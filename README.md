@@ -21,7 +21,7 @@ The app should be able to be run by using the executable in the bin folder.
 
 ## Running
 
-Specify the commands for a developer to run the app from the cloned repo.
+Once Qt and the OpenCV libs have been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui, or run the executable in the bin folder. 
 
 # Testing
 
