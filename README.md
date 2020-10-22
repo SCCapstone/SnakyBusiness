@@ -16,8 +16,8 @@ The app should be able to be run by using the executable in the bin folder.
 
 ## Setup
 
-1. Install open source (Qt)[https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5]
-2. Install (OpenCV)[https://opencv.org/] libraries. (Tutorial)[https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows] if needed.
+1. Install open source [Qt](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5)
+2. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows) if needed.
 
 ## Running
 
