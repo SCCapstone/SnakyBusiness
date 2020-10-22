@@ -66,4 +66,5 @@ Explain how to run the automated tests.
 # Authors
 
 - Auden Childress, geistfulautomaton@gmail.com, auden@email.sc.edu
+- Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu  
 Your names and emails
