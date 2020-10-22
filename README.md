@@ -12,25 +12,12 @@ following your instructions.
 
 ## External Requirements
 
-List all the stuff the reader will need to install in order to get you app to 
-run in their laptop. For example:
-
-In order to build this project you first have to install:
-
-* [Node.js](https://nodejs.org/en/)
-* [MongoDB](https://www.mongodb.com/)
-
-If possible, list the actual commands you used to install these, so the reader
-can just cut-n-paste the commands and get everything setup.
-
-You only need to add instructions for the OS you are using.
+The app should be able to be run by using the executable in the bin folder.
 
 ## Setup
 
-Here you list all the one-time things the developer needs to do after cloning
-your repo. Sometimes there is no need for this section, but some apps require
-some first-time configuration from the developer, for example: setting up a
-database for running your webapp locally.
+1. Install open source (Qt)[https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5]
+2. Install (OpenCV)[https://opencv.org/] libraries. (Tutorial)[https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows] if needed.
 
 ## Running
 
