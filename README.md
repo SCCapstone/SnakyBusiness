@@ -39,4 +39,4 @@ Explain how to run the automated tests.
 
 - Auden Childress, geistfulautomaton@gmail.com, auden@email.sc.edu
 - Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu  
-Your names and emails
+- Your names and emails
