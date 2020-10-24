@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     brush.cpp \
     brushHandler.cpp \
+    dataIO.cpp \
     graphics.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     brush.h \
     brushHandler.h \
+    dataIO.h \
     graphics.h \
     mainwindow.h \
     opencv_handler.h \
