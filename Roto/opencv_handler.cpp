@@ -1,3 +1,7 @@
+/*
+ * The opencv handler is a wrapper class allowing easy integration into various
+ * opencv functionality. It will be implemented later in the project
+ *
 #include "opencv_handler.h"
 
 OpenCV_Handler::OpenCV_Handler()
@@ -53,3 +57,4 @@ void OpenCV_Handler::benDemo() {
                     break;
                 }
 }
+*/
