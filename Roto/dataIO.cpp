@@ -12,7 +12,7 @@ QImage * DataIOHandler::loadImage() {
 
 DataIOHandler::DataIOHandler() {
 
-    loadFile();
+    loadImage();
 
 }
 
