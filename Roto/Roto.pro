@@ -41,7 +41,7 @@ FORMS += \
 # They will be implemented later. For now they specify how the team should
 # set up their opencv directory
 
-#INCLUDEPATH += D:\OpenCV\build\include
+#INCLUDEPATH += C:/OpenCV/build/include
 
 #LIBS += C:/OpenCV/build/lib/opencv_core440.lib
 #LIBS += C:/OpenCV/build/lib/opencv_highgui440.lib
