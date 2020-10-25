@@ -11,8 +11,8 @@ public:
     DataIOHandler();
     ~DataIOHandler();
 
-    QImage * loadFile();
-    void saveFile(QImage * file);
+    QImage * loadImage();
+    void saveImage(QImage * file);
 };
 
 #endif // DATAIO_H
