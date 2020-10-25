@@ -1,6 +1,6 @@
 #include "dataIO.h"
 
-QImage * DataIOHandler::loadFile() {
+QImage * DataIOHandler::loadImage() {
     QStringList fileName = QFileDialog::getOpenFileNames(nullptr, "Open File", "/home", "Images (*.png *.xpm *.jpg");
     QImage *Image = new QImage();
     QString path = fileName.join("");
@@ -12,11 +12,11 @@ QImage * DataIOHandler::loadFile() {
 
 DataIOHandler::DataIOHandler() {
 
-    loadFile();
+    loadImage();
 
 }
 
-void DataIOHandler::saveFile(QImage * file) {
+void DataIOHandler::saveImage(QImage * file) {
     QString saveFileName = QFileDialog::getSaveFileName(nullptr, "Save Image", QString(), "Images (*.png");
 
     file->save(saveFileName);
