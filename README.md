@@ -2,7 +2,7 @@
 
 Glass Opus is an open source rotoscoping software for students and artists. The software will provide a variety of features to allow the users to see their work from start to finish. Drawing with a variety brushes and vectors, image manipuilation and object tracking via an included AI package, and filtering are among the many features than one can employ to create their vision.
 
-The focus of Glass Opus, and the team behind it, is to provide a free software that students and artists can use to further they work and portfolio. This is often a difficult endeavor for artists due to the restrictive cost of major softwares. Since Glass Opus is open source, users can tweak features or add their own to suit specific needs. It will also serve as a foundation for those who seek to improve their knowledge in image processing and manipulation, as well as basic graphics programming.
+The focus of Glass Opus, and the team behind it, is to provide a free software that students and artists can use to further their work and portfolio. This is often a difficult endeavor for artists due to the restrictive cost of major softwares. Since Glass Opus is open source, users can tweak features or add their own to suit specific needs. It will also serve as a foundation for those who seek to improve their knowledge in image processing and manipulation, as well as basic graphics programming.
 
 The team is using Microsoft coding guideleines. Found [here](https://www.cise.ufl.edu/~mschneid/Research/C++%20Programming%20Style%20Guidelines.htm) and implemented via [this](https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019).
 
@@ -10,7 +10,7 @@ The team is using Microsoft coding guideleines. Found [here](https://www.cise.uf
 
 The app should be able to be run by using the executable in the bin folder.
 
-## Setup
+## Dev Setup
 
 1. Install C++ libraries, specifically <!--either -->[MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/)<!-- or [MinGW](http://www.mingw.org/)-->.
 2. Install [Qt and Qt Creator](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5)
@@ -22,8 +22,11 @@ The app should be able to be run by using the executable in the bin folder.
 
 There are two options to running the software:  
 1. Once Qt and the OpenCV libs have been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
-2. Open the bin folder and run the Roto.exe file.
+2. Open the bin folder and run the Roto.exe file.  
+
 # Testing
+
+TBD
 
 In 492 you will write automated tests. When you do you will need to add a 
 section that explains how to run them.
@@ -34,11 +37,11 @@ The behavioral tests are in `/test/casper/`.
 
 ## Testing Technology
 
-In some cases you need to install test runners, etc. Explain how.
+TBD
 
 ## Running Tests
 
-Explain how to run the automated tests.
+TBD
 
 # Authors
 
