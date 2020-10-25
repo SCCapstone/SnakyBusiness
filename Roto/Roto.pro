@@ -43,13 +43,13 @@ FORMS += \
 
 #INCLUDEPATH += C:/OpenCV/build/include
 
-#LIBS += C:/OpenCV/build/lib/opencv_core440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_highgui440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_imgcodecs440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_imgproc440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_features2d440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_calib3d440.lib
-#LIBS += C:/OpenCV/build/lib/opencv_videoio440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_core450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_highgui450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_imgcodecs450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_imgproc450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_features2d450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_calib3d450.lib
+#LIBS += C:/OpenCV/build/lib/opencv_videoio450.lib
 
 
 # Default rules for deployment.
