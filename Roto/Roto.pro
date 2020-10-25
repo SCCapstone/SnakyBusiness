@@ -36,6 +36,22 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+
+# The following are placeholder stubs for OpenCV imports
+# They will be implemented later. For now they specify how the team should
+# set up their opencv directory
+
+#INCLUDEPATH += D:\OpenCV\build\include
+
+#LIBS += C:/OpenCV/build/lib/opencv_core440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_highgui440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_imgcodecs440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_imgproc440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_features2d440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_calib3d440.lib
+#LIBS += C:/OpenCV/build/lib/opencv_videoio440.lib
+
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
