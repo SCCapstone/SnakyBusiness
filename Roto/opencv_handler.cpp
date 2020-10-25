@@ -52,4 +52,5 @@ void OpenCV_Handler::benDemo() {
                 if (waitKey(30) == 27) {
                     break;
                 }
+            }
 }
