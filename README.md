@@ -46,5 +46,6 @@ TBD
 # Authors
 
 - Auden Childress, geistfulautomaton@gmail.com, auden@email.sc.edu
-- Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu  
+- Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu
+- Matthew Pollard, mattpollard44@gmail.com, pollarm@email.sc.edu
 - Your names and emails
