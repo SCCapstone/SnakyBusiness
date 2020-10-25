@@ -21,7 +21,7 @@ The app should be able to be run by using the executable in the bin folder.
 ## Running
 
 There are two options to running the software:  
-1. Once Qt and the OpenCV libs have been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui, or run the executable in the bin folder. 
+1. Once Qt and the OpenCV libs have been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
 2. Open the bin folder and run the Roto.exe file.
 # Testing
 
