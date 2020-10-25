@@ -1,4 +1,4 @@
-#include "dataIO.h"
+#include "dataIOHandler.h"
 
 QImage * DataIOHandler::loadImage() {
     QStringList fileName = QFileDialog::getOpenFileNames(nullptr, "Open File", "/home", "Images (*.png *.xpm *.jpg");
