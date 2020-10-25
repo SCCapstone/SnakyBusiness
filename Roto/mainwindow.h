@@ -39,6 +39,7 @@ using std::ios;
 using std::pair;
 
 const string UI_FileType = ".txt";
+const string UI_FileName = "mainMenubar";
 const int len = 500;
 const int trackDrawSpeed = 0;
 
@@ -57,7 +58,7 @@ public:
     void paintEvent(QPaintEvent *event);
     ~MainWindow();
     void log(string title, QObject *obj);
-    void createMenubar(string filename);
+    bool createMenubar(string filename);
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
 

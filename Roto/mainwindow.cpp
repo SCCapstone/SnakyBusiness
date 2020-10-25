@@ -10,19 +10,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setGeometry(0,0, len, len);
     setWindowTitle("Title");
-    createMenubar("mainMenubar");
-    QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
-    for (string name : filterNames) {
-        QAction *sAction = sFiltering->addAction((name).c_str());
-        connect(sAction, &QAction::triggered, this, [=]() { this->changeScreenFilter(sAction->text().toStdString()); });
-        log(name, sAction);
+    bool wasCreated = createMenubar("mainMenubar");
+    if (wasCreated) {
+        QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
+        for (string name : filterNames) {
+            QAction *sAction = sFiltering->addAction((name).c_str());
+            connect(sAction, &QAction::triggered, this, [=]() { this->changeScreenFilter(sAction->text().toStdString()); });
+            log(name, sAction);
+        }
+        QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
+        for (string name : brushShapes) {
+            QAction *bAction = bShape->addAction((name).c_str());
+            connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushShape(bAction->text().toStdString()); });
+            log(name, bAction);
+        }
     }
-    QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
-    for (string name : brushShapes) {
-        QAction *bAction = bShape->addAction((name).c_str());
-        connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushShape(bAction->text().toStdString()); });
-        log(name, bAction);
-    }
+    else
+        cout << "ERROR: Menu file not found within build folder." << endl;
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -45,12 +49,13 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     repaint();
 }
 
-void MainWindow::createMenubar(string filename) {
+bool MainWindow::createMenubar(string filename) {
 
     QMenuBar *menubar = new QMenuBar(this);
     log(filename + UI_FileType, menubar);
     fstream uiFile;
     uiFile.open(filename + UI_FileType,ios::in);
+    int retVal = 0;
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -65,7 +70,9 @@ void MainWindow::createMenubar(string filename) {
             addItems(menu, fromFile);
         }
         uiFile.close();
+        retVal = 1;
     }
+    return retVal;
 }
 
 void MainWindow::addItems(QMenu *menu, string menuItems) {
