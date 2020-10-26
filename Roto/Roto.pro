@@ -1,58 +1,33 @@
-QT       += core gui
+# Created by and for Qt Creator This file was created for editing the project sources only.
+# You may attempt to use it for building too, by modifying this file here.
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+#TARGET = Roto
 
-CONFIG += c++11
+QT = core gui widgets
 
-# The following define makes your compiler emit warnings if you use
-# any Qt feature that has been marked deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+HEADERS = \
+   $$PWD/brush.h \
+   $$PWD/brushhandler.h \
+   $$PWD/dataIO.h \
+   $$PWD/graphics.h \
+   $$PWD/mainwindow.h \
+   $$PWD/opencv_handler.h \
+   $$PWD/stdfuncs.h
 
-# You can also make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+SOURCES = \
+   $$PWD/brush.cpp \
+   $$PWD/brushhandler.cpp \
+   $$PWD/dataIO.cpp \
+   $$PWD/graphics.cpp \
+   $$PWD/main.cpp \
+   $$PWD/mainMenubar.txt \
+   $$PWD/mainwindow.cpp \
+   $$PWD/mainwindow.ui \
+   $$PWD/opencv_handler.cpp \
+   $$PWD/Roto.pro
 
-SOURCES += \
-    brush.cpp \
-    brushHandler.cpp \
-    dataIO.cpp \
-    graphics.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    opencv_handler.cpp
+INCLUDEPATH = \
+    $$PWD/.
 
-HEADERS += \
-    brush.h \
-    brushHandler.h \
-    dataIO.h \
-    graphics.h \
-    mainwindow.h \
-    opencv_handler.h \
-    stdfuncs.h
+#DEFINES = 
 
-FORMS += \
-    mainwindow.ui
-
-
-# The following are placeholder stubs for OpenCV imports
-# They will be implemented later. For now they specify how the team should
-# set up their opencv directory
-
-#INCLUDEPATH += C:/OpenCV/build/include
-
-#LIBS += C:/OpenCV/build/lib/opencv_core450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_highgui450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_imgcodecs450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_imgproc450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_features2d450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_calib3d450.lib
-#LIBS += C:/OpenCV/build/lib/opencv_videoio450.lib
-
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
