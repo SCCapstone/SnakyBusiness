@@ -149,6 +149,9 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             screenFilter.setStrength(ret);
     }
+    else if (btnPress == "Close") {
+        QApplication::quit();
+    }
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
