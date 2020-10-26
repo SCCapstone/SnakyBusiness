@@ -8,7 +8,7 @@ QT = core gui widgets
 HEADERS = \
    $$PWD/brush.h \
    $$PWD/brushhandler.h \
-   $$PWD/dataIO.h \
+   $$PWD/dataIOHandler.h \
    $$PWD/graphics.h \
    $$PWD/mainwindow.h \
    $$PWD/opencv_handler.h \
@@ -17,7 +17,7 @@ HEADERS = \
 SOURCES = \
    $$PWD/brush.cpp \
    $$PWD/brushhandler.cpp \
-   $$PWD/dataIO.cpp \
+   $$PWD/dataIOHandler.cpp \
    $$PWD/graphics.cpp \
    $$PWD/main.cpp \
    $$PWD/mainMenubar.txt \
