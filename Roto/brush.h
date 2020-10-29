@@ -6,9 +6,9 @@
 #include <stdfuncs.h>
 using std::string;
 
-enum Shape {square, circle};
-const string brushShapes[] = {"Square", "Circle"};
-const int numBrushes = 2;
+enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, Octagon};                //  TODO custom
+const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon"};
+const int numBrushes = 8;
 
 const unsigned char maxRadius = 64;
 const unsigned char minRadius = 1;
@@ -30,6 +30,12 @@ private:
     void update();
     void createSquare();
     void createCircle();
+    void createVertical();
+    void createHorizontal();
+    void createLeftDiagonal();
+    void createRightDiagonal();
+    void createDiamond();
+    void createOctagon();
 
     unsigned char **brushMap;
     Shape shape;
