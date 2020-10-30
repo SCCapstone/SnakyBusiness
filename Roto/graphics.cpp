@@ -37,7 +37,7 @@ void graphics::Filter::strengthDown() {
 void graphics::Filter::setFilter(string filterName) {
     size_t i;
     for (i = 0; i < numFilters; ++i)
-        if (filterName._Equal(filterNames[i]))
+        if (filterName == filterNames[i])
             break;
     if (i == numFilters)
         i = 0;
