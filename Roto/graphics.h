@@ -12,9 +12,10 @@ using std::function;
 
 namespace graphics {
 
-const string filterNames[] = {"Normal (rgb)", "Greyscale", "Polarize", "Negative"};
-const int filterPresets[] =  {0             , 255        , 128         , 0       };
-const int numFilters = 4;
+//  TODO, polarize rgbycm (via mono), neg rgbycm, noise rgbycm, rainbow filter (h, v, ld, rd), vignette filter
+const string filterNames[] = {"Normal (rgb)", "Greyscale", "Polarize", "Negative", "Burn", "Dodge", "Red Channel", "Green Channel", "Blue Channel", "Red Pass", "Green Pass", "Blue Pass", "Red Filter", "Green Filter", "Blue Filter", "Burn Red", "Burn Green", "Burn Blue", "Burn Yellow", "Burn Cyan", "Burn Magenta", "Dodge Red", "Dodge Green", "Dodge Blue", "Dodge Yellow", "Dodge Cyan", "Dodge Magenta", "RBG", "GRB", "GBR", "BRG", "BGR"};
+const int filterPresets[] =  {0             , 255        , 128         , 0         , 20    , 20     , 255          , 255            , 255           , 255       , 255         , 255        , 255         , 255           , 255          , 20        , 20          , 20         , 20           , 20         , 20            , 20         , 20           , 20          , 20            , 20          , 20             , 0    , 0    , 0    , 0    , 0    };
+const int numFilters = 32;
 
 const double minZoom = 0.01;
 const double maxZoom = 8.0;
@@ -46,7 +47,40 @@ public:
     static QRgb greyscale (QColor qc, int strength);
     static QRgb polarize (QColor qc, int strength);
     static QRgb negative (QColor qc, int strength);
+    static QRgb burn (QColor qc, int strength);
+    static QRgb dodge (QColor qc, int strength);
+    static QRgb redChannel (QColor qc, int strength);
+    static QRgb greenChannel (QColor qc, int strength);
+    static QRgb blueChannel (QColor qc, int strength);
+    static QRgb redPass (QColor qc, int strength);
+    static QRgb greenPass (QColor qc, int strength);
+    static QRgb bluePass (QColor qc, int strength);
+    static QRgb redFilter (QColor qc, int strength);
+    static QRgb greenFilter (QColor qc, int strength);
+    static QRgb blueFilter (QColor qc, int strength);
+    static QRgb burnRed (QColor qc, int strength);
+    static QRgb burnGreen (QColor qc, int strength);
+    static QRgb burnBlue (QColor qc, int strength);
+    static QRgb burnYellow (QColor qc, int strength);
+    static QRgb burnCyan (QColor qc, int strength);
+    static QRgb burnMagenta (QColor qc, int strength);
+    static QRgb dodgeRed (QColor qc, int strength);
+    static QRgb dodgeGreen (QColor qc, int strength);
+    static QRgb dodgeBlue (QColor qc, int strength);
+    static QRgb dodgeYellow (QColor qc, int strength);
+    static QRgb dodgeCyan (QColor qc, int strength);
+    static QRgb dodgeMagenta (QColor qc, int strength);
     static QRgb rgb (QColor qc, int strength);
+    static QRgb rbg (QColor qc, int strength);
+    static QRgb grb (QColor qc, int strength);
+    static QRgb gbr (QColor qc, int strength);
+    static QRgb brg (QColor qc, int strength);
+    static QRgb bgr (QColor qc, int strength);
+    static QRgb greyFilmGrain (QColor qc, int strength);
+    static QRgb colorFilmGrain (QColor qc, int strength);
+private:
+    static int Burn(int color, int strength);
+    static int Dodge(int color, int strength);
 
 };
 
@@ -70,7 +104,7 @@ private:
 
 // TODO update names
 
-const function <QRgb (QColor, int)> filters[] = {Filtering::rgb, Filtering::greyscale, Filtering::polarize, Filtering::negative};
+const function <QRgb (QColor, int)> filters[] = {Filtering::rgb, Filtering::greyscale, Filtering::polarize, Filtering::negative, Filtering::burn, Filtering::dodge, Filtering::redChannel, Filtering::greenChannel, Filtering::blueChannel, Filtering::redPass, Filtering::greenPass, Filtering::bluePass, Filtering::redFilter, Filtering::greenFilter, Filtering::blueFilter, Filtering::burnRed, Filtering::burnGreen, Filtering::burnBlue, Filtering::burnYellow, Filtering::burnCyan, Filtering::burnMagenta, Filtering::dodgeRed, Filtering::dodgeGreen, Filtering::dodgeBlue, Filtering::dodgeYellow, Filtering::dodgeCyan, Filtering::dodgeMagenta, Filtering::rbg, Filtering::grb, Filtering::gbr, Filtering::brg, Filtering::bgr};
 
 }
 #endif // GRAPHICS_H
