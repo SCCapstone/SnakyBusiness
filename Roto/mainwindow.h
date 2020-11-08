@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <map>
 #include <fstream>
+#include <vector>
 
 #include <QMainWindow>
 #include <QImage>
@@ -37,6 +38,7 @@ using std::map;
 using std::fstream;
 using std::ios;
 using std::pair;
+using std::vector;
 
 const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
