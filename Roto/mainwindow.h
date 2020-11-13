@@ -8,7 +8,12 @@
 #include <unordered_map>
 #include <map>
 #include <fstream>
-#include <vector>
+#include <thread>
+
+#include <time.h>
+#include <chrono>
+using namespace std::chrono;
+using std::chrono::milliseconds;
 
 #include <QMainWindow>
 #include <QImage>
@@ -38,7 +43,6 @@ using std::map;
 using std::fstream;
 using std::ios;
 using std::pair;
-using std::vector;
 
 const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
@@ -60,7 +64,7 @@ public:
     void paintEvent(QPaintEvent *event);
     ~MainWindow();
     void log(string title, QObject *obj);
-    bool createMenubar(string filename);
+    void createMenubar(string filename);
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
 
@@ -77,11 +81,15 @@ public:
 
 public slots:
     void changeScreenFilter(string s);
+    void changeBrushFilter(string s);
+    void changeBrushMethod(string s);
     void changeBrushShape(string s);
     void doSomething(string btnPress);
 
 private:
     Ui::MainWindow *ui;
 };
+
+void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H

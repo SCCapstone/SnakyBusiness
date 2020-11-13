@@ -10,23 +10,29 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setGeometry(0,0, len, len);
     setWindowTitle("Title");
-    bool wasCreated = createMenubar("mainMenubar");
-    if (wasCreated) {
-        QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
-        for (string name : filterNames) {
-            QAction *sAction = sFiltering->addAction((name).c_str());
-            connect(sAction, &QAction::triggered, this, [=]() { this->changeScreenFilter(sAction->text().toStdString()); });
-            log(name, sAction);
-        }
-        QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
-        for (string name : brushShapes) {
-            QAction *bAction = bShape->addAction((name).c_str());
-            connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushShape(bAction->text().toStdString()); });
-            log(name, bAction);
-        }
+    createMenubar("mainMenubar");
+    QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
+    QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filtering"));
+    for (string name : filterNames) {
+        QAction *sAction = sFiltering->addAction((name).c_str());
+        QAction *bAction = bFiltering->addAction((name).c_str());
+        connect(sAction, &QAction::triggered, this, [=]() { this->changeScreenFilter(sAction->text().toStdString()); });
+        connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushFilter(bAction->text().toStdString()); });
+        log(name, sAction);
+        log(name, bAction);
     }
-    else
-        cout << "ERROR: Menu file not found within build folder." << endl;
+    QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
+    for (string name : brushShapes) {
+        QAction *bAction = bShape->addAction((name).c_str());
+        connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushShape(bAction->text().toStdString()); });
+        log(name, bAction);
+    }
+    QMenu* bMethod = static_cast<QMenu *>(objFetch.at("Brush Method"));
+    for (string name : appMethods) {
+        QAction *bAction = bMethod->addAction((name).c_str());
+        connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
+        log(name, bAction);
+    }
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -49,13 +55,12 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     repaint();
 }
 
-bool MainWindow::createMenubar(string filename) {
+void MainWindow::createMenubar(string filename) {
 
     QMenuBar *menubar = new QMenuBar(this);
     log(filename + UI_FileType, menubar);
     fstream uiFile;
     uiFile.open(filename + UI_FileType,ios::in);
-    int retVal = 0;
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -70,9 +75,7 @@ bool MainWindow::createMenubar(string filename) {
             addItems(menu, fromFile);
         }
         uiFile.close();
-        retVal = 1;
     }
-    return retVal;
 }
 
 void MainWindow::addItems(QMenu *menu, string menuItems) {
@@ -149,8 +152,17 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             screenFilter.setStrength(ret);
     }
-    else if (btnPress == "Close") {
-        QApplication::quit();
+    else if (btnPress == "Brush Strength") {
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush strength", bh.getStength(), minStrength, maxStrength, 1, &ok );
+        if (ok)
+            bh.setStrength(ret);
+    }
+    else if (btnPress == "Spray Density") {
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
+        if (ok)
+            bh.setDensity(ret);
     }
 }
 
@@ -159,14 +171,26 @@ void MainWindow::changeScreenFilter(string filterName) {
     repaint();
 }
 
+void MainWindow::changeBrushFilter(string filterName) {
+    bh.setFilter(filterName);
+}
+
 void MainWindow::changeBrushShape(string shape) {
     bh.setShape(shape);
+}
+
+void MainWindow::changeBrushMethod(string method) {
+    bh.setAppMethod(method);
 }
 
 void MainWindow::log(string title, QObject *obj) {
 
     objFetch[title] = obj;
     toDel.push_front(obj);
+}
+
+void appTo(QImage *qi, Filter f) {
+    f.applyTo(qi);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -176,6 +200,21 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_Down:
         imgSupport.zoomOut();
+        break;
+    case Qt::Key_I:
+        ImgSupport::rotate180(qi);
+        break;
+    case Qt::Key_V:
+        ImgSupport::flipVertical(qi);
+        break;
+    case Qt::Key_H:
+        ImgSupport::flipHorizontal(qi);
+        break;
+    case Qt::Key_L:
+        ImgSupport::rotate90Left(qi);
+        break;
+    case Qt::Key_R:
+        ImgSupport::rotate90Right(qi);
         break;
     }
     repaint();

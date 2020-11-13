@@ -1,4 +1,4 @@
-#include <graphics.h>
+#include "graphics.h"
 
 graphics::Filter::Filter(int str, string filterName) {
     strength = str;
@@ -296,4 +296,60 @@ QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
     qp.setX(static_cast<int>(static_cast<double>(qp.x()) / zoom));
     qp.setY(static_cast<int>(static_cast<double>(qp.y()) / zoom));
     return qp;
+}
+
+void graphics::ImgSupport::rotate90Right(QImage *&qi) {
+    QImage copy = qi->copy();
+    int w = copy.width(), h = copy.height() - 1;
+    delete qi;
+    qi = new QImage(copy.height(), copy.width(), QImage::Format_ARGB32_Premultiplied);
+    for (int x = 0; x < w; ++x)
+        for (int y = 0; y <= h; ++y)
+            qi->setPixel(y, x, copy.pixel(x, h - y));
+}
+
+void graphics::ImgSupport::rotate90Left(QImage *&qi) {
+    QImage copy = qi->copy();
+    int w = copy.width() - 1, h = copy.height();
+    delete qi;
+    qi = new QImage(copy.height(), copy.width(), QImage::Format_ARGB32_Premultiplied);
+    for (int x = 0; x <= w; ++x)
+        for (int y = 0; y < h; ++y)
+            qi->setPixel(y, x, copy.pixel(w - x, y));
+}
+
+void graphics::ImgSupport::rotate180(QImage *qi) {
+    int w = qi->width(), h = qi->height() - 1;
+    int halfW = (w + 1) / 2;
+    --w;
+    for (int i = 0; i < halfW; ++i)
+        for (int j = 0; j <= h; ++j) {
+            QRgb qc = qi->pixel(i, j);
+            qi->setPixel(i, j, qi->pixel(w - i, h - j));
+            qi->setPixel(w - i, h - j, qc);
+        }
+}
+
+void graphics::ImgSupport::flipVertical(QImage *qi) {
+    int w = qi->width(), h = qi->height();
+    int halfW = w / 2;
+    --w;
+    for (int i = 0; i < halfW; ++i)
+        for (int j = 0; j < h; ++j) {
+            QRgb qc = qi->pixel(i, j);
+            qi->setPixel(i, j, qi->pixel(w - i, j));
+            qi->setPixel(w - i, j, qc);
+        }
+}
+
+void graphics::ImgSupport::flipHorizontal(QImage *qi) {
+    int w = qi->width(), h = qi->height();
+    int halfH = h / 2;
+    --h;
+    for (int i = 0; i < w; ++i)
+        for (int j = 0; j < halfH; ++j) {
+            QRgb qc = qi->pixel(i, j);
+            qi->setPixel(i, j, qi->pixel(i, h - j));
+            qi->setPixel(i, h - j, qc);
+        }
 }

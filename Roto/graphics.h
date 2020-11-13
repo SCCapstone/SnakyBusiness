@@ -81,7 +81,6 @@ public:
 private:
     static int Burn(int color, int strength);
     static int Dodge(int color, int strength);
-
 };
 
 class ImgSupport {
@@ -94,6 +93,12 @@ public:
     void zoomIn();
     void zoomOut();
     QPoint getZoomCorrected(QPoint qp);
+    static void rotate90Right(QImage *&qi);
+    static void rotate90Left(QImage *&qi);
+    static void rotate180(QImage *qi);
+    static void flipVertical(QImage *qi);
+    static void flipHorizontal(QImage *qi);
+
 
 private:
 
@@ -105,6 +110,6 @@ private:
 // TODO update names
 
 const function <QRgb (QColor, int)> filters[] = {Filtering::rgb, Filtering::greyscale, Filtering::polarize, Filtering::negative, Filtering::burn, Filtering::dodge, Filtering::redChannel, Filtering::greenChannel, Filtering::blueChannel, Filtering::redPass, Filtering::greenPass, Filtering::bluePass, Filtering::redFilter, Filtering::greenFilter, Filtering::blueFilter, Filtering::burnRed, Filtering::burnGreen, Filtering::burnBlue, Filtering::burnYellow, Filtering::burnCyan, Filtering::burnMagenta, Filtering::dodgeRed, Filtering::dodgeGreen, Filtering::dodgeBlue, Filtering::dodgeYellow, Filtering::dodgeCyan, Filtering::dodgeMagenta, Filtering::rbg, Filtering::grb, Filtering::gbr, Filtering::brg, Filtering::bgr};
-
 }
+
 #endif // GRAPHICS_H
