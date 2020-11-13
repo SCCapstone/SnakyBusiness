@@ -5,6 +5,9 @@
 #include <graphics.h>
 #include <QPoint>
 #include <QImage>
+#include <list>
+#include <time.h>
+#include <chrono>
 #include <iostream>
 
 using graphics::Filter;
@@ -15,30 +18,51 @@ using std::chrono::milliseconds;
 using std::cout;
 using std::endl;
 
-enum appMethod {overwrite};
-const string appMethods[] = {"Overwrite"};
-const int numMethods = 1;
+enum appMethod {overwrite, additive, subtractive, filter, radial};
+const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial"};
+const int numMethods = 6;
 
+const int maxDensity = RAND_MAX / 256;
+const int minDensity = 0;
 const unsigned char maxStrength = 255;
 const unsigned char minStrength = 1;
-
+const long long maxDiffTime_interpolation = 50;
+const long long maxDiffTime_linger = 1000;      // should this be set by user?
 
 class brushHandler
 {
 public:
 
-    brushHandler(int size = 30, string type = appMethods[0], QColor qc = QColor(0xFF000000));
+    brushHandler(unsigned char str = 128, int size = 30, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
     void setAppMethod(string type);
     void setPoint(QPoint qp);
+    void setDensity(int density);
+    void setStrength(int str);
     void setSize(int size);
     void setShape(string shape);
     void setColor(QColor qc);
+    void setFilter(string filterName);
+    const unsigned char *const *const getBrushMap();
+    void setPattern(int xDim, int yDim, unsigned char **pattern);
+    void setPatternInUse(int used);
+    const unsigned char *const *const getPatternMap();
+    int getPatternXDim();
+    int getPatternYDim();
+    int getPatternInUse();
+    int getMethodIndex();
+    int getFilterIndex();
     QColor getColor();
+    int getDensity();
+    int getStength();
     int getSize();
     int getFullSize();
     void sizeUp();
     void sizeDown();
+    void densityUp();
+    void densityDown();
+    void strengthUp();
+    void strengthDown();
     void applyBrush(QImage *qi, QPoint qp);
 
 private:
@@ -46,11 +70,30 @@ private:
     void resetPoint();
     int onScreen(int x, int y, int xMax, int yMax);
     void overwrite(QImage *qi);
+    void additive(QImage *qi);
+    void subractive(QImage *qi);
+    void filter(QImage *qi);
+    void pattern(QImage *qi);
+    void radial(QImage *qi);
+    QColor getAffected();
+    void shift();
+    void shiftLeft();
+    void shiftRight();
+    void shiftUp();
+    void shiftDown();
 
+    int sprayDensity;
+    unsigned char strength, patternXDim, patternYDim, patternInUse;
     appMethod method;
     Brush brush;
     QColor color;
-    QPoint currPnt;
+    unsigned char **patternMap;
+    char **checkMap;
+    Filter brushFilter;
+    QPoint currPnt, lastPnt;
+
+    list <QPoint> toProcess;
+    long long pDrawDiff, pDrawLast;
 
 };
 
