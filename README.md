@@ -50,4 +50,4 @@ TBD
 - Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu
 - Matthew Pollard, mattpollard44@gmail.com, pollarm@email.sc.edu
 - Malik Melvin, melvinmalik15@gmail.com, mmmelvin@email.sc.edu
-- Your names and emails
+- Thomas Wilks, tpwilk@hotmail.com, twilks@email.sc.edu
