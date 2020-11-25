@@ -72,6 +72,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
         bh.setRelativePoint(qp);
         bh.applyBrush(qi, qp);
     }
+    repaint();
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
