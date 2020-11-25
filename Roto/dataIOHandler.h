@@ -4,7 +4,6 @@
 #include <QImageReader>
 #include <QFileDialog>
 #include <QImage>
-#include <mainwindow.h>
 
 class DataIOHandler {
 public:
@@ -17,6 +16,7 @@ public:
     QImage * loadImage(QImage * file);
     static void saveImage(QString saveFileName, QImage * file);
     void saveImageAs(QImage * file);
+    
 private:
     QString saveFileName;
 };
