@@ -4,7 +4,7 @@ Glass Opus is an open source rotoscoping software for students and artists. The 
 
 The focus of Glass Opus, and the team behind it, is to provide a free software that students and artists can use to further their work and portfolio. This is often a difficult endeavor for artists due to the restrictive cost of major softwares. Since Glass Opus is open source, users can tweak features or add their own to suit specific needs. It will also serve as a foundation for those who seek to improve their knowledge in image processing and manipulation, as well as basic graphics programming.
 
-The team is using Microsoft coding guideleines. Found [here](https://www.cise.ufl.edu/~mschneid/Research/C++%20Programming%20Style%20Guidelines.htm) and implemented via [this](https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019).
+The team is using Microsoft coding guidelines. Found [here](https://www.cise.ufl.edu/~mschneid/Research/C++%20Programming%20Style%20Guidelines.htm) and implemented via [this](https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019).
 
 ## External Requirements
 
@@ -16,7 +16,8 @@ The app should be able to be run by using the executable in the bin folder.
 2. Install [Qt and Qt Creator](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5)
 3. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows) if needed.
 4. Make sure system path aligns with current installation of OpenCV and MSVC. Verify that the includes and libs within the project file are correct.
-5. Copy the .libs from the OpenCV build folder to the Qt app build folder.
+5. Copy the .libs from the OpenCV build folder to the highest/top directory of the build folder.
+6. Copy the mainMenubar.txt into same location as the .libs mentioned above.
 
 ## Running
 
@@ -48,4 +49,5 @@ TBD
 - Auden Childress, geistfulautomaton@gmail.com, auden@email.sc.edu
 - Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu
 - Matthew Pollard, mattpollard44@gmail.com, pollarm@email.sc.edu
-- Your names and emails
+- Malik Melvin, melvinmalik15@gmail.com, mmmelvin@email.sc.edu
+- Thomas Wilks, tpwilk@hotmail.com, twilks@email.sc.edu
