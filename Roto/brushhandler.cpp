@@ -20,6 +20,8 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
     patternMap = new unsigned char*[patternXDim];
     patternMap[0] = new unsigned char[patternYDim];
     patternMap[0][0] = 0;
+    samplePnt = QPoint(-1000, -1000);
+    relativityPoint = samplePnt;
 }
 
 brushHandler::~brushHandler() {
@@ -236,7 +238,22 @@ void brushHandler::applyBrush(QImage *qi, QPoint qp) {
     case appMethod::radial:
         radial(qi);
         break;
+    case appMethod::sample:
+        sample(qi);
+        break;
     }
+}
+
+void brushHandler::setSamplePoint(QPoint sPnt) {
+    samplePnt = sPnt;
+}
+
+QPoint brushHandler::getSamplePoint() {
+    return samplePnt;
+}
+
+void brushHandler::setRelativePoint(QPoint rPnt) {
+    relativityPoint = rPnt;
 }
 
 int brushHandler::onScreen(int y, int x, int yMax, int xMax)  {
@@ -437,4 +454,26 @@ void brushHandler::filter(QImage *qi) {
 void brushHandler::radial(QImage *qi) {
     toProcess.clear();
     cout << "Halt! In the name of Talos, stop using this brush! It hasn't been developed yet!" << endl;
+}
+
+void brushHandler::sample(QImage *qi) {
+    const unsigned char *const *const brushMap = brush.getBrushMap();
+    while (toProcess.size() > 0) {
+        QPoint p = toProcess.front();
+        lastPnt = currPnt;
+        currPnt = p;
+        int radius = brush.getRadius(), xMax = qi->width(), yMax = qi->height();
+        int rx = currPnt.x() - relativityPoint.x(), ry = currPnt.y() - relativityPoint.y();
+        int x = 0;
+        for (int i = -radius; i <= radius; ++i) {
+            int y = 0;
+            for (int j = -radius; j <= radius; ++j) {
+                if (onScreen(samplePnt.x() + i + rx, samplePnt.y() + j + ry, xMax, yMax) && onScreen(currPnt.x() + i, currPnt.y() + j, xMax, yMax) && brushMap[x][y] && (!sprayDensity || !(rand() % sprayDensity)) && (!patternInUse || patternMap[i % patternXDim][j % patternYDim]))
+                    qi->setPixel(currPnt.x() + i, currPnt.y() + j, qi->pixel(samplePnt.x() + i+ rx, samplePnt.y() + j + ry));
+                ++y;
+            }
+            ++x;
+        }
+        toProcess.pop_front();
+    }
 }

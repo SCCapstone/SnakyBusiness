@@ -18,8 +18,8 @@ using std::chrono::milliseconds;
 using std::cout;
 using std::endl;
 
-enum appMethod {overwrite, additive, subtractive, filter, radial};
-const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial"};
+enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
+const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial", "Sample"};
 const int numMethods = 6;
 
 const int maxDensity = RAND_MAX / 256;
@@ -43,6 +43,9 @@ public:
     void setShape(string shape);
     void setColor(QColor qc);
     void setFilter(string filterName);
+    void setSamplePoint(QPoint sPnt);
+    QPoint getSamplePoint();
+    void setRelativePoint(QPoint rPnt);
     const unsigned char *const *const getBrushMap();
     void setPattern(int xDim, int yDim, unsigned char **pattern);
     void setPatternInUse(int used);
@@ -75,6 +78,7 @@ private:
     void filter(QImage *qi);
     void pattern(QImage *qi);
     void radial(QImage *qi);
+    void sample(QImage *qi);
     QColor getAffected();
     void shift();
     void shiftLeft();
@@ -90,7 +94,7 @@ private:
     unsigned char **patternMap;
     char **checkMap;
     Filter brushFilter;
-    QPoint currPnt, lastPnt;
+    QPoint currPnt, lastPnt, samplePnt, relativityPoint;
 
     list <QPoint> toProcess;
     long long pDrawDiff, pDrawLast;
