@@ -37,22 +37,49 @@ MainWindow::MainWindow(QWidget *parent)
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
             qi->setPixel(i, j, 0xFFFFFFFF);
+    sampleFlag = 0;
+    sampleFlasher = new QTimer(this);
+    connect(sampleFlasher, SIGNAL(timeout()), this, SLOT(toggleSamplePnt()));
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 
     QPoint qp = imgSupport.getZoomCorrected(event->pos());
-    if (trackDrawSpeed) {
-        auto tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-        long long t1 = tim.count();
-        bh.applyBrush(qi, qp);
-        tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-        long long t2 = tim.count();
-        cout << (t2 - t1) << endl;
+    if (lastButton == Qt::LeftButton) {
+        if (trackDrawSpeed) {
+            auto tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+            long long t1 = tim.count();
+            bh.applyBrush(qi, qp);
+            tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+            long long t2 = tim.count();
+            cout << (t2 - t1) << endl;
+        }
+        else
+            bh.applyBrush(qi, qp);
     }
-    else
-        bh.applyBrush(qi, qp);
+    else if (lastButton == Qt::RightButton)
+        bh.setSamplePoint(qp);
     repaint();
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    QPoint qp = imgSupport.getZoomCorrected(event->pos());
+    lastButton = event->button();
+    if(lastButton == Qt::RightButton) {
+        bh.setSamplePoint(qp);
+    }
+    else if (lastButton == Qt::LeftButton) {
+        bh.setRelativePoint(qp);
+        bh.applyBrush(qi, qp);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+
+}
+
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+
 }
 
 void MainWindow::createMenubar(string filename) {
@@ -181,6 +208,12 @@ void MainWindow::changeBrushShape(string shape) {
 
 void MainWindow::changeBrushMethod(string method) {
     bh.setAppMethod(method);
+    if (method == "Sample") {
+        sampleFlag = 1;
+        sampleFlasher->start(sampleFlashTime);
+    }
+    else
+        sampleFlasher->stop();
 }
 
 void MainWindow::log(string title, QObject *obj) {
@@ -224,14 +257,30 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 
     QImage final = qi->copy();
     screenFilter.applyTo(&final);
+    if (sampleFlag) {
+        QPoint qp = bh.getSamplePoint();
+        for (int i = qp.x() - ptSize; i < qp.x() + ptSize; ++i)
+            for (int j = qp.y() - ptSize; j < qp.y() + ptSize; ++j) {
+                int dist = abs(i - qp.x()) + abs(j - qp.y());
+                if (dist >= ptSize - 1 && dist <= ptSize && i >= 0 && i < final.width() && j >= 0 && j < final.height())
+                    final.setPixel(i, j, graphics::Filtering::negative(final.pixelColor(i, j), 255));
+            }
+    }
     final = imgSupport.zoomImg(final);
     QPainter qp(this);
     qp.drawImage(0, 0, final);
 }
 
+void MainWindow::toggleSamplePnt() {
+    sampleFlag = !sampleFlag;
+    repaint();
+}
+
 MainWindow::~MainWindow() {
 
     this->hide();
+    sampleFlasher->stop();
+    delete sampleFlasher;
     delete ui;
     delete qi;
     objFetch.clear();

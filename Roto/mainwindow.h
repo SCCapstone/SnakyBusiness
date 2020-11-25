@@ -9,6 +9,7 @@
 #include <map>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 #include <time.h>
 #include <chrono>
@@ -24,9 +25,11 @@ using std::chrono::milliseconds;
 #include <QMenuBar>
 #include <QColorDialog>
 #include <QInputDialog>
+#include <QTimer>
 
 #include <brushHandler.h>
 #include <graphics.h>
+#include <stdfuncs.h>
 
 using graphics::filterNames;
 using graphics::Filter;
@@ -48,6 +51,8 @@ const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
 const int len = 500;
 const int trackDrawSpeed = 0;
+const int ptSize = 5;
+const int sampleFlashTime = 400;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -60,6 +65,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void paintEvent(QPaintEvent *event);
     ~MainWindow();
@@ -73,6 +81,9 @@ public:
     Filter screenFilter;
 
     QColorDialog cd;
+    Qt::MouseButton lastButton;
+    QTimer *sampleFlasher;
+    char sampleFlag;
 
     ImgSupport imgSupport;
 
@@ -85,6 +96,7 @@ public slots:
     void changeBrushMethod(string s);
     void changeBrushShape(string s);
     void doSomething(string btnPress);
+    void toggleSamplePnt();
 
 private:
     Ui::MainWindow *ui;
