@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -33,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
+    //DataIOHandler * ImageIO = new DataIOHandler();
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -130,11 +130,18 @@ void MainWindow::doSomething(string btnPress) {
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
     if (btnPress == "Import") {
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
         delete qi;
-        QImage qiTemp(fileName);
-        qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+        //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+        qi = DataIOHandler::loadImage();
+
         repaint();
+    }
+    else if (btnPress == "Export") {
+        QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png"));
+        // qi->save(saveFileName);
+        screenFilter.applyTo(qi);
+        DataIOHandler::saveImage(saveFileName, qi);
+        //ImageIO->saveImage(qi);
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);

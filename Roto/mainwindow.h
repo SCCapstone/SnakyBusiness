@@ -27,6 +27,7 @@ using std::chrono::milliseconds;
 
 #include <brushHandler.h>
 #include <graphics.h>
+#include <dataIOHandler.h>
 
 using graphics::filterNames;
 using graphics::Filter;
@@ -71,6 +72,7 @@ public:
     QImage *qi;
     brushHandler bh;
     Filter screenFilter;
+    //DataIOHandler * ImageIO;
 
     QColorDialog cd;
 

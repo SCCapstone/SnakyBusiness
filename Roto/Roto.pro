@@ -6,25 +6,23 @@
 QT = core gui widgets
 
 HEADERS = \
-   $$PWD/brush.h \
-   $$PWD/brushhandler.h \
-   $$PWD/dataIOHandler.h \
-   $$PWD/graphics.h \
-   $$PWD/mainwindow.h \
-   $$PWD/opencv_handler.h \
-   $$PWD/stdfuncs.h
+  $$PWD/brush.h \
+  $$PWD/brushhandler.h \
+  $$PWD/dataIOHandler.h \
+  $$PWD/graphics.h \
+  $$PWD/mainwindow.h \
+  $$PWD/opencv_handler.h \
+  $$PWD/stdfuncs.h
 
 SOURCES = \
-   $$PWD/brush.cpp \
-   $$PWD/brushhandler.cpp \
-   $$PWD/dataIOHandler.cpp \
-   $$PWD/graphics.cpp \
-   $$PWD/main.cpp \
-   $$PWD/mainMenubar.txt \
-   $$PWD/mainwindow.cpp \
-   $$PWD/mainwindow.ui \
-   $$PWD/opencv_handler.cpp \
-   $$PWD/Roto.pro
+  $$PWD/brush.cpp \
+  $$PWD/brushhandler.cpp \
+  $$PWD/dataIOHandler.cpp \
+  $$PWD/graphics.cpp \
+  $$PWD/main.cpp \
+  $$PWD/mainwindow.cpp \
+  $$PWD/mainwindow.ui \
+  $$PWD/opencv_handler.cpp \
 
 INCLUDEPATH = \
     $$PWD/.
