@@ -16,8 +16,10 @@ public:
 
     static QImage * loadImage();    //  non static, QString parameter needed.
     QImage * loadImage(QImage * file);      //not needed.
-    static void saveImage(QString saveFileName, QImage * file);     // remove QString parameter.
-    void saveImageAs(QImage * file);        // Add QString parameter.
+    static void saveImage(QString saveFileName, QImage * file);     // non static, remove QImage parameter.
+    void saveImageAs(QImage * file);        // not needed
+    
+    // FUNCTIONS FOR THE UI TO GET THE DRAW LAYER AND ACTIVE MEDIA LAYER. SEE CPP FILE FOR CLARIFICATION.
     
 private:
     QString saveFileName;
