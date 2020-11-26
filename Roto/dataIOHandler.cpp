@@ -2,7 +2,23 @@
 #include "mainwindow.h"         // not needed
 #include "ui_mainwindow.h"      // not needed
 
-QImage * DataIOHandler::loadImage() {       // should be static, and take QString parameter filename
+// It seems the functions were made with the idea of a save file in mind, or perhap I am incorrect. However,
+// If you also want to commits from writing the saving feature, it'd be quite easy. I've detailed it in the saveLoad.txt.
+// I'll upload it to the repo / github.
+
+QImage * DataIOHandler::loadImage() {       
+    /* Should be non-static, and take QString parameter filename. importImage would be a more accurate name.
+     * This function should have no return type as the as the QImage pointer that is drawn to the screen
+     * Should actually be a private member of the dataIO_handler class, as should the draw layer. Ideally,
+     * there should be a single QImage pointer for displaying the import media, one for displaying the
+     * draw layer, two std::list <QImage *> for the draw frames on either side on either side of the draw
+     * layer when importing video, and similary two more lists of the same type for the import media.
+     *
+     * should have a bool flag that alerts the front end to whether there is already import media, if so, ask if the user
+     * wants to replace the current media with what they intend to import.
+     * eventually, when we have save files, we'll want to ask the user if they want to load the media upon loading the save file,
+     * as they may instead be in the final stages of work, where they no longer need it - saving ram.
+     */
     QStringList fileName = QFileDialog::getOpenFileNames(nullptr, "Open File", "/home", "Images (*.png *.xpm *.jpg");
     /* The call about should be QFileDialog::getOpenFileName
      * The call should be made in the MainWindow.cpp, and it's output (QString) should be fed to this method.
@@ -10,6 +26,8 @@ QImage * DataIOHandler::loadImage() {       // should be static, and take QStrin
      * Eventually, this will need to be generalized on the other end such that if the file is an image file, it 
      * calls and image loader function (like this one) otherwise, it should call the video loader is it is a
      * video.
+     *
+     * Also, I belive the typing call with "Images (*.png ..." is ill formated, and the quotes go on the outside of the parenthetical
      */
     QImage *Image = new QImage();
     QString path = fileName.join("");
@@ -19,7 +37,7 @@ QImage * DataIOHandler::loadImage() {       // should be static, and take QStrin
      * QImage temp(filename)
      * return new QImage(temp.convertToFormat(QImage::Format_ARGB32_Premultiplied));  
      */
-    // on the mainwindow.cpp end, the window title should be updated. update media name string.
+    // on the mainwindow.cpp end, if there is no save file, the window title should be updated. unconditionally update import media name string.
 }
 
 // The function below is not needed
@@ -48,8 +66,11 @@ DataIOHandler::DataIOHandler(QImage * file) {
 
 }
 
-// does not need the QString parameter. non static method
-void DataIOHandler::saveImage(QString saveFileName, QImage * file) {
+// non static method
+void DataIOHandler::saveImage(QString saveFileName, QImage * file) {        // exportImage would be a more accurate name.
+    
+    // similar to the load function above, the commented-out call below call too should be in MainWindow.cpp with the nullptr replaced.
+    
     //if (saveFileName.isEmpty()) {
     //    saveFileName = QFileDialog::getSaveFileName(nullptr, "Save Image", QString(), "Images (*.png)");
     //}
@@ -57,11 +78,13 @@ void DataIOHandler::saveImage(QString saveFileName, QImage * file) {
     //file->save(saveFileName);
 }
 
-// This function should be the one to take an extra parameter - a QString for the new file name. non static method
+
+
+// update media namestring and window title when saving a save file, but not the image.
+
+// This function below is not needed.
 void DataIOHandler::saveImageAs(QImage * file) {
-    // similar to the load function aboce, this call too should be in MainWindow.cpp with the nullptr replaced.
     saveFileName = QFileDialog::getSaveFileName(nullptr, "Save Image As", QString(), "Images (*.png)");
 
     file->save(saveFileName);
-    // update media namestring and window title
 }
