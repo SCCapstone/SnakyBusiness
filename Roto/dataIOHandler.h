@@ -2,20 +2,22 @@
 #define DATAIO_H
 
 #include <QImageReader>
-#include <QFileDialog>
+#include <QFileDialog>      // import should be within MainWindow.h for now.
 #include <QImage>
 
 class DataIOHandler {
 public:
 
+    // CHECK CPP FILE
+    
     DataIOHandler();
-    DataIOHandler(QImage * file);
+    DataIOHandler(QImage * file);   // not needed
     ~DataIOHandler();
 
-    static QImage * loadImage();
-    QImage * loadImage(QImage * file);
-    static void saveImage(QString saveFileName, QImage * file);
-    void saveImageAs(QImage * file);
+    static QImage * loadImage();    //  non static, QString parameter needed.
+    QImage * loadImage(QImage * file);      //not needed.
+    static void saveImage(QString saveFileName, QImage * file);     // remove QString parameter.
+    void saveImageAs(QImage * file);        // Add QString parameter.
     
 private:
     QString saveFileName;
