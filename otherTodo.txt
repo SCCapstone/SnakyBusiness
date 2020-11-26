@@ -1,0 +1,38 @@
+
+====== Auden's todo ===============================================================================================
+
+- Graphics method to control opacity of media frame to draw frame. 100% and variable% or variable% and 255-variable%, test to find out.
+
+- Radial brush, wrap editor in proper window with controls. Put in QMainWindow and query the info back upon close. 
+  Must be aware of brush max size and use graphics zoom to increase size to fit window.
+
+- Add triangle rendering to vector rendering.
+
+- speciality filters including painting, guassian blur, orb for screen filters.
+
+- Editing, select, cut, paste, copy, move, delete, paint bucket, etc? non-square/rectangle edits?
+
+----- quick / optional ------------------------------------------------------------------------------------------
+
+- Pixelation brush.
+
+- Filter similar to polarize, but showing color (need above and below versions).
+
+- Distorion map brush if time permits.
+
+- Transitions, maybe even alpha transitions, if time permits.
+
+====== Team working on Data and UI =========================================================================================================
+
+- Use QMainWindow for pattern editor, custom brush editor, Radial brush editor, and filter applicator. 
+  If there will ever be a distortion map brush, it will need one too.
+
+- Undo and redo (see memDetail.txt)
+
+- Frame via io handler. File, in out & import export. special file io for draw frames, stram io for media frame 
+  via qMediaPlayer and QAbstractVideoSurface inherited obj overloading present method. (see saveLoad.txt)
+  This is going to be complex so hold off on this for until we can discuss it. Needs to be done by the Dec 4th for the POC.
+
+- UI, video track bar, side bars. ATTACH LINKS HERE.
+	for track bars, use QLabel and set it's pixmap and mask to that of the QImage. Potentially do something
+	with setSizePolicy and setScaledContents. add these to a QHBoxLayout and make this the layout for a QScrollArea.
