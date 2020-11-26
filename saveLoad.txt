@@ -1,0 +1,19 @@
+Saving/loading project files and loading video chunks (ranges of frames): draw frames (raster data), vectors,
+and filter data need to be encoded in hex, as it is the easiest and fastest to encode with the smallest reasonable data usage.
+Hexidecimal, unless I am missing a potential avenue, will yield small files than plain text, but faster decoding than other methods.
+mock save and load project:
+  unsigned long long l = 18446744073709551615;
+  std::stringstream stream;
+  stream << std::hex << l;
+  std::string result( stream.str() );
+  std::cout << result << std::endl;
+  unsigned long long r = strtoul(result.c_str(), NULL, 16);
+  std::cout << r<< std::endl;
+
+Each part of the save file should seperate the (still) image contents from the vector. the most useful seperators seem to be 'I' for
+image and 'V' for vector, as these are non hex characters. There naturally needs to be a header, probably signified by 'H' that details
+the frame size, current frame, etc etc. following the header there could be a section for filters and their ranges, 'T' type, and 'Range'.
+
+Just thoughts
+
+If you think of any alternative, please share.
