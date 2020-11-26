@@ -16,15 +16,13 @@
 
 - Pixelation brush.
 
-- Filter similar to polarize, but showing color (need above and below versions).
-
 - Distorion map brush if time permits.
 
 - Transitions, maybe even alpha transitions, if time permits.
 
 ====== Team working on Data and UI =========================================================================================================
 
-- Use QMainWindow for pattern editor, custom brush editor, Radial brush editor, and filter applicator. 
+- Use QMainWindow for pattern editor, custom brush editor, Radial brush editor, settings, and filter applicator. 
   If there will ever be a distortion map brush, it will need one too.
 
 - Undo and redo (see memDetail.txt)
