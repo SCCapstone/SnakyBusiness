@@ -2,9 +2,10 @@
 #include "mainwindow.h"         // not needed
 #include "ui_mainwindow.h"      // not needed
 
-// It seems the functions were made with the idea of a save file in mind, or perhap I am incorrect. However,
-// If you also want to commits from writing the saving feature, it'd be quite easy. I've detailed it in the saveLoad.txt.
-// I'll upload it to the repo / github.
+/* It seems the functions were made with the idea of a save file in mind, or perhap I am incorrect. However,
+ * If you also want to commits from writing the saving feature, it'd be quite easy. I've detailed it in the saveLoad.txt.
+ * I'll upload it to the repo / github.
+ */
 
 QImage * DataIOHandler::loadImage() {       
     /* Should be non-static, and take QString parameter filename. importImage would be a more accurate name.
@@ -23,8 +24,8 @@ QImage * DataIOHandler::loadImage() {
     /* The call about should be QFileDialog::getOpenFileName
      * The call should be made in the MainWindow.cpp, and it's output (QString) should be fed to this method.
      * The nullptr should be 'this', so that it references the qmainwindow qwidget as a parent.
-     * Eventually, this will need to be generalized on the other end such that if the file is an image file, it 
-     * calls and image loader function (like this one) otherwise, it should call the video loader is it is a
+     * Eventually, this will need to be generalized such that if the file is an image file, it 
+     * calls an image loader function (like this one) otherwise, it should call the video loader if it is a
      * video.
      *
      * Also, I belive the typing call with "Images (*.png ..." is ill formated, and the quotes go on the outside of the parenthetical
@@ -56,10 +57,11 @@ DataIOHandler::DataIOHandler() {
 
 }
 
-// The function below is not needed as the data handler should be a container for
-// either a singular image, or video. It should also have active frames and the
-// undo and redo stack(s). It should also have the string name of the import media,
-// used in the save function below.
+/* The function below is not needed as the data handler should be a container for
+ * either a singular image, or video. It should also have active frames and the
+ * undo and redo stack(s). It should also have the string name of the import media,
+ * used in the save function below.
+ */
 DataIOHandler::DataIOHandler(QImage * file) {
 
     loadImage(file);
@@ -67,9 +69,12 @@ DataIOHandler::DataIOHandler(QImage * file) {
 }
 
 // non static method
-void DataIOHandler::saveImage(QString saveFileName, QImage * file) {        // exportImage would be a more accurate name.
+void DataIOHandler::saveImage(QString saveFileName, QImage * file) {        // exportImage would be a more accurate name. QImage param not needed
     
-    // similar to the load function above, the commented-out call below call too should be in MainWindow.cpp with the nullptr replaced.
+    /* similar to the load function above, the commented-out call below call too should be in MainWindow.cpp with the nullptr replaced.
+     * since this exports a still image, and not a video, it should export the active draw layer mentioned in load function above in the
+     * same way it already does with the provided QString.
+     */
     
     //if (saveFileName.isEmpty()) {
     //    saveFileName = QFileDialog::getSaveFileName(nullptr, "Save Image", QString(), "Images (*.png)");
