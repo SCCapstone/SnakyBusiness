@@ -7,22 +7,21 @@
 
 class DataIOHandler {
 public:
-
+    QImage * Image;
     // CHECK CPP FILE
     
     DataIOHandler();
-    DataIOHandler(QImage * file);   // not needed
+    DataIOHandler(QImage * qi);
     ~DataIOHandler();
 
-    static QImage * loadImage();    //  non static, QString parameter needed.
-    QImage * loadImage(QImage * file);      //not needed.
-    static void saveImage(QString saveFileName, QImage * file);     // non static, remove QImage parameter.
-    void saveImageAs(QImage * file);        // not needed
+    QImage * loadImage(QString file);    //  non static, QString parameter needed.
+    void saveImage(QString saveFileName);     // non static, remove QImage parameter.
     
     // FUNCTIONS FOR THE UI TO GET THE DRAW LAYER AND ACTIVE MEDIA LAYER. SEE CPP FILE FOR CLARIFICATION.
     
 private:
     QString saveFileName;
+    //QImage * Image;
 };
 
 #endif // DATAIO_H
