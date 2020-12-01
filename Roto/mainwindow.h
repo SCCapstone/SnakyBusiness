@@ -80,7 +80,7 @@ public:
     QImage *qi;
     brushHandler bh;
     Filter screenFilter;
-    DataIOHandler * ImageIO;
+    DataIOHandler ImageIO;
 
     QColorDialog cd;
     Qt::MouseButton lastButton;

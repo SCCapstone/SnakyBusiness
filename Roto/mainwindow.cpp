@@ -32,7 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
-    //DataIOHandler * ImageIO = new DataIOHandler();
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -160,18 +159,18 @@ void MainWindow::doSomething(string btnPress) {
     if (btnPress == "Import") {
         delete qi;
         //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-        QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg");
-        //ImageIO = new DataIOHandler(new QImage(fileName));
-        qi = ImageIO->loadImage(fileName);
+        QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
+        //ImageIO = new DataIOHandler();
+        qi = ImageIO.loadImage(fileName);
         //ImageIO->Image = ImageIO->loadImage(fileName);
         repaint();
-        ImageIO->Image = qi;
+        ImageIO.Image = qi;
     }
     else if (btnPress == "Export") {
-        QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png"));
+        QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
         // qi->save(saveFileName);
         screenFilter.applyTo(qi);
-        ImageIO->DataIOHandler::saveImage(saveFileName);
+        ImageIO.DataIOHandler::saveImage(saveFileName);
         //ImageIO->saveImage(qi);
     }
     else if (btnPress == "Choose Color") {

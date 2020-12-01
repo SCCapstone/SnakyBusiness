@@ -11,7 +11,7 @@ public:
     // CHECK CPP FILE
     
     DataIOHandler();
-    DataIOHandler(QImage * qi);
+    //DataIOHandler(QImage * qi);
     ~DataIOHandler();
 
     QImage * loadImage(QString file);    //  non static, QString parameter needed.
@@ -21,7 +21,6 @@ public:
     
 private:
     QString saveFileName;
-    //QImage * Image;
 };
 
 #endif // DATAIO_H

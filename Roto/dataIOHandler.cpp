@@ -31,24 +31,19 @@ QImage * DataIOHandler::loadImage(QString file) {
      */
     QImage temp(file);
     return new QImage(temp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-    /*The four lines above can be replaced with:
-     * QImage temp(filename)
-     * return new QImage(temp.convertToFormat(QImage::Format_ARGB32_Premultiplied));  
-     */
-    // on the mainwindow.cpp end, if there is no save file, the window title should be updated. unconditionally update import media name string.
 }
 
-DataIOHandler::DataIOHandler(QImage * qi) {
+DataIOHandler::DataIOHandler() {
 
-    this->Image = qi;
+    this->Image = nullptr;
 
 }
 
-/* The function below is not needed as the data handler should be a container for
- * either a singular image, or video. It should also have active frames and the
- * undo and redo stack(s). It should also have the string name of the import media,
- * used in the save function below.
- */
+//DataIOHandler::DataIOHandler(QImage * qi) {
+//
+//    this->Image = qi;
+//
+//}
 
 // non static method
 void DataIOHandler::saveImage(QString saveFileName) {        // exportImage would be a more accurate name. QImage param not needed
