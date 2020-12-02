@@ -160,7 +160,6 @@ void MainWindow::doSomething(string btnPress) {
         delete qi;
         //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
         QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
-        //ImageIO = new DataIOHandler();
         qi = ImageIO.loadImage(fileName);
         //ImageIO->Image = ImageIO->loadImage(fileName);
         repaint();
@@ -289,6 +288,7 @@ void MainWindow::toggleSamplePnt() {
 MainWindow::~MainWindow() {
 
     this->hide();
+    ImageIO.~DataIOHandler();
     sampleFlasher->stop();
     delete sampleFlasher;
     delete ui;

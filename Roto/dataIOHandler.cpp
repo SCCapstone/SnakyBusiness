@@ -1,6 +1,4 @@
 #include "dataIOHandler.h"
-#include "mainwindow.h"         // not needed
-#include "ui_mainwindow.h"      // not needed
 
 /* It seems the functions were made with the idea of a save file in mind, or perhap I am incorrect. However,
  * If you also want to commits from writing the saving feature, it'd be quite easy. I've detailed it in the saveLoad.txt.
@@ -36,6 +34,13 @@ QImage * DataIOHandler::loadImage(QString file) {
 DataIOHandler::DataIOHandler() {
 
     this->Image = nullptr;
+
+}
+
+DataIOHandler::~DataIOHandler() {
+
+    saveFileName.QString::~QString();
+    Image->QImage::~QImage();
 
 }
 
