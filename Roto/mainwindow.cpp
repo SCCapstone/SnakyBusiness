@@ -86,9 +86,9 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 void MainWindow::createMenubar(string filename) {
 
     QMenuBar *menubar = new QMenuBar(this);
-    log(filename + UI_FileType, menubar);
+//    log(filename + UI_FileType, menubar);
     fstream uiFile;
-    uiFile.open(filename + UI_FileType,ios::in);
+    uiFile.open(filename+".txt",ios::in);
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
