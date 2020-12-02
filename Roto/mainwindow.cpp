@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
+    //ImageIO = new DataIOHandler();
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -157,7 +158,7 @@ void MainWindow::doSomething(string btnPress) {
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
     if (btnPress == "Import") {
-        delete qi;
+        //delete qi;
         //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
         QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
         qi = ImageIO.loadImage(fileName);
