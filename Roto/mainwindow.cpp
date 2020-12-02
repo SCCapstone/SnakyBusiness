@@ -169,8 +169,40 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Import Video") {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), "/", tr("Video Files (*.mkv *.mp4)"));
         string utf8_file = fileName.toUtf8().constData();
-        OpenCV_Handler cv = OpenCV_Handler();
-        cv.playVideo(utf8_file);
+        cv::VideoCapture cap = cv::VideoCapture(utf8_file);
+        if(!cap.isOpened()) {
+            cap.~VideoCapture();
+        }
+
+        struct RGB {
+            uchar blue;
+            uchar green;
+            uchar red;
+        };
+
+        while(1) {
+            cv::Mat frame;
+            cap >> frame;
+            if (frame.empty())
+                break;
+            delete qi;
+            qi = new QImage(frame.rows, frame.cols, QImage::Format_ARGB32_Premultiplied);
+            for(int r=0;r<frame.rows;r++)
+            {
+                for(int c=0;c<frame.cols;c++)
+                {
+                    // get pixel
+                    RGB& rgb = frame.ptr<RGB>(r)[c];
+                    qi->setPixel(r, c, qRgb(rgb.red,rgb.green,rgb.blue));
+                }
+            }
+            repaint();
+            char c = (char) cv::waitKey(1);
+            if (c==27)
+                break;
+        }
+        cap.release();
+        cv::destroyAllWindows();
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);

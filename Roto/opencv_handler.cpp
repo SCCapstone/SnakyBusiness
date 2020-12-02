@@ -10,25 +10,28 @@ OpenCV_Handler::OpenCV_Handler()
 
 }
 
-void OpenCV_Handler::playVideo(String fileName) {
-    cv::VideoCapture cap = cv::VideoCapture(fileName);
-    bool open = true;
-    if(!cap.isOpened()) {
-        cap.~VideoCapture();
-        open = false;
-    }
-    while(1) {
-        cv::Mat frame;
-        cap >> frame;
-        if (frame.empty())
-            break;
-        imshow("Frame",frame);
-        char c = (char) cv::waitKey(1);
-        if (c==27)
-            break;
-    }
-    cap.release();
-    cv::destroyAllWindows();
+void OpenCV_Handler::playVideo(String fileName, QImage *qi) {
+
+//    cv::VideoCapture cap = cv::VideoCapture(fileName);
+//    bool open = true;
+//    if(!cap.isOpened()) {
+//        cap.~VideoCapture();
+//        open = false;
+//    }
+//    while(1) {
+//        cv::Mat frame;
+//        cap >> frame;
+//        if (frame.empty())
+//            break;
+//        delete qi;
+//        QImage qiTemp = Mat2QImage(frame);
+//        qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+//        char c = (char) cv::waitKey(1);
+//        if (c==27)
+//            break;
+//    }
+//    cap.release();
+//    cv::destroyAllWindows();
 }
 
 void OpenCV_Handler::benDemo() {
@@ -79,4 +82,22 @@ void OpenCV_Handler::benDemo() {
 //                    break;
 //                }
 //            }
+}
+
+//QImage Mat2QImage(const cv::Mat3b &src) {
+//        QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
+//        for (int y = 0; y < src.rows; ++y) {
+//                const cv::Vec3b *srcrow = src[y];
+//                QRgb *destrow = (QRgb*)dest.scanLine(y);
+//                for (int x = 0; x < src.cols; ++x) {
+//                        destrow[x] = qRgba(srcrow[x][2], srcrow[x][1], srcrow[x][0], 255);
+//                }
+//        }
+//        return dest;
+//}
+
+
+QImage OpenCV_Handler::Mat2QImage(const cv::Mat &mat, QImage::Format format)
+{
+        return QImage(mat.data, mat.cols, mat.rows, mat.step, format).copy();
 }
