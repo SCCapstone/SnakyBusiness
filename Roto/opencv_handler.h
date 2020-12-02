@@ -1,7 +1,7 @@
 /*
  * The opencv handler is a wrapper class allowing easy integration into various
  * opencv functionality. It will be implemented later in the project
- *
+ */
 #ifndef OPENCV_HANDLER_H
 #define OPENCV_HANDLER_H
 
@@ -22,8 +22,8 @@ class OpenCV_Handler
 public:
     OpenCV_Handler();
     void benDemo();
+    void playVideo(String);
 
 };
 
 #endif // OPENCV_HANDLER_H
-*/
