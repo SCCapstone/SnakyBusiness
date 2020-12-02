@@ -161,16 +161,17 @@ void MainWindow::doSomething(string btnPress) {
         //delete qi;
         //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
         QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
-        qi = ImageIO.loadImage(fileName);
+        qi = ImageIO.importImage(fileName);
         //ImageIO->Image = ImageIO->loadImage(fileName);
         repaint();
-        ImageIO.Image = qi;
+        ImageIO.setBaseLayer(qi);
+        //ImageIO.Image = qi;
     }
     else if (btnPress == "Export") {
         QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
         // qi->save(saveFileName);
         screenFilter.applyTo(qi);
-        ImageIO.DataIOHandler::saveImage(saveFileName);
+        ImageIO.DataIOHandler::exportImage(saveFileName);
         //ImageIO->saveImage(qi);
     }
     else if (btnPress == "Choose Color") {

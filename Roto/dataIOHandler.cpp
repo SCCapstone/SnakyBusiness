@@ -5,7 +5,7 @@
  * I'll upload it to the repo / github.
  */
 
-QImage * DataIOHandler::loadImage(QString file) {
+QImage * DataIOHandler::importImage(QString file) {
     /* Should be non-static, and take QString parameter filename. importImage would be a more accurate name.
      * This function should have no return type as the as the QImage pointer that is drawn to the screen
      * Should actually be a private member of the dataIO_handler class, as should the draw layer. Ideally,
@@ -37,10 +37,24 @@ DataIOHandler::DataIOHandler() {
 
 }
 
+QImage * DataIOHandler::getBaseLayer() {
+
+    return this->Image;
+
+}
+
+void DataIOHandler::setBaseLayer(QImage *newImage) {
+
+    this->Image = newImage;
+
+}
+
 DataIOHandler::~DataIOHandler() {
 
     saveFileName.QString::~QString();
     Image->QImage::~QImage();
+    leftFrames.~list();
+    rightFrames.~list();
 
 }
 
@@ -51,7 +65,7 @@ DataIOHandler::~DataIOHandler() {
 //}
 
 // non static method
-void DataIOHandler::saveImage(QString saveFileName) {        // exportImage would be a more accurate name. QImage param not needed
+void DataIOHandler::exportImage(QString saveFileName) {        // exportImage would be a more accurate name. QImage param not needed
     
     /* similar to the load function above, the commented-out call below call too should be in MainWindow.cpp with the nullptr replaced.
      * since this exports a still image, and not a video, it should export the active draw layer mentioned in load function above in the
