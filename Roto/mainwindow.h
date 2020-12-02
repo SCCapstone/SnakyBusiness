@@ -26,6 +26,7 @@ using std::chrono::milliseconds;
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
+#include <QTextBrowser>
 
 #include <brushHandler.h>
 #include <graphics.h>

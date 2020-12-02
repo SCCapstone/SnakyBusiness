@@ -202,6 +202,17 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             bh.setDensity(ret);
     }
+    else if (btnPress == "Help") {
+        //https://stackoverflow.com/questions/18555367/qtcreator-gui-open-text-file
+        QString docs = "userDocsFile.txt";
+        QFile file(docs);
+        if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return;
+
+        QTextBrowser *b = new QTextBrowser();
+        b->setText(file.readAll());
+        b->show();
+    }
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
