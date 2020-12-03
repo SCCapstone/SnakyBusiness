@@ -1,0 +1,4 @@
+File;Save,Save As,Open Recent>,Open,Import,Export,
+Edit;Brush Size,Screen Strength,Brush Strength,Spray Density,Choose Color,Screen Filtering>,Brush Filtering>,Brush Shape>,Brush Method>,
+Settings;Some Item 1>(a,b>(b1,b2,b3),c,d,e,),Some Item 2,
+About;Help,About,
