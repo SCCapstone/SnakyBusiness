@@ -210,6 +210,7 @@ void MainWindow::doSomething(string btnPress) {
             return;
 
         QTextBrowser *b = new QTextBrowser();
+        b->setGeometry(0,0,len,len);
         b->setText(file.readAll());
         b->show();
     }
