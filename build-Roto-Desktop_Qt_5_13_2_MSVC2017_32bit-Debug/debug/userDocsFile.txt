@@ -58,6 +58,31 @@ A prompt is brought up, where you can choose the color for the brush to paint.
 
 ========================
 
+Screen Filtering:
+
+Hovering over this button brings up a sub-menu, which lists all available filters to apply to the imported file. 
+
+========================
+
+Brush Filtering: 
+
+Hovering over this button brings up a sub-menu, which lists all available filters to make the brush apply. 
+
+========================
+
+Brush Shape: 
+
+Hovering over this button brings up a sub-menu, which lists all the shapes that the brush can be
+
+========================
+
+Brush Method: 
+
+Hovering over this button brings up a sub-menu, which lists all the different ways for the brush to apply
+its paint. 
+
+========================
+
 About: 
 
-This brings up the user documentation, but I hope you know that because you had to hit it to get to this document!
+This brings up the user documentation, which you should know because you had to hit it to get here!
