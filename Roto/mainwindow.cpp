@@ -179,27 +179,24 @@ void MainWindow::doSomething(string btnPress) {
             uchar green;
             uchar red;
         };
-
+        // TODO(anyone): wait until user input to change frames
         while(1) {
             cv::Mat frame;
             cap >> frame;
             if (frame.empty())
                 break;
             delete qi;
-            qi = new QImage(frame.rows, frame.cols, QImage::Format_ARGB32_Premultiplied);
+            qi = new QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
             for(int r=0;r<frame.rows;r++)
             {
                 for(int c=0;c<frame.cols;c++)
                 {
                     // get pixel
                     RGB& rgb = frame.ptr<RGB>(r)[c];
-                    qi->setPixel(r, c, qRgb(rgb.red,rgb.green,rgb.blue));
+                    qi->setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
                 }
             }
             repaint();
-            char c = (char) cv::waitKey(1);
-            if (c==27)
-                break;
         }
         cap.release();
         cv::destroyAllWindows();
