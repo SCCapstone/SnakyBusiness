@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "opencv_handler.h"
+#include <iostream>
 
 
 
@@ -88,7 +90,7 @@ void MainWindow::createMenubar(string filename) {
     //QMenuBar *menubar = new QMenuBar(this);
     log(filename + UI_FileType, menuBar());
     fstream uiFile;
-    uiFile.open(filename + UI_FileType,ios::in);
+    uiFile.open(filename+".txt",ios::in);
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -157,12 +159,47 @@ void MainWindow::doSomething(string btnPress) {
     // first thing to do is load test images
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
-    if (btnPress == "Import") {
+    if (btnPress == "Import Image") {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
         delete qi;
         QImage qiTemp(fileName);
         qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
         repaint();
+    }
+    else if (btnPress == "Import Video") {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), "/", tr("Video Files (*.mkv *.mp4)"));
+        string utf8_file = fileName.toUtf8().constData();
+        cv::VideoCapture cap = cv::VideoCapture(utf8_file);
+        if(!cap.isOpened()) {
+            cap.~VideoCapture();
+        }
+
+        struct RGB {
+            uchar blue;
+            uchar green;
+            uchar red;
+        };
+        // TODO(anyone): wait until user input to change frames
+        while(1) {
+            cv::Mat frame;
+            cap >> frame;
+            if (frame.empty())
+                break;
+            delete qi;
+            qi = new QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
+            for(int r=0;r<frame.rows;r++)
+            {
+                for(int c=0;c<frame.cols;c++)
+                {
+                    // get pixel
+                    RGB& rgb = frame.ptr<RGB>(r)[c];
+                    qi->setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
+                }
+            }
+            repaint();
+        }
+        cap.release();
+        cv::destroyAllWindows();
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
