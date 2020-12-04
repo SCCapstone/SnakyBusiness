@@ -87,8 +87,8 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 
 void MainWindow::createMenubar(string filename) {
 
-    QMenuBar *menubar = new QMenuBar(this);
-//    log(filename + UI_FileType, menubar);
+    //QMenuBar *menubar = new QMenuBar(this);
+    log(filename + UI_FileType, menuBar());
     fstream uiFile;
     uiFile.open(filename+".txt",ios::in);
     if (uiFile.is_open()){
@@ -98,7 +98,7 @@ void MainWindow::createMenubar(string filename) {
             size_t i;
             for (i = 0; fromFile[i] != ';'; ++i)
                 item += fromFile[i];
-            QMenu *menu = menubar->addMenu(item.c_str());
+            QMenu *menu = menuBar()->addMenu(item.c_str());
             log(item, menu);
             ++i;
             fromFile = fromFile.substr(i, fromFile.length() - i);
