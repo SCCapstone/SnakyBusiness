@@ -26,9 +26,11 @@ using std::chrono::milliseconds;
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
+#include <QTextBrowser>
 
 #include <brushHandler.h>
 #include <graphics.h>
+#include <dataIOHandler.h>
 #include <stdfuncs.h>
 
 using graphics::filterNames;
@@ -79,6 +81,7 @@ public:
     QImage *qi;
     brushHandler bh;
     Filter screenFilter;
+    DataIOHandler ImageIO;
 
     QColorDialog cd;
     Qt::MouseButton lastButton;

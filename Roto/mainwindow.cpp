@@ -4,7 +4,6 @@
 #include <iostream>
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -160,11 +159,16 @@ void MainWindow::doSomething(string btnPress) {
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
     if (btnPress == "Import Image") {
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
-        delete qi;
-        QImage qiTemp(fileName);
-        qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+        QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
+        qi = ImageIO.importImage(fileName);
+
         repaint();
+        ImageIO.setBaseLayer(qi);
+    }
+    else if (btnPress == "Export") {
+        QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
+        screenFilter.applyTo(qi);
+        ImageIO.DataIOHandler::exportImage(saveFileName);
     }
     else if (btnPress == "Import Video") {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), "/", tr("Video Files (*.mkv *.mp4)"));
@@ -228,6 +232,19 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
         if (ok)
             bh.setDensity(ret);
+    }
+    else if (btnPress == "Help") {
+        //https://stackoverflow.com/questions/18555367/qtcreator-gui-open-text-file
+        QString docs = "userDocsFile.txt";
+        QFile file(docs);
+        if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            return;
+
+        QTextBrowser *b = new QTextBrowser();
+        b->setGeometry(0,0,len,len);
+        b->setText(file.readAll());
+        b->show();
+        file.close();
     }
 }
 
@@ -317,6 +334,7 @@ void MainWindow::toggleSamplePnt() {
 MainWindow::~MainWindow() {
 
     this->hide();
+    ImageIO.~DataIOHandler();
     sampleFlasher->stop();
     delete sampleFlasher;
     delete ui;

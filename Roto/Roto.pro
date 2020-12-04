@@ -27,5 +27,4 @@ SOURCES = \
 INCLUDEPATH = \
     $$PWD/.
 
-#DEFINES = 
-
+#DEFINES =
