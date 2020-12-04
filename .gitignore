@@ -1,6 +1,9 @@
 build-Roto-Desktop_Qt_5_15_1_MSVC2015_64bit-Release/
 Roto.pro.user
 *.obj
+*.lib
+*.dll
+*.exp
 *.ilk
 *.pdb
 *.exe
