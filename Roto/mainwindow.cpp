@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "opencv_handler.h"
+#include <iostream>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -84,10 +86,10 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 
 void MainWindow::createMenubar(string filename) {
 
-    QMenuBar *menubar = new QMenuBar(this);
-    log(filename + UI_FileType, menubar);
+    //QMenuBar *menubar = new QMenuBar(this);
+    log(filename + UI_FileType, menuBar());
     fstream uiFile;
-    uiFile.open(filename + UI_FileType,ios::in);
+    uiFile.open(filename+".txt",ios::in);
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -95,7 +97,7 @@ void MainWindow::createMenubar(string filename) {
             size_t i;
             for (i = 0; fromFile[i] != ';'; ++i)
                 item += fromFile[i];
-            QMenu *menu = menubar->addMenu(item.c_str());
+            QMenu *menu = menuBar()->addMenu(item.c_str());
             log(item, menu);
             ++i;
             fromFile = fromFile.substr(i, fromFile.length() - i);
@@ -159,6 +161,7 @@ void MainWindow::doSomething(string btnPress) {
     if (btnPress == "Import Image") {
         QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
         qi = ImageIO.importImage(fileName);
+
         repaint();
         ImageIO.setBaseLayer(qi);
     }
@@ -166,6 +169,41 @@ void MainWindow::doSomething(string btnPress) {
         QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
         screenFilter.applyTo(qi);
         ImageIO.DataIOHandler::exportImage(saveFileName);
+    }
+    else if (btnPress == "Import Video") {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), "/", tr("Video Files (*.mkv *.mp4)"));
+        string utf8_file = fileName.toUtf8().constData();
+        cv::VideoCapture cap = cv::VideoCapture(utf8_file);
+        if(!cap.isOpened()) {
+            cap.~VideoCapture();
+        }
+
+        struct RGB {
+            uchar blue;
+            uchar green;
+            uchar red;
+        };
+        // TODO(anyone): wait until user input to change frames
+        while(1) {
+            cv::Mat frame;
+            cap >> frame;
+            if (frame.empty())
+                break;
+            delete qi;
+            qi = new QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
+            for(int r=0;r<frame.rows;r++)
+            {
+                for(int c=0;c<frame.cols;c++)
+                {
+                    // get pixel
+                    RGB& rgb = frame.ptr<RGB>(r)[c];
+                    qi->setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
+                }
+            }
+            repaint();
+        }
+        cap.release();
+        cv::destroyAllWindows();
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
