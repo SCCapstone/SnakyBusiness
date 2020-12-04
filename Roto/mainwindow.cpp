@@ -156,22 +156,16 @@ void MainWindow::doSomething(string btnPress) {
     // first thing to do is load test images
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
-    if (btnPress == "Import") {
-        //delete qi;
-        //qi = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    if (btnPress == "Import Image") {
         QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
         qi = ImageIO.importImage(fileName);
-        //ImageIO->Image = ImageIO->loadImage(fileName);
         repaint();
         ImageIO.setBaseLayer(qi);
-        //ImageIO.Image = qi;
     }
     else if (btnPress == "Export") {
         QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
-        // qi->save(saveFileName);
         screenFilter.applyTo(qi);
         ImageIO.DataIOHandler::exportImage(saveFileName);
-        //ImageIO->saveImage(qi);
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
