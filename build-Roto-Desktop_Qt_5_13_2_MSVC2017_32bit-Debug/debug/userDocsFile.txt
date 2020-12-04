@@ -83,6 +83,24 @@ its paint.
 
 ========================
 
+Keyboard Shortcuts:
+
+Up Arrow - Zooms in
+
+Down Arrow - Zooms out
+
+I - 180 degree rotation 
+
+V - Flip vertically
+
+H - Flip Horizontally
+
+L - Rotate 90 degrees left
+
+R - Rotate 90 degrees right
+
+========================
+
 About: 
 
 This brings up the user documentation, which you should know because you had to hit it to get here!
