@@ -32,7 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
-    //ImageIO = new DataIOHandler();
     qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
     for (int i = 0; i < len; ++i)
         for (int j = 0; j < len; ++j)
@@ -213,6 +212,7 @@ void MainWindow::doSomething(string btnPress) {
         b->setGeometry(0,0,len,len);
         b->setText(file.readAll());
         b->show();
+        file.close();
     }
 }
 

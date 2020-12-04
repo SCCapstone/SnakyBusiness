@@ -67,8 +67,7 @@ DataIOHandler::~DataIOHandler() {
 // non static method
 void DataIOHandler::exportImage(QString saveFileName) {        // exportImage would be a more accurate name. QImage param not needed
     
-    /* similar to the load function above, the commented-out call below call too should be in MainWindow.cpp with the nullptr replaced.
-     * since this exports a still image, and not a video, it should export the active draw layer mentioned in load function above in the
+    /* since this exports a still image, and not a video, it should export the active draw layer mentioned in load function above in the
      * same way it already does with the provided QString.
      */
     Image->save(saveFileName);
