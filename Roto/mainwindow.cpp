@@ -235,7 +235,7 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Help") {
         //https://stackoverflow.com/questions/18555367/qtcreator-gui-open-text-file
-        QString docs = "userDocsFile.txt";
+        QString docs = "userDocsFile";
         QFile file(docs);
         if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
