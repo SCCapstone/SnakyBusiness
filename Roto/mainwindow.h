@@ -11,11 +11,6 @@
 #include <thread>
 #include <algorithm>
 
-#include <time.h>
-#include <chrono>
-using namespace std::chrono;
-using std::chrono::milliseconds;
-
 #include <QMainWindow>
 #include <QImage>
 #include <QPainter>
@@ -26,10 +21,22 @@ using std::chrono::milliseconds;
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
+#include <QTextBrowser>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include <dataIOHandler.h>
 #include <brushHandler.h>
 #include <graphics.h>
 #include <stdfuncs.h>
+#include <resizewindow.h>
+
+using cv::VideoCapture;
+using cv::Mat;
+using cv::destroyAllWindows;
 
 using graphics::filterNames;
 using graphics::Filter;
@@ -49,7 +56,6 @@ using std::pair;
 
 const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
-const int len = 500;
 const int trackDrawSpeed = 0;
 const int ptSize = 5;
 const int sampleFlashTime = 400;
@@ -76,14 +82,16 @@ public:
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
 
-    QImage *qi;
+    DataIOHandler *ioh;
     brushHandler bh;
-    Filter screenFilter;
+    resizeWindow *resizeCheck;
 
     QColorDialog cd;
     Qt::MouseButton lastButton;
     QTimer *sampleFlasher;
     char sampleFlag;
+
+    QTextBrowser qtb;
 
     ImgSupport imgSupport;
 

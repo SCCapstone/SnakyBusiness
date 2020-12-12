@@ -17,6 +17,8 @@ using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
 using std::cout;
 using std::endl;
+using std::min;
+using std::max;
 
 enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
 const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial", "Sample"};
@@ -25,9 +27,7 @@ const int numMethods = 6;
 const int maxDensity = RAND_MAX / 256;
 const int minDensity = 0;
 const unsigned char maxStrength = 255;
-const unsigned char minStrength = 1;
-const long long maxDiffTime_interpolation = 50;
-const long long maxDiffTime_linger = 1000;      // should this be set by user?
+const unsigned char minStrength = 1;    // should this be set by user?
 
 class brushHandler
 {
@@ -52,7 +52,7 @@ public:
     const unsigned char *const *const getPatternMap();
     int getPatternXDim();
     int getPatternYDim();
-    int getPatternInUse();
+    bool getPatternInUse();
     int getMethodIndex();
     int getFilterIndex();
     QColor getColor();
@@ -67,6 +67,7 @@ public:
     void strengthUp();
     void strengthDown();
     void applyBrush(QImage *qi, QPoint qp);
+    void setInterpolationActive(bool flag);
 
 private:
 
@@ -86,8 +87,9 @@ private:
     void shiftUp();
     void shiftDown();
 
-    int sprayDensity;
-    unsigned char strength, patternXDim, patternYDim, patternInUse;
+    bool active, patternInUse;
+    int sprayDensity, checkEdgeSize;
+    unsigned char strength, patternXDim, patternYDim;
     appMethod method;
     Brush brush;
     QColor color;
@@ -97,7 +99,6 @@ private:
     QPoint currPnt, lastPnt, samplePnt, relativityPoint;
 
     list <QPoint> toProcess;
-    long long pDrawDiff, pDrawLast;
 
 };
 
