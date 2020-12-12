@@ -20,14 +20,11 @@ SOURCES = \
    $$PWD/dataIOHandler.cpp \
    $$PWD/graphics.cpp \
    $$PWD/main.cpp \
-   $$PWD/mainMenubar.txt \
    $$PWD/mainwindow.cpp \
    $$PWD/mainwindow.ui \
    $$PWD/opencv_handler.cpp \
-   $$PWD/Roto.pro
 
 INCLUDEPATH = \
     $$PWD/.
 
-#DEFINES = 
-
+#DEFINES =

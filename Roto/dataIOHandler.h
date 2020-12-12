@@ -2,7 +2,7 @@
 #define DATAIO_H
 
 #include <QImageReader>
-#include <QFileDialog>
+#include <QFileDialog>      // import should be within MainWindow.h for now.
 #include <QImage>
 
 #include <graphics.h>
@@ -25,6 +25,7 @@ struct RGB {
 class DataIOHandler {
 public:
     DataIOHandler();
+    //DataIOHandler(QImage * qi);
     ~DataIOHandler();
     bool importImage(QString fileName);
     void exportImage(QString fileName);
@@ -53,7 +54,7 @@ private:
     QImage *canvasLayer, *mediaLayer, filteredMLayer;
     list <QImage *> canvasLeft, canvasRight, mediaLeft, mediaRight;
     QString file;
-    Filter screenFilter;
+    Filter screenFilter;    
 };
 
 #endif // DATAIO_H

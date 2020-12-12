@@ -1,0 +1,66 @@
+/* GENERAL FORM:
+ * mmmm xxxx xxxxxxxx xxxxxxxx xxxxxxxx , xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+ * usage
+ * bits, shift amount
+ * notes
+ *
+ * MODES:
+ * 0000 uuuuuuuuuuuuuuuuuuuuuuuuuuuu , ssss    uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+ * mode (see below)                    submode (see below)
+ *
+ *      STOP:
+ *      0000 uuuuuuuuuuuuuuuuuuuuuuuuuuuu , 0000    uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+ *      mode unused                         submode unused
+ *      4,28                                4,60
+ *      note: used to signal the stop of the pixel editing modes' changes.
+ *
+ *      BRUSH / COPY PASTE:
+ *      0000 uuuuuuuuuuuuuuuuuuuuuuuuuuuu , 0001    xxxxxxxxxxxxxx yyyyyyyyyyyyyy aaaaaaaa rrrrrrrr gggggggg bbbbbbbb
+ *      mode unused                         submode x              y              color diff
+ *      4,28                                4,60    14,46          14,32          32,0
+ *      note: diff = og - new.
+ *
+ *      MOVE  / CUT PASTE:
+ *      0000 xxxxxxxxxxxxxx yyyyyyyyyyyyyy , 0010    xxxxxxxxxxxxxx yyyyyyyyyyyyyy aaaaaaaa rrrrrrrr gggggggg bbbbbbbb
+ *      mode from x         from y           submode to x           to y           color diff
+ *      4,28 14,14          14,0             4,60    14,46          14,32          32,0
+ *      note: white is drawn where the image is cut from; paste color providing to og color for that pixel. diff = og - new.
+ *
+ * 0010 ssss    uuuuuuuuuuuuuuuuuuuuuuuu , uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+ * mode submode (see below)                (see below)
+ *
+ *      CHANGE FRAME:
+ *      0110 0011    uuuuuuuuuuuuuuuuuuuuuuuu , uuuuuuuuuuuuuuuuuuuuuuuu ffffffffffffffffffff ffffffffffffffffffff
+ *      mode submode unused                                              previous frame       current frame
+ *      4,60 4,56                                                        32,32                32,0
+ *      note: used to signal a frame change for the pixel editing modes.
+ *
+ *      FILTER:
+ *      0110 0000    fffffffff uuuuuuuuuuuuuuu , uuuuuuuuuuuuuuuuuuuuuuuu ffffffffffffffffffff ffffffffffffffffffff
+ *      mode submode filter    unused            unused                   start frame          end frame
+ *      4,28 4,24    9,15                                                 20,20                20,0
+ *
+ *      INSERT:
+ *      0110 0001    uuuuuuuuuuuuuuuuuuuuuuuu , uuuuuuuuuuuuuuuuuuuuuuuu ffffffffffffffffffff ffffffffffffffffffff
+ *      mode submode unused                     unused                   frame number         number of frames
+ *      4,28 4,24                                                        20,20                20,0
+ *
+ *      DELETE FRAME(S):
+ * 
+ *          DELETE FRAME:
+ *          0110 0010    0000 ffffffffffffffffffff , pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ *          mode submode type frame number           memory address (pointer) to a QImage
+ *          4,60 4,24    4,20 20,0                   64,0
+ * 
+ *          DELETE FRAMES:
+ *          0110 0010    0001 ffffffffffffffffffff , pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ *          mode submode type start frame number     memory address (pointer) to a list<QImage>
+ *          4,60 4,24    4,20 20,0                   64,0
+ *
+ *      VECTOR:
+ *      0001 0100    uuuuuuuuuuuuuuuuuuuuuuuu , pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ *      mode submode unused                     memory address (pointer) to vector object
+ *      4,28 4,24                               64,0
+ *      note: THIS IS OUTDATED DUE TO REDESIGNS IN THE VECTOR METHODING. IT NEEDS TO BE UPDATED BEFORE IMPLEMENTATION.
+ *
+ */

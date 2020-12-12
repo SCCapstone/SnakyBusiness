@@ -113,3 +113,4 @@ private:
 void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H
+

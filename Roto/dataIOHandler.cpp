@@ -1,5 +1,4 @@
 #include "dataIOHandler.h"
-
 #include <iostream>
 
 using namespace std;
@@ -134,3 +133,5 @@ void DataIOHandler::setMediaLayer(QImage qi) {
     mediaLayer = new QImage(qi);
     filteredMLayer = qi;
 }
+
+// update media namestring and window title when saving a save file, but not the image.
