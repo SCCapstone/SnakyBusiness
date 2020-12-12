@@ -75,10 +75,14 @@ QRgb graphics::Filtering::negative(QColor qc, int strength) {
     return toRGB(255 - qc.red(), 255 - qc.green(), 255 - qc.blue());
 }
 
+QRgb graphics::Filtering::enshadow(QColor qc, int strength) {
+    int combined = (qc.red() + qc.blue() + qc.green()) / 3;
+    return combined > strength ? qc.rgba() : 0xFF000000;
+}
+
 QRgb graphics::Filtering::redChannel(QColor qc, int strength) {
     int combined = (qc.green() + qc.blue()) / 2;
     return toRGB(qc.red(), combined, combined);
-
 }
 
 QRgb graphics::Filtering::greenChannel(QColor qc, int strength) {
@@ -264,6 +268,9 @@ QRgb graphics::Filtering::colorFilmGrain (QColor qc, int strength) {
 
 graphics::ImgSupport::ImgSupport() {
     zoom = 1.0;
+    canvasOffset = mediaOffset = QPoint(0, 0);
+    alphaLayer = QImage(1, 1, QImage::Format_Alpha8);
+    setAlphaValue(128);
 }
 
 double graphics::ImgSupport::getZoom() {
@@ -296,6 +303,40 @@ QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
     qp.setX(static_cast<int>(static_cast<double>(qp.x()) / zoom));
     qp.setY(static_cast<int>(static_cast<double>(qp.y()) / zoom));
     return qp;
+}
+
+void graphics::ImgSupport::setCanvasOffset(QPoint qp) {
+    canvasOffset = qp;
+}
+
+void graphics::ImgSupport::setMediaOffset(QPoint qp) {
+    mediaOffset = qp;
+}
+
+QPoint graphics::ImgSupport::getCanvasOffset() {
+    return canvasOffset;
+}
+
+QPoint graphics::ImgSupport::getMediaOffset() {
+    return mediaOffset;
+}
+
+void graphics::ImgSupport::setAlphaValue(int val) {
+    alphaValue = val;
+    alphaLayer.fill(static_cast<uint>(val));
+}
+
+int graphics::ImgSupport::getAlphaValue() {
+    return alphaValue;
+}
+
+void graphics::ImgSupport::setLayerSize(QSize qs) {
+    alphaLayer = QImage(qs, QImage::Format_Alpha8);
+    alphaLayer.fill(alphaValue);
+}
+
+QImage graphics::ImgSupport::getAlphaLayer() {
+    return alphaLayer;
 }
 
 void graphics::ImgSupport::rotate90Right(QImage *&qi) {

@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "opencv_handler.h"
-#include <iostream>
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -9,8 +8,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setGeometry(0,0, len, len);
-    setWindowTitle("Title");
+    ioh = new DataIOHandler();
+    QSize size = ioh->getBounds();
+    imgSupport.setLayerSize(size);
+    setGeometry(0,0, size.width(), size.width());
+    setWindowTitle("Glass Opus");
     createMenubar("mainMenubar");
     QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
     QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filtering"));
@@ -34,29 +36,25 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
-    qi = new QImage(len, len, QImage::Format_ARGB32_Premultiplied);
-    for (int i = 0; i < len; ++i)
-        for (int j = 0; j < len; ++j)
-            qi->setPixel(i, j, 0xFFFFFFFF);
     sampleFlag = 0;
     sampleFlasher = new QTimer(this);
     connect(sampleFlasher, SIGNAL(timeout()), this, SLOT(toggleSamplePnt()));
+    resizeCheck = new resizeWindow(this, ioh);
+    QString docs = "userDocsFile.txt";
+    QFile file(docs);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    qtb.setGeometry(this->geometry());
+    qtb.setText(file.readAll());
+    file.close();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-
+    // AVERAGE CASE ON MOST EXPENSIVE SETTINGS (SEE REPAINT) AVERAGE 2ms, MAX WAS 51ms HOWEVER (BEFORE UPDATE).
     QPoint qp = imgSupport.getZoomCorrected(event->pos());
     if (lastButton == Qt::LeftButton) {
-        if (trackDrawSpeed) {
-            auto tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-            long long t1 = tim.count();
-            bh.applyBrush(qi, qp);
-            tim = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-            long long t2 = tim.count();
-            cout << (t2 - t1) << endl;
-        }
-        else
-            bh.applyBrush(qi, qp);
+        QImage *qi = ioh->getCanvasLayer();
+        bh.applyBrush(qi, qp);
     }
     else if (lastButton == Qt::RightButton)
         bh.setSamplePoint(qp);
@@ -71,13 +69,15 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
     else if (lastButton == Qt::LeftButton) {
         bh.setRelativePoint(qp);
+        QImage *qi = ioh->getCanvasLayer();
         bh.applyBrush(qi, qp);
+        bh.setInterpolationActive(true);
     }
     repaint();
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
-
+    bh.setInterpolationActive(false);
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
@@ -85,11 +85,11 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 void MainWindow::createMenubar(string filename) {
-
-    //QMenuBar *menubar = new QMenuBar(this);
-    log(filename + UI_FileType, menuBar());
+    QMenuBar *menubar = new QMenuBar(this);
+    menubar->setGeometry(QRect(0, 0, 800, 20));
+    log(filename + UI_FileType, menubar);
     fstream uiFile;
-    uiFile.open(filename+".txt",ios::in);
+    uiFile.open(filename + UI_FileType,ios::in);
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -97,7 +97,7 @@ void MainWindow::createMenubar(string filename) {
             size_t i;
             for (i = 0; fromFile[i] != ';'; ++i)
                 item += fromFile[i];
-            QMenu *menu = menuBar()->addMenu(item.c_str());
+            QMenu *menu = menubar->addMenu(item.c_str());
             log(item, menu);
             ++i;
             fromFile = fromFile.substr(i, fromFile.length() - i);
@@ -108,7 +108,6 @@ void MainWindow::createMenubar(string filename) {
 }
 
 void MainWindow::addItems(QMenu *menu, string menuItems) {
-
     string item = "";
     for (size_t i = 0; i < menuItems.length(); ++i) {
         if (menuItems[i] == ',') {
@@ -144,66 +143,74 @@ void MainWindow::addItems(QMenu *menu, string menuItems) {
 }
 
 void MainWindow::addAction(QMenu *menu, string item) {
-
     QAction *action = menu->addAction(item.c_str());
     connect(action, &QAction::triggered, this, [=]() { this->doSomething(item); });
     log(item, action);
 }
 
 void MainWindow::doSomething(string btnPress) {
-
     cout << btnPress << endl;
     // process the actions here
 
     // first thing to do is load test images
     // https://doc.qt.io/qt-5/qfiledialog.html
     // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
-    if (btnPress == "Import Image") {
-        QString fileName = QFileDialog::getOpenFileName(this, "Import Media", "/home", "Images (*.png *.xpm *.jpg)");
-        qi = ImageIO.importImage(fileName);
-
+    if (btnPress == "Import") {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), "/", tr("Media Files (*.png *.jpg *.bmp *.mp4 *.avi *.mkv)"));
+        if (fileName == "")
+            return;
+        string fn = fileName.toStdString();
+        int index = fn.find_last_of('.');
+        string fileType = fn.substr(index + 1);
+        if (fileType == "png" || fileType == "jpg" || fileType == "bmp") {
+            bool flag = ioh->importImage(fileName);
+            if (flag)
+                resizeCheck->showRelative();
+        }
+        else {
+            VideoCapture cap = VideoCapture(fileName.toStdString());
+            if(!cap.isOpened()) {
+                return;
+            }
+            list <Mat> list;
+            long long l;
+            while(true) {
+                l = stdFuncs::getTime();
+                Mat frame;
+                cap >> frame;
+                if (frame.empty())
+                    break;
+                list.push_back(frame);
+                cout << stdFuncs::getChange(l);
+                l = stdFuncs::getTime();
+                QImage qi = QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
+                for(int r = 0; r < frame.rows; ++r)
+                    for(short c = 0; c < frame.cols; ++c) {
+                        RGB& rgb = frame.ptr<RGB>(r)[c];
+                        qi.setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
+                    }
+                cout << "\t" << stdFuncs::getChange(l) << "\t" << list.size() << endl;
+                ioh->setMediaLayer(qi);
+                repaint();
+            }
+            cap.release();
+            //destroyAllWindows();
+        }
         repaint();
-        ImageIO.setBaseLayer(qi);
     }
     else if (btnPress == "Export") {
-        QString saveFileName = QFileDialog::getSaveFileName(this, tr("Export Image File"), QString(), tr("Images (*.png)"));
-        screenFilter.applyTo(qi);
-        ImageIO.DataIOHandler::exportImage(saveFileName);
-    }
-    else if (btnPress == "Import Video") {
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video"), "/", tr("Video Files (*.mkv *.mp4)"));
-        string utf8_file = fileName.toUtf8().constData();
-        cv::VideoCapture cap = cv::VideoCapture(utf8_file);
-        if(!cap.isOpened()) {
-            cap.~VideoCapture();
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Import"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
+        if (fileName == "")
+            return;
+        string fn = fileName.toStdString();
+        int index = fn.find_last_of('.');
+        string fileType = fn.substr(index + 1);
+        if (fileType == "png" || fileType == "jpg" || fileType == "bmp") {
+            ioh->exportImage(fileName);
         }
+        else {
 
-        struct RGB {
-            uchar blue;
-            uchar green;
-            uchar red;
-        };
-        // TODO(anyone): wait until user input to change frames
-        while(1) {
-            cv::Mat frame;
-            cap >> frame;
-            if (frame.empty())
-                break;
-            delete qi;
-            qi = new QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
-            for(int r=0;r<frame.rows;r++)
-            {
-                for(int c=0;c<frame.cols;c++)
-                {
-                    // get pixel
-                    RGB& rgb = frame.ptr<RGB>(r)[c];
-                    qi->setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
-                }
-            }
-            repaint();
         }
-        cap.release();
-        cv::destroyAllWindows();
     }
     else if (btnPress == "Choose Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
@@ -217,15 +224,16 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Screen Strength") {
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a screen filter strength", screenFilter.getStrength(), minStrength, maxStrength, 1, &ok );
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a screen filter strength", ioh->getFilterStrength(), minStrength, maxStrength, 1, &ok );
         if (ok)
-            screenFilter.setStrength(ret);
+            ioh->setFilterStrength(ret);
     }
     else if (btnPress == "Brush Strength") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush strength", bh.getStength(), minStrength, maxStrength, 1, &ok );
         if (ok)
             bh.setStrength(ret);
+        cout << ok << endl;
     }
     else if (btnPress == "Spray Density") {
         bool ok = false;
@@ -234,22 +242,13 @@ void MainWindow::doSomething(string btnPress) {
             bh.setDensity(ret);
     }
     else if (btnPress == "Help") {
-        //https://stackoverflow.com/questions/18555367/qtcreator-gui-open-text-file
-        QString docs = "userDocsFile";
-        QFile file(docs);
-        if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-            return;
-
-        QTextBrowser *b = new QTextBrowser();
-        b->setGeometry(0,0,len,len);
-        b->setText(file.readAll());
-        b->show();
-        file.close();
+        qtb.move(0,0);
+        qtb.show();
     }
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
-    screenFilter.setFilter(filterName);
+    ioh->setScreenFilter(filterName);
     repaint();
 }
 
@@ -272,7 +271,6 @@ void MainWindow::changeBrushMethod(string method) {
 }
 
 void MainWindow::log(string title, QObject *obj) {
-
     objFetch[title] = obj;
     toDel.push_front(obj);
 }
@@ -282,6 +280,7 @@ void appTo(QImage *qi, Filter f) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
+    QImage *qi = ioh->getCanvasLayer();
     switch (event->key()) {
     case Qt::Key_Up:
         imgSupport.zoomIn();
@@ -309,21 +308,26 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::paintEvent(QPaintEvent *event) {
-
-    QImage final = qi->copy();
-    screenFilter.applyTo(&final);
+    // TAKES ABOUT 8ms MAX ON MOST EXPENSIVE SETTINGS - FILTER BRUSH (GBR), 64 SIZE, 2 SPRAY DENSITY.
+    QSize size = ioh->getBounds();
+    imgSupport.setLayerSize(size);
+    QImage canvas = ioh->getCanvasLayer()->copy();
+    QImage media = ioh->getFilteredMLayer();
     if (sampleFlag) {
         QPoint qp = bh.getSamplePoint();
         for (int i = qp.x() - ptSize; i < qp.x() + ptSize; ++i)
             for (int j = qp.y() - ptSize; j < qp.y() + ptSize; ++j) {
                 int dist = abs(i - qp.x()) + abs(j - qp.y());
-                if (dist >= ptSize - 1 && dist <= ptSize && i >= 0 && i < final.width() && j >= 0 && j < final.height())
-                    final.setPixel(i, j, graphics::Filtering::negative(final.pixelColor(i, j), 255));
+                if (dist >= ptSize - 1 && dist <= ptSize && i >= 0 && i < canvas.width() && j >= 0 && j < canvas.height())
+                    canvas.setPixel(i, j, graphics::Filtering::negative(canvas.pixelColor(i, j), 255));
             }
     }
-    final = imgSupport.zoomImg(final);
+    canvas.setAlphaChannel(imgSupport.getAlphaLayer());
+    canvas = imgSupport.zoomImg(canvas);
+    media = imgSupport.zoomImg(media);
     QPainter qp(this);
-    qp.drawImage(0, 0, final);
+    qp.drawImage(0, 20, media);
+    qp.drawImage(0, 20, canvas);
 }
 
 void MainWindow::toggleSamplePnt() {
@@ -332,13 +336,12 @@ void MainWindow::toggleSamplePnt() {
 }
 
 MainWindow::~MainWindow() {
-
+    resizeCheck->doClose();
+    delete resizeCheck;
     this->hide();
-    ImageIO.~DataIOHandler();
     sampleFlasher->stop();
     delete sampleFlasher;
     delete ui;
-    delete qi;
     objFetch.clear();
     while (!toDel.empty()) {
         QObject *obj = toDel.front();

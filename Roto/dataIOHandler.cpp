@@ -1,78 +1,137 @@
 #include "dataIOHandler.h"
+#include <iostream>
 
-/* It seems the functions were made with the idea of a save file in mind, or perhap I am incorrect. However,
- * If you also want to commits from writing the saving feature, it'd be quite easy. I've detailed it in the saveLoad.txt.
- * I'll upload it to the repo / github.
- */
-
-QImage * DataIOHandler::importImage(QString file) {
-    /* Should be non-static, and take QString parameter filename. importImage would be a more accurate name.
-     * This function should have no return type as the as the QImage pointer that is drawn to the screen
-     * Should actually be a private member of the dataIO_handler class, as should the draw layer. Ideally,
-     * there should be a single QImage pointer for displaying the import media, one for displaying the
-     * draw layer, two std::list <QImage *> for the draw frames on either side on either side of the draw
-     * layer when importing video, and similary two more lists of the same type for the import media.
-     *
-     * should have a bool flag that alerts the front end to whether there is already import media, if so, ask if the user
-     * wants to replace the current media with what they intend to import.
-     * eventually, when we have save files, we'll want to ask the user if they want to load the media upon loading the save file,
-     * as they may instead be in the final stages of work, where they no longer need it - saving ram.
-     */
-    /* The call about should be QFileDialog::getOpenFileName
-     * The call should be made in the MainWindow.cpp, and it's output (QString) should be fed to this method.
-     * The nullptr should be 'this', so that it references the qmainwindow qwidget as a parent.
-     * Eventually, this will need to be generalized such that if the file is an image file, it 
-     * calls an image loader function (like this one) otherwise, it should call the video loader if it is a
-     * video.
-     *
-     * Also, I belive the typing call with "Images (*.png ..." is ill formated, and the quotes go on the outside of the parenthetical
-     */
-    QImage temp(file);
-    return new QImage(temp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-}
+using namespace std;
 
 DataIOHandler::DataIOHandler() {
-
-    this->Image = nullptr;
-
-}
-
-QImage * DataIOHandler::getBaseLayer() {
-
-    return this->Image;
-
-}
-
-void DataIOHandler::setBaseLayer(QImage *newImage) {
-
-    this->Image = newImage;
-
+    // isDefaulted = true;
+    canvasLayer = new QImage(QSize(defaultSize, defaultSize), QImage::Format_ARGB32_Premultiplied);
+    mediaLayer = new QImage(QSize(defaultSize, defaultSize), QImage::Format_ARGB32_Premultiplied);
+    for (int i = 0; i < defaultSize; ++i)
+        for (int j = 0; j < defaultSize; ++j) {
+            canvasLayer->setPixel(i, j, 0xFFFFFFFF);
+            mediaLayer->setPixel(i, j, 0xFFFFFFFF);
+        }
+    applyFilter();
 }
 
 DataIOHandler::~DataIOHandler() {
-
-    saveFileName.QString::~QString();
-    Image->QImage::~QImage();
-    leftFrames.~list();
-    rightFrames.~list();
-
+    delete canvasLayer;
+    delete mediaLayer;
 }
 
-//DataIOHandler::DataIOHandler(QImage * qi) {
-//
-//    this->Image = qi;
-//
-//}
-
-// non static method
-void DataIOHandler::exportImage(QString saveFileName) {        // exportImage would be a more accurate name. QImage param not needed
-    
-    /* since this exports a still image, and not a video, it should export the active draw layer mentioned in load function above in the
-     * same way it already does with the provided QString.
-     */
-    Image->save(saveFileName);
+void DataIOHandler::setScreenFilter(string filterName) {
+    screenFilter.setFilter(filterName);
+    applyFilter();
 }
 
+void DataIOHandler::setFilterStrength(int strength) {
+    screenFilter.setStrength(strength);
+}
 
+int DataIOHandler::getFilterIndex() {
+    return screenFilter.getFilterIndex();
+}
+
+int DataIOHandler::getFilterStrength() {
+    return screenFilter.getStrength();
+}
+
+void DataIOHandler::applyFilter() {
+    filteredMLayer = mediaLayer->copy();
+    screenFilter.applyTo(&filteredMLayer);
+}
+
+bool DataIOHandler::importImage(QString fileName) {
+    file = fileName;
+    QImage qiTemp(fileName);
+    bool askResize = mediaLayer->size() != qiTemp.size();
+    delete mediaLayer;
+    mediaLayer = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    return askResize;
+    // tf keep aspect ratio, scale import to draw, scale draw to import, do nothing.
+    // scale to longest or shortest side.
+}
+
+void DataIOHandler::scale(int layer, int scaleType) {
+    scaleLayers(layer, scaleType);
+    scaleLists(layer, scaleType);
+    applyFilter();
+}
+
+void DataIOHandler::scaleLayers(int layer, int scaleType) {
+    if (scaleType != 0) {
+        if (layer == 0) {
+            QImage copy = canvasLayer->copy();
+            delete canvasLayer;
+            switch (scaleType) {
+            case 1:
+                canvasLayer = new QImage(copy.scaledToWidth(mediaLayer->width(), Qt::SmoothTransformation));
+            case 2:
+                canvasLayer = new QImage(copy.scaledToWidth(mediaLayer->height(), Qt::SmoothTransformation));
+            case 3:
+                canvasLayer = new QImage(copy.scaled(mediaLayer->width(), mediaLayer->height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            }
+        }
+        else if (layer == 1) {
+            QImage copy = mediaLayer->copy();
+            delete mediaLayer;
+            switch (scaleType) {
+            case 1:
+                mediaLayer = new QImage(copy.scaledToWidth(canvasLayer->width(), Qt::SmoothTransformation));
+            case 2:
+                mediaLayer = new QImage(copy.scaledToWidth(canvasLayer->height(), Qt::SmoothTransformation));
+            case 3:
+                mediaLayer = new QImage(copy.scaled(canvasLayer->width(), canvasLayer->height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            }
+        }
+    }
+}
+
+void DataIOHandler::scaleLists(int layer, int scaleType) {
+    // use concurrence
+}
+
+void DataIOHandler::exportImage(QString fileName) {
+    canvasLayer->save(fileName);
+}
+
+bool DataIOHandler::importVideo(QString fileName) {
+    file = fileName;
+    return false;
+}
+
+void DataIOHandler::exportVideo(QString fileName) {
+    canvasLayer->save(fileName);
+}
+
+QImage *DataIOHandler::getCanvasLayer() {
+    return canvasLayer;
+}
+
+QImage *DataIOHandler::getMediaLayer() {
+    return mediaLayer;
+}
+
+QImage DataIOHandler::getFilteredMLayer() {
+    return filteredMLayer;
+}
+
+QSize DataIOHandler::getBounds() {
+    return canvasLayer->size();
+}
+
+QSize DataIOHandler::fullBounds() {
+    QSize qs;
+    qs.setWidth(max(canvasLayer->width(), mediaLayer->width()));
+    qs.setHeight(max(canvasLayer->height(), mediaLayer->height()));
+    return qs;
+}
+
+void DataIOHandler::setMediaLayer(QImage qi) {
+    delete mediaLayer;
+    mediaLayer = new QImage(qi);
+    filteredMLayer = qi;
+}
 
 // update media namestring and window title when saving a save file, but not the image.
