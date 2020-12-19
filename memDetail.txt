@@ -1,7 +1,4 @@
 
-reexamine deltas to see if they can work with deltas
-
-
 BRUSH:
 0000 0000 xxxxxxxxxxxxxx yyyyyyyyyyyyyy xxxxxxxxxxxxxx yyyyyyyyyyyyyy , aaaaaaaa rrrrrrrr gggggggg bbbbbbbb aaaaaaaa rrrrrrrr gggggggg bbbbbbbb
 mode used x1             y1             x2             y2               color diff                          color diff
