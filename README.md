@@ -14,7 +14,7 @@ The app should be able to be run by using the executable in the bin folder.
 
 1. Install C++ libraries, specifically <!--either -->[MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/)<!-- or [MinGW](http://www.mingw.org/)-->.
 2. Install [Qt and Qt Creator](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5)
-3. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows) if needed.
+3. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows_with_MSVC2017)<!--(https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows)--> if needed.
 4. Make sure system path aligns with current installation of OpenCV and MSVC. Verify that the includes and libs within the project file are correct.
 5. Copy the .libs from the OpenCV build folder to the highest/top directory of the build folder.
 6. Copy the mainMenubar.txt into same location as the .libs mentioned above.
