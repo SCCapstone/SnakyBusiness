@@ -2,6 +2,7 @@
 
 
 brushHandler::brushHandler(unsigned char str, int size, int density, string type, QColor qc) {
+    alpha = 255;
     setStrength(str);
     setDensity(density);
     setAppMethod(type);
@@ -22,7 +23,6 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
     patternMap[0][0] = 0;
     samplePoint = new QPoint(-1000, -1000);
     ipolActive = false;
-    alpha = 255;
     relativityPoint = QPoint(-1000,-1000);
 }
 

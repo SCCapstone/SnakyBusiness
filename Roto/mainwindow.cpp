@@ -82,8 +82,9 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
     setLastButton(event->button());
     QPoint qp = sr->getZoomCorrected(event->pos());
+    cout << mode << " " << lastButton << endl;
     if (mode == Brush_Mode) {
-        if(lastButton == RightButton)
+        if (lastButton == RightButton)
             bh.setSamplePoint(qp);
         else if (lastButton == LeftButton) {
             bh.setRelativePoint(qp);

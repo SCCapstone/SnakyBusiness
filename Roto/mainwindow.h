@@ -122,7 +122,7 @@ private:
 
     Ui::MainWindow *ui;
     screenRender *sr;
-    unsigned char mode;
+    Modes mode;
     bool shiftFlag, ctrlFlag;
     MouseButton lastButton;
 
