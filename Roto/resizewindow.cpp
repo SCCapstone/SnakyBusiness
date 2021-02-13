@@ -77,7 +77,7 @@ void resizeWindow::finish() {
     hide();
     parentIOH->scale(ui->comboBox->currentIndex(), ui->comboBox_2->currentIndex());
     QMainWindow *qmw = dynamic_cast<QMainWindow*>(this->parent());
-    QSize qs = parentIOH->fullBounds();
+    QSize qs = parentIOH->getWorkingLayer()->getCanvas()->size();
     int X = qmw->x(), Y = qmw->y();
     qmw->setGeometry(X, Y, qs.width(), qs.height());
     qmw->move(X, Y);

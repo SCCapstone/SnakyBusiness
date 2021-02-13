@@ -9,6 +9,7 @@
 #include <time.h>
 #include <chrono>
 #include <iostream>
+#include <vector>
 
 using graphics::Filter;
 using std::list;
@@ -19,6 +20,7 @@ using std::cout;
 using std::endl;
 using std::min;
 using std::max;
+using std::vector;
 
 enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
 const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial", "Sample"};
@@ -35,6 +37,7 @@ public:
 
     brushHandler(unsigned char str = 128, int size = 30, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
+    void setAlpha(int val);
     void setAppMethod(string type);
     void setPoint(QPoint qp);
     void setDensity(int density);
@@ -44,8 +47,8 @@ public:
     void setColor(QColor qc);
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
-    QPoint getSamplePoint();
     void setRelativePoint(QPoint rPnt);
+    QPoint *getSamplePoint();
     const unsigned char *const *const getBrushMap();
     void setPattern(int xDim, int yDim, unsigned char **pattern);
     void setPatternInUse(int used);
@@ -87,8 +90,8 @@ private:
     void shiftUp();
     void shiftDown();
 
-    bool active, patternInUse;
-    int sprayDensity, checkEdgeSize;
+    bool ipolActive, patternInUse;
+    int sprayDensity, checkEdgeSize, alpha;
     unsigned char strength, patternXDim, patternYDim;
     appMethod method;
     Brush brush;
@@ -96,8 +99,7 @@ private:
     unsigned char **patternMap;
     char **checkMap;
     Filter brushFilter;
-    QPoint currPnt, lastPnt, samplePnt, relativityPoint;
-
+    QPoint currPnt, lastPnt, relativityPoint, *samplePoint;
     list <QPoint> toProcess;
 
 };

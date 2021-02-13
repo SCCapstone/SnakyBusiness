@@ -2,19 +2,22 @@
 #define DATAIO_H
 
 #include <QImageReader>
-#include <QFileDialog>      // import should be within MainWindow.h for now.
+#include <QFileDialog>
 #include <QImage>
+#include <QPainter>
 
 #include <graphics.h>
 
 #include <list>
+#include <vector>
+#include <layer.h>
 
 using std::list;
 using std::pair;
 
 using graphics::Filter;
 
-const int defaultSize = 700;
+const QSize defaultSize (700, 700);
 
 struct RGB {
     uchar blue;
@@ -25,8 +28,19 @@ struct RGB {
 class DataIOHandler {
 public:
     DataIOHandler();
-    //DataIOHandler(QImage * qi);
     ~DataIOHandler();
+    /*
+    void addLayer();
+    void copyLayers(int first, int last = -1);
+    void pastLayers(int after);
+    void removeLayers(int first, int last = -1);
+    void addFrame(int num);
+    void duplicateFrame(int count);
+    void copyFrames(int first, int last = -1);
+    void pasteFrames(int after);
+    void removeFrames(int first, int last = -1);
+    // Update the menu file to match.
+    */
     bool importImage(QString fileName);
     void exportImage(QString fileName);
     bool importVideo(QString fileName);
@@ -37,24 +51,20 @@ public:
     void setFilterStrength(int strength);
     int getFilterIndex();
     int getFilterStrength();
-    QImage *getCanvasLayer();
-    QImage *getMediaLayer();
-    QImage getFilteredMLayer();
-    QSize getBounds();
-    QSize fullBounds();
+    Layer *getWorkingLayer();
+    QImage getBackground();
+    QImage getForeground();
     void scale(int option1, int option2);
-
-    void setMediaLayer (QImage qi);
 
 private:
     void scaleLayers(int option1, int option2);
     void scaleLists(int layer, int scaleType);
     void applyFilter();
 
-    QImage *canvasLayer, *mediaLayer, filteredMLayer;
-    list <QImage *> canvasLeft, canvasRight, mediaLeft, mediaRight;
+    vector <vector <Layer *> > frames;
     QString file;
-    Filter screenFilter;    
+    Filter screenFilter;
+    unsigned char activeLayer, activeFrame;
 };
 
 #endif // DATAIO_H

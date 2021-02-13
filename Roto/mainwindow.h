@@ -29,10 +29,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <dataIOHandler.h>
-#include <brushHandler.h>
+#include <brushhandler.h>
 #include <graphics.h>
 #include <stdfuncs.h>
 #include <resizewindow.h>
+#include <screenrender.h>
 
 using cv::VideoCapture;
 using cv::Mat;
@@ -40,7 +41,6 @@ using cv::destroyAllWindows;
 
 using graphics::filterNames;
 using graphics::Filter;
-using graphics::ImgSupport;
 
 using std::cout;
 using std::endl;
@@ -54,11 +54,25 @@ using std::fstream;
 using std::ios;
 using std::pair;
 
+using Qt::MouseButton;
+using Qt::NoButton;
+using Qt::LeftButton;
+using Qt::RightButton;
+using Qt::Key_Shift;
+using Qt::Key_Control;
+using Qt::Key_Up;
+using Qt::Key_Down;
+using Qt::Key_Left;
+using Qt::Key_Right;
+using Qt::Key_Escape;
+using Qt::Key_Delete;
+using Qt::Key_Backspace;
+
 const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
 const int trackDrawSpeed = 0;
-const int ptSize = 5;
-const int sampleFlashTime = 400;
+
+enum Modes {Brush_Mode, Spline_Mode};
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -74,26 +88,23 @@ public:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
     void paintEvent(QPaintEvent *event);
     ~MainWindow();
     void log(string title, QObject *obj);
     void createMenubar(string filename);
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
+    void refresh();
 
     DataIOHandler *ioh;
     brushHandler bh;
     resizeWindow *resizeCheck;
 
     QColorDialog cd;
-    Qt::MouseButton lastButton;
-    QTimer *sampleFlasher;
-    char sampleFlag;
-
     QTextBrowser qtb;
-
-    ImgSupport imgSupport;
 
     unordered_map <string, QObject *> objFetch;
     list <QObject *> toDel;
@@ -104,13 +115,19 @@ public slots:
     void changeBrushMethod(string s);
     void changeBrushShape(string s);
     void doSomething(string btnPress);
-    void toggleSamplePnt();
 
 private:
+    void setLastButton(MouseButton button);
+    void setShiftFlag(bool b);
+
     Ui::MainWindow *ui;
+    screenRender *sr;
+    unsigned char mode;
+    bool shiftFlag, ctrlFlag;
+    MouseButton lastButton;
+
 };
 
 void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H
-

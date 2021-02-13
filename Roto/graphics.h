@@ -47,7 +47,7 @@ private:
 
 class Filtering {
 public:
-    static QRgb toRGB (int r, int g, int b);
+    static QRgb toRGB (int a, int r, int g, int b);
     static QRgb greyscale (QColor qc, int strength);
     static QRgb polarize (QColor qc, int strength);
     static QRgb negative (QColor qc, int strength);
@@ -90,8 +90,8 @@ private:
 };
 
 class ImgSupport {
-public:
 
+public:
     ImgSupport();
     QImage zoomImg(QImage qi);
     double getZoom();
@@ -99,14 +99,6 @@ public:
     void zoomIn();
     void zoomOut();
     QPoint getZoomCorrected(QPoint qp);
-    void setCanvasOffset(QPoint qp);
-    void setMediaOffset(QPoint qp);
-    QPoint getCanvasOffset();
-    QPoint getMediaOffset();
-    void setAlphaValue(int val);
-    int getAlphaValue();
-    void setLayerSize(QSize qs);
-    QImage getAlphaLayer();
     static void rotate90Right(QImage *&qi);
     static void rotate90Left(QImage *&qi);
     static void rotate180(QImage *qi);
@@ -115,12 +107,8 @@ public:
     static list <QImage *> resize(QSize reqSize);
 
 private:
-
     static int getSize(double dim, double zoom);
 
-    QImage alphaLayer;
-    int alphaValue;
-    QPoint canvasOffset, mediaOffset;
     double zoom;
 };
 

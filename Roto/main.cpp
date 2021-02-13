@@ -11,11 +11,13 @@ int main(int argc, char *argv[])
      *
      */
 
+
     QApplication a(argc, argv);
     MainWindow w;
 
     //https://doc.qt.io/qt-5/qtwidgets-mainwindows-menus-example.html
 
     w.show();
-    return a.exec();
+    int i = a.exec();
+    return i;
 }
