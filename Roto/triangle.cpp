@@ -1,5 +1,6 @@
 #include <triangle.h>
 
+
 Triangle::Triangle(QPoint A, QPoint B, QPoint C) {
     a = A;
     b = B;
@@ -17,3 +18,4 @@ QPoint Triangle::B() {
 QPoint Triangle::C() {
     return c;
 }
+

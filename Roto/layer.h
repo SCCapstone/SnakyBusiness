@@ -1,13 +1,11 @@
 #ifndef LAYER_H
 #define LAYER_H
 
+#include <vector>
+#include <list>
+#include <QImage>
 #include <splinevector.h>
 #include <triangle.h>
-#include <QImage>
-#include <list>
-
-#include <iostream>
-using namespace std;
 
 using std::vector;
 using std::list;
@@ -17,12 +15,12 @@ using Qt::RightButton;
 
 const float ipolMin = 0.001;
 const float ipolMax = 0.1;
-
 const unsigned char ptSize = 5;
 
-class Layer
-{
+class Layer {
+
 public:
+
     Layer(QSize qs);
     ~Layer();
     QImage *getCanvas();
@@ -49,6 +47,7 @@ public:
     void deleteSelected();
 
 private:
+
     void calcLine();
     float getipol(float a, float b, float ipol);
 
@@ -65,3 +64,4 @@ private:
 };
 
 #endif // LAYER_H
+

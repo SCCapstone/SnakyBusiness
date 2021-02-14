@@ -4,13 +4,14 @@
 #include <vector>
 #include <QPoint>
 #include <QColor>
-using std::pair;
 
 using std::vector;
+using std::pair;
 
-class SplineVector
-{
+class SplineVector {
+
 public:
+
     SplineVector(QPoint a, QPoint b, int Width = 1);
     SplineVector operator = (const SplineVector &sv);
     vector <QPoint> getControls();
@@ -34,6 +35,7 @@ public:
     void calcBounds();
 
 private:
+
     void setBounds(int mix, int miy, int max, int may);
 
     vector <QPoint> controlPts, backup;
@@ -44,3 +46,4 @@ private:
 };
 
 #endif // VECTOR_H
+

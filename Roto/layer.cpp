@@ -1,5 +1,6 @@
 #include "layer.h"
 
+
 Layer::Layer(QSize qs) {
     activePt = -1;
     alpha = 255;
@@ -8,7 +9,7 @@ Layer::Layer(QSize qs) {
         for (int j = 0; j < qs.height(); ++j)
             qi->setPixelColor(i, j, 0xFFFFFFFF);
     shiftFlag = false;
-    ipolPts = ipolMin;
+    ipolPts = ipolMin * 2;
 }
 
 Layer::~Layer() {
@@ -47,6 +48,8 @@ void Layer::calcLine() {
             workPts.push_back(QPointF(controlPts[i]));
         list <pair <QPoint, QPoint> > pairs;
         for (float ipol = 0.0; ipol <= 1.0; ipol += ipolPts) {
+
+            float twidth = static_cast<float>(sv.getWidth()) * sqrt(2.0 * abs(abs(ipol - 0.5) - 0.5));
             for (int max = numpts; max > 1; --max) {    // og  > 0
                 for (char i = 0; i < max; ++i) {
                     workPts[i].setX(getipol(workPts[i].x(), workPts[i + 1].x(), ipol));
@@ -61,7 +64,7 @@ void Layer::calcLine() {
             float slope = dx / dy;
             float sqrSlope = slope * slope;
             QPointF midPt = workPts[0];
-            float dist = sv.getWidth();
+            float dist = twidth; //static_cast<float>(sv.getWidth());
             float inverter = slope < 0.0 ? 1.0 : -1.0;
             int x1 = static_cast<int>(((inverter * dist) / sqrt(1 + sqrSlope)) + midPt.x());
             int y1 = static_cast<int>((dist / sqrt(1 + (1 / sqrSlope))) + midPt.y());
@@ -358,3 +361,4 @@ void Layer::deleteSelected() {
 void Layer::deselect() {
     activeVects.clear();
 }
+

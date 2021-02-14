@@ -153,3 +153,4 @@ void SplineVector::setColors(QRgb a, QRgb b) {
 pair <QRgb, QRgb> SplineVector::getColors() {
     return pair <QRgb, QRgb> (colors[0], colors[1]);
 }
+

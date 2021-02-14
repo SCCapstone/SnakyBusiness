@@ -1,5 +1,6 @@
 #include <screenrender.h>
 
+
 screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     sizeDisplay = -1;
     shiftFlag = false;
@@ -9,6 +10,7 @@ screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     connect(flasher, SIGNAL(timeout()), this, SLOT(toggleFlasher()));
     fgVisible = true;
     adder = 0.1;
+    samplePoint = QPoint(-1000, -1000);
     flasher->start(flashSpeed);
 }
 
@@ -65,8 +67,9 @@ void screenRender::updateViews(Layer *working, QImage fg, QImage bg) {
 }
 
 void screenRender::paintEvent(QPaintEvent *event) {
+    long long t1 = stdFuncs::getTime();
     QPainter qp(this);
-    if (bgLayers.height() != 0)
+    if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
     if (workLayer == nullptr)
         return;
@@ -166,14 +169,14 @@ void screenRender::paintEvent(QPaintEvent *event) {
                 }
         }
     }
-    for (int i = stdFuncs::clamp(samplePoint->x() - ptSize, 0, w); i < stdFuncs::clamp(samplePoint->x() + ptSize + 1, 0, w); ++i)
-        for (int j = stdFuncs::clamp(samplePoint->y() - ptSize, 0, h); j < stdFuncs::clamp(samplePoint->y() + ptSize + 1, 0, h); ++j) {
-            int dist = abs(i - samplePoint->x()) + abs(j - samplePoint->y());
+    for (int i = stdFuncs::clamp(samplePoint.x() - ptSize, 0, w); i < stdFuncs::clamp(samplePoint.x() + ptSize + 1, 0, w); ++i)
+        for (int j = stdFuncs::clamp(samplePoint.y() - ptSize, 0, h); j < stdFuncs::clamp(samplePoint.y() + ptSize + 1, 0, h); ++j) {
+            int dist = abs(i - samplePoint.x()) + abs(j - samplePoint.y());
             if ((flashFlag || dist >= ptSize - 1) && dist <= ptSize)
                 qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
         }
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
-    if (fgVisible && fgLayers.height() != 0)
+    if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
     if (sizeDisplay != -1) {
         qp.drawRoundRect(0, 25, 40, 20);
@@ -183,9 +186,10 @@ void screenRender::paintEvent(QPaintEvent *event) {
         sizeDisplay = -1;
         flasher->start(flashSpeed);
     }
+    cout << stdFuncs::getChange(t1) << endl;
 }
 
-void screenRender::setSamplePt(QPoint *qp) {
+void screenRender::setSamplePt(QPoint qp) {
     samplePoint = qp;
 }
 
@@ -240,7 +244,7 @@ void screenRender::fillBTri(QPoint a, QPoint b, QPoint c) {
     for (float y = a.y(); y >= b.y(); y -= adder)
     {
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba());
+            qi.setPixel(x, static_cast<int>(y), Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -259,7 +263,7 @@ void screenRender::fillTTri(QPoint a, QPoint b, QPoint c) {
     for (float y = a.y(); y <= b.y(); y += adder)
     {
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba()); //qi->setPixel(x, y, 0xFF00FF00);
+            qi.setPixel(x, static_cast<int>(y), Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
         curx1 += invslope1;
         curx2 += invslope2;
     }
@@ -345,3 +349,4 @@ void screenRender::setSizeDisplay(int i) {
     sizeDisplay = i;
     flasher->stop();
 }
+

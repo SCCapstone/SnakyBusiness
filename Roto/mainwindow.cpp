@@ -7,14 +7,14 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    statusBar()->hide();
     shiftFlag = false;
     ctrlFlag = false;
     lastButton = NoButton;
-    sr = new screenRender();
-    sr->setSamplePt(bh.getSamplePoint());
+    sr = new screenRender(this);
     ioh = new DataIOHandler();
     sr->updateViews(ioh->getWorkingLayer(), ioh->getForeground(), ioh->getBackground());
-    this->setCentralWidget(sr);
+    setCentralWidget(sr);
     setGeometry(0,0, defaultSize.width(), defaultSize.height());
     setWindowTitle("Glass Opus");
     createMenubar("mainMenubar");
@@ -58,8 +58,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
             QImage *qi = ioh->getWorkingLayer()->getCanvas();
             bh.applyBrush(qi, qp);
         }
-        else if (lastButton == RightButton)
-            bh.setSamplePoint(qp);
+        else if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
+            setSamplePt(qp);
     }
     else if (mode == Spline_Mode) {
         if (ctrlFlag)
@@ -82,10 +82,9 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
     setLastButton(event->button());
     QPoint qp = sr->getZoomCorrected(event->pos());
-    cout << mode << " " << lastButton << endl;
     if (mode == Brush_Mode) {
         if (lastButton == RightButton)
-            bh.setSamplePoint(qp);
+            setSamplePt(qp);
         else if (lastButton == LeftButton) {
             bh.setRelativePoint(qp);
             QImage *qi = ioh->getWorkingLayer()->getCanvas();
@@ -164,6 +163,11 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
 void MainWindow::setLastButton(MouseButton button) {
     lastButton = button;
     sr->setLastButton(button);
+}
+
+void MainWindow::setSamplePt(QPoint qp) {
+    bh.setSamplePoint(qp);
+    sr->setSamplePt(qp);
 }
 
 void MainWindow::setShiftFlag(bool b) {
@@ -329,9 +333,11 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Brush Mode") {
         mode = Brush_Mode;
+        ioh->getWorkingLayer()->deselect();
     }
     else if (btnPress == "Spline Mode") {
         mode = Spline_Mode;
+        setSamplePt(QPoint(-1000, -1000));
     }
     else if (btnPress == "Help") {
         qtb.move(0,0);
@@ -366,7 +372,7 @@ void appTo(QImage *qi, Filter f) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-//    QImage *qi = ioh->getWorkingLayer()->getCanvas();
+    QImage *qi = ioh->getWorkingLayer()->getCanvas();
     switch (event->key()) {
     case Key_Up:
         sr->zoomIn();
@@ -423,24 +429,22 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Key_Delete:
         ioh->getWorkingLayer()->deleteSelected();
         break;
-//    case Qt::Key_I:
-//        ImgSupport::rotate180(qi);
-//        break;
-//    case Qt::Key_V:
-//        ImgSupport::flipVertical(qi);
-//        break;
-//    case Qt::Key_H:
-//        ImgSupport::flipHorizontal(qi);
-//        break;
-//    case Qt::Key_L:
-//        ImgSupport::rotate90Left(qi);
-//        break;
-//    case Qt::Key_R:
-//        ImgSupport::rotate90Right(qi);
-//        break;
+    case Qt::Key_I:
+        ImgSupport::rotate180(qi);
+        break;
+    case Qt::Key_V:
+        ImgSupport::flipVertical(qi);
+        break;
+    case Qt::Key_H:
+        ImgSupport::flipHorizontal(qi);
+        break;
+    case Qt::Key_L:
+        ImgSupport::rotate90Left(qi);
+        break;
+    case Qt::Key_R:
+        ImgSupport::rotate90Right(qi);
+        break;
     }
-//    if (limitCnt > 1.0)
-//        limitCnt -= 1.0;
     refresh();
 }
 
@@ -467,7 +471,9 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 MainWindow::~MainWindow() {
     resizeCheck->doClose();
     delete resizeCheck;
-    this->hide();
+    hide();
+    delete ioh;
+    delete sr;
     delete ui;
     objFetch.clear();
     while (!toDel.empty()) {

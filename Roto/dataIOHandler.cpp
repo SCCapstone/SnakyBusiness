@@ -1,5 +1,6 @@
 #include "dataIOHandler.h"
 
+
 DataIOHandler::DataIOHandler() {
     activeFrame = 0;
     activeLayer = 0;
@@ -133,3 +134,4 @@ bool DataIOHandler::importVideo(QString fileName) {
 void DataIOHandler::exportVideo(QString fileName) {
 
 }
+

@@ -1,38 +1,34 @@
 #ifndef SCREENRENDER_H
 #define SCREENRENDER_H
 
+#include <vector>
+#include <string>
+#include <iostream>
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
-
-#include <layer.h>
-
-#include <vector>
 #include <stdfuncs.h>
 #include <graphics.h>
-#include <string>
-using std::to_string;
+#include <layer.h>
 
 using std::vector;
-using graphics::Filtering;
-
+using std::to_string;
+using std::cout;
+using std::endl;
 using Qt::MouseButton;
 using Qt::RightButton;
 using Qt::NoButton;
+using graphics::Filtering;
+using graphics::ImgSupport;
 
 const int flashSpeed = 1000;
 
+class screenRender : public QWidget {
 
-
-using graphics::ImgSupport;
-
-#include <iostream>
-using namespace std;
-
-class screenRender : public QWidget
-{
     Q_OBJECT
+
 public:
+
     explicit screenRender(QWidget *parent = nullptr);
     ~screenRender();
     void updateViews(Layer *working, QImage fg, QImage bg);
@@ -45,12 +41,13 @@ public:
     void showPts();
     QPoint getZoomCorrected(QPoint qp);
     void paintEvent(QPaintEvent *event);
-    void setSamplePt(QPoint *qp);
+    void setSamplePt(QPoint qp);
     void stopFlashing();
     void showFg(bool shown);
     void setSizeDisplay(int i);
 
 private:
+
     void calcTri(Triangle t);
     void fillBTri(QPoint a, QPoint b, QPoint c);
     void fillTTri(QPoint a, QPoint b, QPoint c);
@@ -62,20 +59,20 @@ private:
     Layer *workLayer;
     QPixmap bgLayers, fgLayers;
     QImage qi, bgPrescaled, fgPrescaled;
-    vector <QPoint> *qpts;
     QTimer *flasher;
     bool flashFlag, fgVisible, shiftFlag;
     QColor flashColor;
     float adder;
     QColor color;
-    QPoint *samplePoint;
+    QPoint samplePoint;
     MouseButton lastButton;
     ImgSupport screenZoom;
     int sizeDisplay;
 
 public slots:
-    void toggleFlasher();
 
+    void toggleFlasher();
 };
 
 #endif // SCREENRENDER_H
+

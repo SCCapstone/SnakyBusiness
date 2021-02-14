@@ -1,23 +1,21 @@
 #ifndef DATAIO_H
 #define DATAIO_H
 
+#include <vector>
+#include <list>
 #include <QImageReader>
 #include <QFileDialog>
 #include <QImage>
 #include <QPainter>
-
+#include <layer.h>
 #include <graphics.h>
 
-#include <list>
-#include <vector>
-#include <layer.h>
-
+using std::vector;
 using std::list;
 using std::pair;
-
 using graphics::Filter;
 
-const QSize defaultSize (700, 700);
+const QSize defaultSize (1200, 900);
 
 struct RGB {
     uchar blue;
@@ -26,7 +24,9 @@ struct RGB {
 };
 
 class DataIOHandler {
+
 public:
+
     DataIOHandler();
     ~DataIOHandler();
     /*
@@ -57,6 +57,7 @@ public:
     void scale(int option1, int option2);
 
 private:
+
     void scaleLayers(int option1, int option2);
     void scaleLists(int layer, int scaleType);
     void applyFilter();
@@ -68,3 +69,4 @@ private:
 };
 
 #endif // DATAIO_H
+

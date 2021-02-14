@@ -1,5 +1,6 @@
 #include "graphics.h"
 
+
 graphics::Filter::Filter(int str, string filterName) {
     strength = str;
     setFilter(filterName);
@@ -354,3 +355,4 @@ void graphics::ImgSupport::flipHorizontal(QImage *qi) {
             qi->setPixel(i, h - j, qc);
         }
 }
+

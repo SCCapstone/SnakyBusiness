@@ -84,6 +84,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
@@ -92,22 +93,11 @@ public:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     void paintEvent(QPaintEvent *event);
-    ~MainWindow();
     void log(string title, QObject *obj);
     void createMenubar(string filename);
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
     void refresh();
-
-    DataIOHandler *ioh;
-    brushHandler bh;
-    resizeWindow *resizeCheck;
-
-    QColorDialog cd;
-    QTextBrowser qtb;
-
-    unordered_map <string, QObject *> objFetch;
-    list <QObject *> toDel;
 
 public slots:
     void changeScreenFilter(string s);
@@ -119,12 +109,20 @@ public slots:
 private:
     void setLastButton(MouseButton button);
     void setShiftFlag(bool b);
+    void setSamplePt(QPoint qp);
 
     Ui::MainWindow *ui;
     screenRender *sr;
     Modes mode;
     bool shiftFlag, ctrlFlag;
     MouseButton lastButton;
+    DataIOHandler *ioh;
+    brushHandler bh;
+    resizeWindow *resizeCheck;
+    QColorDialog cd;
+    QTextBrowser qtb;
+    unordered_map <string, QObject *> objFetch;
+    list <QObject *> toDel;
 
 };
 

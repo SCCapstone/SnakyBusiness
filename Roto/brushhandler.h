@@ -1,38 +1,30 @@
 #ifndef brushHANDLER_H
 #define brushHANDLER_H
 
-#include <brush.h>
-#include <graphics.h>
+#include <vector>
+#include <list>
 #include <QPoint>
 #include <QImage>
-#include <list>
-#include <time.h>
-#include <chrono>
-#include <iostream>
-#include <vector>
+#include <brush.h>
+#include <graphics.h>
 
-using graphics::Filter;
+using std::vector;
 using std::list;
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-using std::chrono::milliseconds;
-using std::cout;
-using std::endl;
 using std::min;
 using std::max;
-using std::vector;
+using graphics::Filter;
 
 enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
+
 const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial", "Sample"};
 const int numMethods = 6;
-
 const int maxDensity = RAND_MAX / 256;
 const int minDensity = 0;
 const unsigned char maxStrength = 255;
 const unsigned char minStrength = 1;    // should this be set by user?
 
-class brushHandler
-{
+class brushHandler {
+
 public:
 
     brushHandler(unsigned char str = 128, int size = 30, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
@@ -48,7 +40,6 @@ public:
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
-    QPoint *getSamplePoint();
     const unsigned char *const *const getBrushMap();
     void setPattern(int xDim, int yDim, unsigned char **pattern);
     void setPatternInUse(int used);
@@ -92,16 +83,16 @@ private:
 
     bool ipolActive, patternInUse;
     int sprayDensity, checkEdgeSize, alpha;
-    unsigned char strength, patternXDim, patternYDim;
+    unsigned char strength, patternXDim, patternYDim, **patternMap;
     appMethod method;
     Brush brush;
     QColor color;
-    unsigned char **patternMap;
     char **checkMap;
     Filter brushFilter;
-    QPoint currPnt, lastPnt, relativityPoint, *samplePoint;
+    QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
 
 };
 
 #endif // brushHANDLER_H
+
