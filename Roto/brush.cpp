@@ -66,7 +66,7 @@ void Brush::update() {
     case diamond:
         createDiamond();
         break;
-    case Octagon:
+    case octagon:
         createOctagon();
         break;
     }

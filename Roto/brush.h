@@ -1,20 +1,21 @@
 #ifndef BRUSH_H
 #define BRUSH_H
 
-
 #include <string>
 #include <stdfuncs.h>
+
 using std::string;
 
-enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, Octagon};                //  TODO custom
-const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon"};
-const int numBrushes = 8;
+enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon};                //  TODO custom
 
+const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon"};
+
+const int numBrushes = 8;
 const unsigned char maxRadius = 64;
 const unsigned char minRadius = 1;
 
-class Brush
-{
+class Brush {
+
 public:
 
     Brush(string brushName = brushShapes[0], int Radius = 30);
@@ -37,10 +38,10 @@ private:
     void createDiamond();
     void createOctagon();
 
-    unsigned char **brushMap;
+    unsigned char radius, **brushMap;
     Shape shape;
     unsigned short size;
-    unsigned char radius;
 };
 
 #endif // BRUSH_H
+

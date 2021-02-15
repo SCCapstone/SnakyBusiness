@@ -2,16 +2,20 @@
 #include "ui_mainwindow.h"
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    statusBar()->hide();
+    shiftFlag = false;
+    ctrlFlag = false;
+    lastButton = NoButton;
+    sr = new screenRender(this);
     ioh = new DataIOHandler();
-    QSize size = ioh->getBounds();
-    imgSupport.setLayerSize(size);
-    setGeometry(0,0, size.width(), size.width());
+    sr->updateViews(ioh->getWorkingLayer(), ioh->getForeground(), ioh->getBackground());
+    setCentralWidget(sr);
+    setGeometry(0,0, defaultSize.width(), defaultSize.height());
     setWindowTitle("Glass Opus");
     createMenubar("mainMenubar");
     QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
@@ -36,9 +40,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
-    sampleFlag = 0;
-    sampleFlasher = new QTimer(this);
-    connect(sampleFlasher, SIGNAL(timeout()), this, SLOT(toggleSamplePnt()));
     resizeCheck = new resizeWindow(this, ioh);
     QString docs = "userDocsFile.txt";
     QFile file(docs);
@@ -47,41 +48,132 @@ MainWindow::MainWindow(QWidget *parent)
     qtb.setGeometry(this->geometry());
     qtb.setText(file.readAll());
     file.close();
+    mode = Brush_Mode;
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // AVERAGE CASE ON MOST EXPENSIVE SETTINGS (SEE REPAINT) AVERAGE 2ms, MAX WAS 51ms HOWEVER (BEFORE UPDATE).
-    QPoint qp = imgSupport.getZoomCorrected(event->pos());
-    if (lastButton == Qt::LeftButton) {
-        QImage *qi = ioh->getCanvasLayer();
-        bh.applyBrush(qi, qp);
+    QPoint qp = sr->getZoomCorrected(event->pos());
+    if (mode == Brush_Mode) {
+        if (lastButton == LeftButton) {
+            QImage *qi = ioh->getWorkingLayer()->getCanvas();
+            bh.applyBrush(qi, qp);
+        }
+        else if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
+            setSamplePt(qp);
     }
-    else if (lastButton == Qt::RightButton)
-        bh.setSamplePoint(qp);
-    repaint();
+    else if (mode == Spline_Mode) {
+        if (ctrlFlag)
+            return;
+        Layer *layer = ioh->getWorkingLayer();
+        if (lastButton == Qt::LeftButton)
+            layer->moveLeft(qp);
+        else if (lastButton == RightButton && shiftFlag)
+            layer->moveRight(qp);
+    }
+    refresh();
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    QPoint qp = imgSupport.getZoomCorrected(event->pos());
-    lastButton = event->button();
-    if(lastButton == Qt::RightButton) {
-        bh.setSamplePoint(qp);
+    if (ctrlFlag)
+        return;
+    if (event->button() >= 8) {
+        setShiftFlag(true);
+        return;
     }
-    else if (lastButton == Qt::LeftButton) {
-        bh.setRelativePoint(qp);
-        QImage *qi = ioh->getCanvasLayer();
-        bh.applyBrush(qi, qp);
-        bh.setInterpolationActive(true);
+    setLastButton(event->button());
+    QPoint qp = sr->getZoomCorrected(event->pos());
+    if (mode == Brush_Mode) {
+        if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
+            setSamplePt(qp);
+        else if (lastButton == LeftButton) {
+            bh.setRelativePoint(qp);
+            QImage *qi = ioh->getWorkingLayer()->getCanvas();
+            bh.applyBrush(qi, qp);
+            bh.setInterpolationActive(true);
+        }
     }
-    repaint();
+    else if (mode == Spline_Mode) {
+        Layer *layer = ioh->getWorkingLayer();
+        if(lastButton == RightButton) {
+           MouseButton button = layer->pressRight(qp);
+           setLastButton(button);
+        }
+        else if (lastButton == LeftButton)
+            layer->pressLeft(qp);
+    }
+    refresh();
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
-    bh.setInterpolationActive(false);
+    if (mode == Brush_Mode)
+        bh.setInterpolationActive(false);
+    else if (mode == Spline_Mode)
+        ioh->getWorkingLayer()->release(event->button());
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+    QPoint qp = sr->getZoomCorrected(event->pos());
+    MouseButton button = event->button();
+    if (mode == Spline_Mode) {
+        if (shiftFlag)
+            return;
+        Layer *layer = ioh->getWorkingLayer();
+        if (button == LeftButton)
+            layer->doubleClickLeft(qp, ctrlFlag);
+        else if (button == RightButton && ctrlFlag)
+            layer->doubleClickRight(qp);
+        sr->showPts();
+        refresh();
+    }
+}
 
+void MainWindow::wheelEvent(QWheelEvent *event) {
+    int dy = event->angleDelta().y();
+    dy = abs(dy)/ dy;
+    if (mode == Brush_Mode) {
+        if (shiftFlag) {
+            if (dy > 0)
+                bh.strengthUp();
+            else
+                bh.strengthDown();
+            sr->setSizeDisplay(bh.getStength());
+        }
+        else if (ctrlFlag) {
+            if (dy > 0)
+                bh.densityUp();
+            else
+                bh.densityDown();
+            sr->setSizeDisplay(bh.getDensity());
+        }
+        else {
+            if (dy > 0)
+                bh.sizeUp();
+            else
+                bh.sizeDown();
+            sr->setSizeDisplay(bh.getSize());
+        }
+    }
+    else if (mode == Spline_Mode && !shiftFlag) {
+        ioh->getWorkingLayer()->spinWheel(dy);
+        sr->setSizeDisplay(ioh->getWorkingLayer()->getWidth());
+    }
+    refresh();
+}
+
+void MainWindow::setLastButton(MouseButton button) {
+    lastButton = button;
+    sr->setLastButton(button);
+}
+
+void MainWindow::setSamplePt(QPoint qp) {
+    bh.setSamplePoint(qp);
+    sr->setSamplePt(qp);
+}
+
+void MainWindow::setShiftFlag(bool b) {
+    shiftFlag = b;
+    ioh->getWorkingLayer()->setShiftFlag(b);
+    sr->setShiftFlag(b);
 }
 
 void MainWindow::createMenubar(string filename) {
@@ -190,16 +282,15 @@ void MainWindow::doSomething(string btnPress) {
                         qi.setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
                     }
                 cout << "\t" << stdFuncs::getChange(l) << "\t" << list.size() << endl;
-                ioh->setMediaLayer(qi);
-                repaint();
+                //ioh->setMediaLayer(qi);
+                refresh();
             }
             cap.release();
-            //destroyAllWindows();
         }
-        repaint();
+        refresh();
     }
-    else if (btnPress == "Export") {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Import"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
+    else if (btnPress == "Export") {    //TODO
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Export"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
         if (fileName == "")
             return;
         string fn = fileName.toStdString();
@@ -233,13 +324,20 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush strength", bh.getStength(), minStrength, maxStrength, 1, &ok );
         if (ok)
             bh.setStrength(ret);
-        cout << ok << endl;
     }
     else if (btnPress == "Spray Density") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
         if (ok)
             bh.setDensity(ret);
+    }
+    else if (btnPress == "Brush Mode") {
+        mode = Brush_Mode;
+        ioh->getWorkingLayer()->deselect();
+    }
+    else if (btnPress == "Spline Mode") {
+        mode = Spline_Mode;
+        setSamplePt(QPoint(-1000, -1000));
     }
     else if (btnPress == "Help") {
         qtb.move(0,0);
@@ -249,7 +347,7 @@ void MainWindow::doSomething(string btnPress) {
 
 void MainWindow::changeScreenFilter(string filterName) {
     ioh->setScreenFilter(filterName);
-    repaint();
+    refresh();
 }
 
 void MainWindow::changeBrushFilter(string filterName) {
@@ -262,12 +360,6 @@ void MainWindow::changeBrushShape(string shape) {
 
 void MainWindow::changeBrushMethod(string method) {
     bh.setAppMethod(method);
-    if (method == "Sample") {
-        sampleFlag = 1;
-        sampleFlasher->start(sampleFlashTime);
-    }
-    else
-        sampleFlasher->stop();
 }
 
 void MainWindow::log(string title, QObject *obj) {
@@ -280,14 +372,64 @@ void appTo(QImage *qi, Filter f) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    QImage *qi = ioh->getCanvasLayer();
+    QImage *qi = ioh->getWorkingLayer()->getCanvas();
     switch (event->key()) {
-    case Qt::Key_Up:
-        imgSupport.zoomIn();
+    case Key_Up:
+        sr->zoomIn();
         break;
-    case Qt::Key_Down:
-        imgSupport.zoomOut();
+    case Key_Down:
+        sr->zoomOut();
         break;
+    case Key_Left:
+        if (mode == Brush_Mode) {
+            if (shiftFlag) {
+                bh.strengthDown();
+                sr->setSizeDisplay(bh.getStength());
+            }
+            else if (ctrlFlag) {
+                bh.densityDown();
+                sr->setSizeDisplay(bh.getDensity());
+            }
+            else {
+                bh.sizeDown();
+                sr->setSizeDisplay(bh.getSize());
+            }
+        }
+        else if (mode == Spline_Mode)
+            ioh->getWorkingLayer()->widthDown();
+        break;
+    case Key_Right:
+        if (mode == Brush_Mode) {
+            if (shiftFlag) {
+                bh.strengthUp();
+                sr->setSizeDisplay(bh.getStength());
+            }
+            else if (ctrlFlag) {
+                bh.densityUp();
+                sr->setSizeDisplay(bh.getDensity());
+            }
+            else {
+                bh.sizeUp();
+                sr->setSizeDisplay(bh.getSize());
+            }
+        }
+        else if (mode == Spline_Mode)
+            ioh->getWorkingLayer()->widthUp();
+        break;
+    case Key_Control:
+        ctrlFlag = true;
+        break;
+    case Key_Shift:
+        setShiftFlag(true);
+        break;
+    case Key_Escape:
+        ioh->getWorkingLayer()->deselect();
+        break;
+    case Key_Backspace:
+    case Key_Delete:
+        ioh->getWorkingLayer()->deleteSelected();
+        break;
+        /*
     case Qt::Key_I:
         ImgSupport::rotate180(qi);
         break;
@@ -303,44 +445,37 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_R:
         ImgSupport::rotate90Right(qi);
         break;
+        */
     }
-    repaint();
+    refresh();
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event) {
+    switch (event->key()) {
+    case Key_Shift:
+        setShiftFlag(false);
+        ioh->getWorkingLayer()->cleanUp();
+        break;
+    case Key_Control:
+        ctrlFlag = false;
+        break;
+    }
+}
+
+void MainWindow::refresh() {
+    sr->repaint();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event) {
-    // TAKES ABOUT 8ms MAX ON MOST EXPENSIVE SETTINGS - FILTER BRUSH (GBR), 64 SIZE, 2 SPRAY DENSITY.
-    QSize size = ioh->getBounds();
-    imgSupport.setLayerSize(size);
-    QImage canvas = ioh->getCanvasLayer()->copy();
-    QImage media = ioh->getFilteredMLayer();
-    if (sampleFlag) {
-        QPoint qp = bh.getSamplePoint();
-        for (int i = qp.x() - ptSize; i < qp.x() + ptSize; ++i)
-            for (int j = qp.y() - ptSize; j < qp.y() + ptSize; ++j) {
-                int dist = abs(i - qp.x()) + abs(j - qp.y());
-                if (dist >= ptSize - 1 && dist <= ptSize && i >= 0 && i < canvas.width() && j >= 0 && j < canvas.height())
-                    canvas.setPixel(i, j, graphics::Filtering::negative(canvas.pixelColor(i, j), 255));
-            }
-    }
-    canvas.setAlphaChannel(imgSupport.getAlphaLayer());
-    canvas = imgSupport.zoomImg(canvas);
-    media = imgSupport.zoomImg(media);
-    QPainter qp(this);
-    qp.drawImage(0, 20, media);
-    qp.drawImage(0, 20, canvas);
-}
 
-void MainWindow::toggleSamplePnt() {
-    sampleFlag = !sampleFlag;
-    repaint();
 }
 
 MainWindow::~MainWindow() {
     resizeCheck->doClose();
     delete resizeCheck;
-    this->hide();
-    sampleFlasher->stop();
-    delete sampleFlasher;
+    hide();
+    delete ioh;
+    delete sr;
     delete ui;
     objFetch.clear();
     while (!toDel.empty()) {
