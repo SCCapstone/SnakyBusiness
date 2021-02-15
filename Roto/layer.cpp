@@ -9,7 +9,7 @@ Layer::Layer(QSize qs) {
         for (int j = 0; j < qs.height(); ++j)
             qi->setPixelColor(i, j, 0xFFFFFFFF);
     shiftFlag = false;
-    ipolPts = ipolMin * 2;
+    ipolPts = ipolMin;
 }
 
 Layer::~Layer() {

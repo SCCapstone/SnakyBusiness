@@ -22,6 +22,7 @@
 #include <QInputDialog>
 #include <QTimer>
 #include <QTextBrowser>
+#include <QScrollArea>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>

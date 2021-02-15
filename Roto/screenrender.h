@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <QWidget>
+#include <QScrollArea>
 #include <QPainter>
 #include <QTimer>
 #include <stdfuncs.h>

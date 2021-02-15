@@ -83,7 +83,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     setLastButton(event->button());
     QPoint qp = sr->getZoomCorrected(event->pos());
     if (mode == Brush_Mode) {
-        if (lastButton == RightButton)
+        if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
             setSamplePt(qp);
         else if (lastButton == LeftButton) {
             bh.setRelativePoint(qp);
@@ -429,6 +429,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Key_Delete:
         ioh->getWorkingLayer()->deleteSelected();
         break;
+        /*
     case Qt::Key_I:
         ImgSupport::rotate180(qi);
         break;
@@ -444,6 +445,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_R:
         ImgSupport::rotate90Right(qi);
         break;
+        */
     }
     refresh();
 }

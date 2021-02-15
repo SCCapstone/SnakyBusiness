@@ -244,7 +244,7 @@ void screenRender::fillBTri(QPoint a, QPoint b, QPoint c) {
     for (float y = a.y(); y >= b.y(); y -= adder)
     {
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
+            qi.setPixel(x, static_cast<int>(y), color.rgba());//Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -263,7 +263,7 @@ void screenRender::fillTTri(QPoint a, QPoint b, QPoint c) {
     for (float y = a.y(); y <= b.y(); y += adder)
     {
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
+            qi.setPixel(x, static_cast<int>(y), color.rgba());//Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
         curx1 += invslope1;
         curx2 += invslope2;
     }
