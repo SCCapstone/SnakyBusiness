@@ -49,7 +49,7 @@ void Layer::calcLine() {
         list <pair <QPoint, QPoint> > pairs;
         for (float ipol = 0.0; ipol <= 1.0; ipol += ipolPts) {
 
-            float twidth = static_cast<float>(sv.getWidth()) * sqrt(2.0 * abs(abs(ipol - 0.5) - 0.5));
+            float twidth = static_cast<float>(sv.getWidth()); //* sqrt(2.0 * abs(abs(ipol - 0.5) - 0.5));
             for (int max = numpts; max > 1; --max) {    // og  > 0
                 for (char i = 0; i < max; ++i) {
                     workPts[i].setX(getipol(workPts[i].x(), workPts[i + 1].x(), ipol));
