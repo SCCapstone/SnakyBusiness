@@ -186,7 +186,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
         sizeDisplay = -1;
         flasher->start(flashSpeed);
     }
-    cout << stdFuncs::getChange(t1) << endl;
+    //cout << stdFuncs::getChange(t1) << endl;
 }
 
 void screenRender::setSamplePt(QPoint qp) {

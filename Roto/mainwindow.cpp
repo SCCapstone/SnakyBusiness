@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
         log(name, bAction);
     }
     resizeCheck = new resizeWindow(this, ioh);
+    radialProfiler = new RadialProfiler(&bh, this);
     QString docs = "userDocsFile.txt";
     QFile file(docs);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -132,24 +133,15 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
     dy = abs(dy)/ dy;
     if (mode == Brush_Mode) {
         if (shiftFlag) {
-            if (dy > 0)
-                bh.strengthUp();
-            else
-                bh.strengthDown();
+            bh.setStrength(bh.getStength() + dy);
             sr->setSizeDisplay(bh.getStength());
         }
         else if (ctrlFlag) {
-            if (dy > 0)
-                bh.densityUp();
-            else
-                bh.densityDown();
+            bh.setDensity(bh.getDensity() + dy);
             sr->setSizeDisplay(bh.getDensity());
         }
         else {
-            if (dy > 0)
-                bh.sizeUp();
-            else
-                bh.sizeDown();
+            radialProfiler->updateSize(bh.getSize() + dy);
             sr->setSizeDisplay(bh.getSize());
         }
     }
@@ -307,11 +299,14 @@ void MainWindow::doSomething(string btnPress) {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
         bh.setColor(color);
     }
+    else if (btnPress == "Radial Editor") {
+        radialProfiler->showRelative();
+    }
     else if (btnPress == "Brush Size") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush size/radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
         if (ok)
-            bh.setSize(ret);
+            radialProfiler->updateSize(ret);
     }
     else if (btnPress == "Screen Strength") {
         bool ok = false;
@@ -391,7 +386,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 sr->setSizeDisplay(bh.getDensity());
             }
             else {
-                bh.sizeDown();
+                radialProfiler->updateSize(bh.getSize() - 1);
                 sr->setSizeDisplay(bh.getSize());
             }
         }
@@ -409,7 +404,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 sr->setSizeDisplay(bh.getDensity());
             }
             else {
-                bh.sizeUp();
+                radialProfiler->updateSize(bh.getSize() + 1);
                 sr->setSizeDisplay(bh.getSize());
             }
         }

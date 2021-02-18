@@ -7,12 +7,16 @@
 #include <QImage>
 #include <brush.h>
 #include <graphics.h>
+#include <stdfuncs.h>
 
 using std::vector;
 using std::list;
 using std::min;
 using std::max;
 using graphics::Filter;
+
+#include <iostream>
+using namespace std;
 
 enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
 
@@ -34,7 +38,6 @@ public:
     void setPoint(QPoint qp);
     void setDensity(int density);
     void setStrength(int str);
-    void setSize(int size);
     void setShape(string shape);
     void setColor(QColor qc);
     void setFilter(string filterName);
@@ -43,6 +46,7 @@ public:
     const unsigned char *const *const getBrushMap();
     void setPattern(int xDim, int yDim, unsigned char **pattern);
     void setPatternInUse(int used);
+    void radialUpdate(int size, vector <int> pts);
     const unsigned char *const *const getPatternMap();
     int getPatternXDim();
     int getPatternYDim();
@@ -54,8 +58,6 @@ public:
     int getStength();
     int getSize();
     int getFullSize();
-    void sizeUp();
-    void sizeDown();
     void densityUp();
     void densityDown();
     void strengthUp();
@@ -65,6 +67,7 @@ public:
 
 private:
 
+    void setSize(int size);
     void resetPoint();
     int onScreen(int x, int y, int xMax, int yMax);
     void overwrite(QImage *qi);
@@ -83,15 +86,15 @@ private:
 
     bool ipolActive, patternInUse;
     int sprayDensity, checkEdgeSize, alpha;
-    unsigned char strength, patternXDim, patternYDim, **patternMap;
+    unsigned char strength, patternXDim, patternYDim, **patternMap, **checkMap;
     appMethod method;
     Brush brush;
     QColor color;
-    char **checkMap;
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
-
+    float **radialMap;
+    vector <int> radialValues;
 };
 
 #endif // brushHANDLER_H

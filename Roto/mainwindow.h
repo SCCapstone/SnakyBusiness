@@ -35,6 +35,7 @@
 #include <stdfuncs.h>
 #include <resizewindow.h>
 #include <screenrender.h>
+#include <radialprofiler.h>
 
 using cv::VideoCapture;
 using cv::Mat;
@@ -120,6 +121,7 @@ private:
     DataIOHandler *ioh;
     brushHandler bh;
     resizeWindow *resizeCheck;
+    RadialProfiler *radialProfiler;
     QColorDialog cd;
     QTextBrowser qtb;
     unordered_map <string, QObject *> objFetch;

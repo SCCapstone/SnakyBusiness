@@ -12,7 +12,7 @@ const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Lef
 
 const int numBrushes = 8;
 const unsigned char maxRadius = 64;
-const unsigned char minRadius = 1;
+const unsigned char minRadius = 0;
 
 class Brush {
 
