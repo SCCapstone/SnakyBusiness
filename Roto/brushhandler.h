@@ -7,6 +7,7 @@
 #include <QImage>
 #include <brush.h>
 #include <graphics.h>
+#include <stdfuncs.h>
 
 using std::vector;
 using std::list;

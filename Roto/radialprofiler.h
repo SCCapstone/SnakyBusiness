@@ -2,6 +2,7 @@
 #define RADIALPROFILER_H
 
 #include <vector>
+#include <string>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -14,6 +15,7 @@
 using Qt::Key_Left;
 using Qt::Key_Right;
 using std::vector;
+using std::to_string;
 
 const int wSize = 512;
 const int numpts = 4;
@@ -48,7 +50,6 @@ public slots:
 private:
 
     void calcLine();
-    int bound(int val, int max, int min = 0);
     float getipol(float a, float b, float ipol);
 
     Ui::RadialProfiler *ui;

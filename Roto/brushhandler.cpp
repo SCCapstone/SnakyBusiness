@@ -457,6 +457,7 @@ void brushHandler::radialUpdate(int size, vector<int> pts) {
         for (int i = 0; i < fullSize; ++i)
             radialMap[i] = new float [fullSize];
     }
+    cout << size << " " << brush.getRadius() << endl;
     radialValues = pts;
     for (size_t i = 0; i < radialValues.size(); ++i)
         radialValues[i] = 255 - radialValues[i];
@@ -485,20 +486,14 @@ void brushHandler::radial(QImage *qi) {
             for (int j = currPnt.y() - radius; j <= currPnt.y() + radius; ++j) {
                 if (onScreen(i, j, xMax, yMax) && brushMap[x][y] && (!sprayDensity || !(rand() % sprayDensity)) && (!patternInUse || patternMap[i % patternXDim][j % patternYDim])) {
                     int trueY = y - radius;
-                    int checkStr = sqrt(trueX * trueX + trueY * trueY) + 1;//static_cast<int>(static_cast<float>(strength) * radialMap[x][y]);
+                    int checkStr = sqrt(trueX * trueX + trueY * trueY) + 1;
                     if (checkMap[x + checkEdgeSize][y + checkEdgeSize] > checkStr || checkMap[x + checkEdgeSize][y + checkEdgeSize] == 0) {
                         QColor qcs(qc), pcs(qi->pixelColor(i, j));
                         float g = static_cast<float>(checkStr - 1) / static_cast <float>(radius);
-                        float f = radialMap[x][y] * g;// / static_cast<float>(sqrt(checkStr));
-                        /*
-                        int dr = qcs.red() - pcs.red(), dg = qcs.green() - pcs.green(), db = qcs.blue() - pcs.blue();
-                        qcs.setRed(pcs.red() + static_cast<int>(static_cast<float>(dr) * f));
-                        qcs.setGreen(pcs.green() + static_cast<int>(static_cast<float>(dg) * f));
-                        qcs.setBlue(pcs.blue() + static_cast<int>(static_cast<float>(db) * f));
-                        */
-                        qcs.setRedF(qcs.redF() * f + pcs.redF() * (1.0 - f * g));
-                        qcs.setGreenF(qcs.greenF() * f + pcs.greenF() * (1.0 - f * g));
-                        qcs.setBlueF(qcs.blueF() * f + pcs.blueF() * (1.0 - f * g));
+                        float f = radialMap[x][y] * g;
+                        qcs.setRedF(stdFuncs::clamp(qcs.redF() * f + pcs.redF() * (1.0 - f), 0.0, 1.0));
+                        qcs.setGreenF(stdFuncs::clamp(qcs.greenF() * f + pcs.greenF() * (1.0 - f), 0.0, 1.0));
+                        qcs.setBlueF(stdFuncs::clamp(qcs.blueF() * f + pcs.blueF() * (1.0 - f), 0.0, 1.0));
                         qi->setPixel(i, j, qcs.rgba());
                         checkMap[x + checkEdgeSize][y + checkEdgeSize] = static_cast<unsigned char>(checkStr);
                     }

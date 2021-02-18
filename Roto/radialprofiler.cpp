@@ -60,6 +60,8 @@ void RadialProfiler::closeEvent(QCloseEvent *event) {
 }
 
 void RadialProfiler::calcLine() {
+    if (radius == 0)
+        return;
     for (int i = 0; i <= radius; ++i)
         pts[i] = 255;
     vector <QPointF> workPts;
@@ -76,10 +78,6 @@ void RadialProfiler::calcLine() {
     }
 }
 
-int RadialProfiler::bound(int val, int max, int min) {
-    return val < min ? min : (val > max ? max : val);
-}
-
 float RadialProfiler::getipol(float a, float b, float ipol) {
     return a + static_cast<float>(b - a) * ipol;
 }
@@ -89,7 +87,7 @@ void RadialProfiler::mouseMoveEvent(QMouseEvent *event) {
     qp = QPoint(static_cast<int>(static_cast<float>(qp.x()) / xZoom), qp.y() / 2);
     if (activePt == 0) {
         qp.setX(0);
-        qp.setY(bound(qp.y(), controlPts[3].y()));
+        qp.setY(stdFuncs::clamp(qp.y(), 0, controlPts[3].y()));
         controlPts[0] = qp;
         if (controlPts[1].y() < qp.y())
             controlPts[1].setY(qp.y());
@@ -98,7 +96,7 @@ void RadialProfiler::mouseMoveEvent(QMouseEvent *event) {
     }
     else if (activePt == 3) {
         qp.setX(radius);
-        qp.setY(bound(qp.y(), 255, controlPts[0].y()));
+        qp.setY(stdFuncs::clamp(qp.y(), controlPts[0].y(), 255));
         controlPts[3] = qp;
         if (controlPts[1].y() > qp.y())
             controlPts[1].setY(qp.y());
@@ -106,8 +104,7 @@ void RadialProfiler::mouseMoveEvent(QMouseEvent *event) {
             controlPts[2].setY(qp.y());
     }
     else if (activePt > 0) {
-        qp.setX(bound(qp.x(), radius));
-        qp.setY(bound(qp.y(), controlPts[3].y(), controlPts[0].y()));
+        qp.setY(stdFuncs::clamp(qp.y(), controlPts[0].y(), controlPts[3].y()));
         controlPts[activePt] = qp;
     }
     calcLine();
@@ -135,15 +132,18 @@ void RadialProfiler::wheelEvent(QWheelEvent *event) {
     int newRadius = radius + abs(delta) / delta;
     updateSize(newRadius);
     repaint();
+    setWindowTitle(("Brush Radius: " + to_string(radius)).c_str());
 }
 
 void RadialProfiler::keyPressEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Key_Left:
         updateSize(radius - 1);
+        setWindowTitle(("Brush Radius: " + to_string(radius)).c_str());
         break;
     case Key_Right:
         updateSize(radius + 1);
+        setWindowTitle(("Brush Radius: " + to_string(radius)).c_str());
         break;
     }
     repaint();
@@ -152,20 +152,25 @@ void RadialProfiler::keyPressEvent(QKeyEvent *event) {
 void RadialProfiler::flashCPts() {
     form = !form;
     repaint();
+    setWindowTitle("Radial Brush Profiler");
 }
 
 void RadialProfiler::paintEvent(QPaintEvent *event) {
     qi->fill(0xFFFFFFFF);
-    for (int i = 0; i <= radius; ++i) {
-        QRgb color = 0xFF000000;
-        for (int j = 0; j < 3; ++j)
-            color += ((pts[i] / 2) << (8 * j));
-        for (int j = pts[i]; j <= 255; ++j)
-            qi->setPixel(i, j, color);
-    }
+    if (radius == 0)
+        for (int j = 0; j <= 255; ++j)
+            qi->setPixel(0, j, 0xFF000000);
+    else
+        for (int i = 0; i <= radius; ++i) {
+            QRgb color = 0xFF000000;
+            for (int j = 0; j < 3; ++j)
+                color += ((pts[i] / 2) << (8 * j));
+            for (int j = pts[i]; j <= 255; ++j)
+                qi->setPixel(i, j, color);
+        }
     for (QPoint qp : controlPts) {
-        for (int i = bound(qp.x() - 1, radius); i <= bound(qp.x() + 1, radius); ++i)
-            for (int j = bound(qp.y() - xZoom, 255); j <= bound(qp.y() + xZoom / 2, 255); ++j) {
+        for (int i = stdFuncs::clamp(qp.x() - 1, 0, radius); i <= stdFuncs::clamp(qp.x() + 1, 0, radius); ++i)
+            for (int j = stdFuncs::clamp(qp.y() - static_cast<int>(xZoom), 0, 255); j <= stdFuncs::clamp(qp.y() + static_cast<int>(xZoom / 2), 0, 255); ++j) {
                 int dist = abs(i - qp.x()) + abs(j - qp.y());
                 if ((form || dist >= 2) && dist <= 2) {
                     QColor qc = qi->pixelColor(i, j);
@@ -184,13 +189,13 @@ void RadialProfiler::paintEvent(QPaintEvent *event) {
 
 void RadialProfiler::updateSize(int size) {
     timer->stop();
-    int newRadius = bound(size, maxRadius, minRadius);
+    int newRadius = stdFuncs::clamp(size, static_cast<int>(minRadius), static_cast<int>(maxRadius));
     if (radius != newRadius) {
-        float mult = static_cast<float>(newRadius) / static_cast<float>(radius);
-        size_t size = static_cast<unsigned int>(radius);
-        while (pts.size() < size)
+        float mult = radius == 0 ? 1 : static_cast<float>(newRadius) / static_cast<float>(radius);
+        size_t Rad = static_cast<unsigned int>(newRadius);
+        while (pts.size() < Rad)
             pts.push_back(0);
-        while (pts.size() > size)
+        while (pts.size() > Rad)
             pts.pop_back();
         radius = newRadius;
         controlPts[3].setX(radius);
@@ -201,6 +206,8 @@ void RadialProfiler::updateSize(int size) {
         delete qi;
         qi = new QImage(radius + 1, 256, QImage::Format_ARGB32_Premultiplied);
     }
+    else
+        return;
     if (!this->isVisible())
         bh->radialUpdate(newRadius, pts);
     else
