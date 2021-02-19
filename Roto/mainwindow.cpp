@@ -145,9 +145,23 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
             sr->setSizeDisplay(bh.getSize());
         }
     }
-    else if (mode == Spline_Mode && !shiftFlag) {
-        ioh->getWorkingLayer()->spinWheel(dy);
-        sr->setSizeDisplay(ioh->getWorkingLayer()->getWidth());
+    else if (mode == Spline_Mode) {
+        if (shiftFlag) {
+            vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+            if (activeVects.size() != 1)
+                return;
+            ioh->getWorkingLayer()->setVectorTaper1(ioh->getWorkingLayer()->getVectorTapers().first + dy);
+        }
+        else if (ctrlFlag) {
+            vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+            if (activeVects.size() != 1)
+                return;
+            ioh->getWorkingLayer()->setVectorTaper2(ioh->getWorkingLayer()->getVectorTapers().second + dy);
+        }
+        else {
+            ioh->getWorkingLayer()->spinWheel(dy);
+            sr->setSizeDisplay(ioh->getWorkingLayer()->getWidth());
+        }
     }
     refresh();
 }
@@ -325,6 +339,65 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
         if (ok)
             bh.setDensity(ret);
+    }
+    else if (btnPress == "Vector Width") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
+        if (ok)
+            ioh->getWorkingLayer()->setWidth(ret);
+        refresh();
+    }
+    else if (btnPress == "Vector Taper 1") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok );
+        if (ok)
+            ioh->getWorkingLayer()->setVectorTaper1(ret);
+        refresh();
+    }
+    else if (btnPress == "Vector Taper 2") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok );
+        if (ok)
+            ioh->getWorkingLayer()->setVectorTaper2(ret);
+        refresh();
+    }
+    else if (btnPress == "Vector Color 1") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().second, this);
+        ioh->getWorkingLayer()->setVectorColor2(color.rgba());
+        refresh();
+    }
+    else if (btnPress == "Vector Color 2") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().first, this);
+        ioh->getWorkingLayer()->setVectorColor1(color.rgba());
+        refresh();
+    }
+    else if (btnPress == "Single Taper") {
+        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
+        if (activeVects.size() != 1)
+            return;
+        refresh();
+    }
+    else if (btnPress == "Double Taper") {
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
+        if (ok)
+            bh.setDensity(ret);
+        refresh();
     }
     else if (btnPress == "Brush Mode") {
         mode = Brush_Mode;

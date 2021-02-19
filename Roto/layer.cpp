@@ -47,9 +47,18 @@ void Layer::calcLine() {
         for (char i = 0; i < numpts + 1; ++i)
             workPts.push_back(QPointF(controlPts[i]));
         list <pair <QPoint, QPoint> > pairs;
+        pair <unsigned char, unsigned char> taper = sv.getTaper();
+        float taper1 = taper.first == 0 ? 0.0 : 1.0 / static_cast<float>(taper.first), taper2 = taper.second == 0 ? 0.0 : 1.0 / static_cast<float>(taper.second);
         for (float ipol = 0.0; ipol <= 1.0; ipol += ipolPts) {
-
-            float twidth = static_cast<float>(sv.getWidth()); //* sqrt(2.0 * abs(abs(ipol - 0.5) - 0.5));
+            float twidth = static_cast<float>(sv.getWidth());
+            if (taper.first != 0 || taper.second != 0) {
+                if (sv.getTaperType() == 1)
+                    twidth *= pow(ipol, taper1);
+                else {
+                    float f = 2.0 * abs(abs(ipol - 0.5) - 0.5);
+                    twidth *= pow(f, ipol <= 0.5 ? taper1 : taper2);
+                }
+            }
             for (int max = numpts; max > 1; --max) {    // og  > 0
                 for (char i = 0; i < max; ++i) {
                     workPts[i].setX(getipol(workPts[i].x(), workPts[i + 1].x(), ipol));
@@ -327,7 +336,7 @@ int Layer::getWidth() {
 void Layer::setWidth(int w) {
     if (activeVects.size() == 1) {
         unsigned char i = activeVects[0];
-        vects[i].setWidth(vects[i].getWidth());
+        vects[i].setWidth(w);
     }
 }
 
@@ -339,6 +348,52 @@ void Layer::widthUp() {
 void Layer::widthDown() {
     for (unsigned char i : activeVects)
         vects[i].setWidth(vects[i].getWidth() - 1);
+}
+
+void Layer::setVectorColor1(QRgb a) {
+    if (activeVects.size() != 1)
+        return;
+    vects[activeVects[0]].setColor1(a);
+    calcLine();
+}
+
+void Layer::setVectorColor2(QRgb b) {
+    if (activeVects.size() != 1)
+        return;
+    vects[activeVects[0]].setColor2(b);
+    calcLine();
+}
+
+pair <QRgb, QRgb> Layer::getVectorColors() {
+    if (activeVects.size() == 1)
+        return vects[activeVects[0]].getColors();
+    return pair <QRgb, QRgb> (0x00000000, 0x00000000);
+}
+
+void Layer::setVectorTaper1(int a) {
+    if (activeVects.size() != 1)
+        return;
+    vects[activeVects[0]].setTaper1(a);
+    calcLine();
+}
+
+void Layer::setVectorTaper2(int b) {
+    if (activeVects.size() != 1)
+        return;
+    vects[activeVects[0]].setTaper2(b);
+    calcLine();
+}
+
+pair <char, char> Layer::getVectorTapers() {
+    if (activeVects.size() != 1)
+        return pair <char, char> (11, 11);
+    return vects[activeVects[0]].getTaper();
+}
+
+unsigned char Layer::getVectorTaperType() {
+    if (activeVects.size() != 1)
+        return 0;
+    return vects[activeVects[0]].getTaperType();
 }
 
 void Layer::cleanUp() {

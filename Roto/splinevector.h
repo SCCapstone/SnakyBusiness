@@ -4,9 +4,15 @@
 #include <vector>
 #include <QPoint>
 #include <QColor>
+#include <stdfuncs.h>
 
 using std::vector;
 using std::pair;
+
+const int minTaper = 0;
+const int maxTaper = 10;
+const int minWidth = 0;
+const int maxWidth = UCHAR_MAX;
 
 class SplineVector {
 
@@ -29,7 +35,12 @@ public:
     void setWidth(int val);
     int getWidth();
     int getNumPts();
-    void setColors(QRgb a, QRgb b);
+    void setColor1(QRgb a);
+    void setColor2(QRgb b);
+    void setTaper1(int a);
+    void setTaper2(int b);
+    char getTaperType();
+    pair <char, char> getTaper();
     pair <QRgb, QRgb> getColors();
     pair <QPoint, QPoint> getBounds();
     void calcBounds();
@@ -42,7 +53,8 @@ private:
     QPoint orig, offs;
     int minX, maxX, minY, maxY;
     unsigned char width;
-    QRgb colors[2];
+    char taper1, taper2, taperType;
+    QRgb color1, color2;
 };
 
 #endif // VECTOR_H

@@ -5,7 +5,9 @@ SplineVector::SplineVector(QPoint a, QPoint b, int Width) {
     controlPts.push_back(a);
     controlPts.push_back(b);
     width = Width;
-    setColors(0xFF00DD00, 0xFFAA00AA);
+    color1 = color2 = 0xFF000000;
+    taper1 = taper2 = 0;
+    taperType = 2;
 }
 
 SplineVector SplineVector::operator = (const SplineVector &sv) {
@@ -133,8 +135,7 @@ void SplineVector::rotate(QPoint qp) {
 }
 
 void SplineVector::setWidth(int val) {
-    if (val >= 0 && val <= UCHAR_MAX)
-        width = static_cast<unsigned char>(val);
+    width = static_cast<unsigned char>(stdFuncs::clamp(val, minWidth, maxWidth));
 }
 
 int SplineVector::getWidth() {
@@ -145,12 +146,31 @@ int SplineVector::getNumPts() {
     return static_cast<int>(controlPts.size());
 }
 
-void SplineVector::setColors(QRgb a, QRgb b) {
-    colors[0] = a;
-    colors[1] = b;
+void SplineVector::setColor1(QRgb a) {
+    color1 = a;
+}
+
+void SplineVector::setColor2(QRgb b) {
+    color2 = b;
+}
+
+void SplineVector::setTaper1(int a) {
+    taper1 = static_cast<char>(stdFuncs::clamp(a, minTaper, maxTaper));
+}
+
+void SplineVector::setTaper2(int b) {
+    taper2 = static_cast<char>(stdFuncs::clamp(b, minTaper, maxTaper));
+}
+
+char SplineVector::getTaperType() {
+    return taperType;
+}
+
+pair <char, char> SplineVector::getTaper() {
+    return pair <char, char> (taper1, taper2);
 }
 
 pair <QRgb, QRgb> SplineVector::getColors() {
-    return pair <QRgb, QRgb> (colors[0], colors[1]);
+    return pair <QRgb, QRgb> (color1, color2);
 }
 

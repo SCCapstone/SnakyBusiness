@@ -42,6 +42,13 @@ public:
     void setWidth(int w);
     void widthUp();
     void widthDown();
+    void setVectorColor1(QRgb a);
+    void setVectorColor2(QRgb b);
+    void setVectorTaper1(int a);
+    void setVectorTaper2(int b);
+    unsigned char getVectorTaperType();
+    pair <char, char> getVectorTapers();
+    pair <QRgb, QRgb> getVectorColors();
     void cleanUp();
     void deselect();
     void deleteSelected();
