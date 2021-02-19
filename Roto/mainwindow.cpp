@@ -18,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     setGeometry(0,0, defaultSize.width(), defaultSize.height());
     setWindowTitle("Glass Opus");
     createMenubar("mainMenubar");
-    QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Screen Filtering"));
-    QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filtering"));
+    QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Layer Filter"));
+    QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filter"));
     for (string name : filterNames) {
         QAction *sAction = sFiltering->addAction((name).c_str());
         QAction *bAction = bFiltering->addAction((name).c_str());
@@ -295,14 +295,14 @@ void MainWindow::doSomething(string btnPress) {
 
         }
     }
-    else if (btnPress == "Choose Color") {
+    else if (btnPress == "Brush Color") {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
         bh.setColor(color);
     }
     else if (btnPress == "Radial Editor") {
         radialProfiler->showRelative();
     }
-    else if (btnPress == "Brush Size") {
+    else if (btnPress == "Brush Radius") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush size/radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
         if (ok)
