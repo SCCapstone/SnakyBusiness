@@ -48,7 +48,7 @@ void Layer::calcLine() {
             workPts.push_back(QPointF(controlPts[i]));
         list <pair <QPoint, QPoint> > pairs;
         pair <unsigned char, unsigned char> taper = sv.getTaper();
-        float taper1 = taper.first == 0 ? 0.0 : 1.0 / static_cast<float>(taper.first), taper2 = taper.second == 0 ? 0.0 : 1.0 / static_cast<float>(taper.second);
+        float taper1 = taper.first == 0 ? 0.0 : 1.0 / static_cast<float>((9 - (taper.first - 1)) + 1), taper2 = taper.second == 0 ? 0.0 : 1.0 / static_cast<float>((9 - (taper.second - 1)) + 1);
         for (float ipol = 0.0; ipol <= 1.0; ipol += ipolPts) {
             float twidth = static_cast<float>(sv.getWidth());
             if (taper.first != 0 || taper.second != 0) {
