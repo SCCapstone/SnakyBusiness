@@ -15,9 +15,6 @@ using std::min;
 using std::max;
 using graphics::Filter;
 
-#include <iostream>
-using namespace std;
-
 enum appMethod {overwrite, additive, subtractive, filter, radial, sample};
 
 const string appMethods[] = {"Overwrite", "Additive", "Subtractive", "Filter", "Radial", "Sample"};

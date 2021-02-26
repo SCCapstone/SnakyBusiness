@@ -34,4 +34,6 @@ protected:
      void closeEvent(QCloseEvent *event);
 
 };
+
 #endif // RESIZEWINDOW_H
+

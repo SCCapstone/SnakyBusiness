@@ -1,10 +1,15 @@
 #ifndef STDFUNCS_H
 #define STDFUNCS_H
 
+#include <iostream>
 #include <time.h>
 #include <chrono>
-using namespace std::chrono;
+using std::cout;
+using std::endl;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
+
 
 class stdFuncs
 {
@@ -26,3 +31,4 @@ public:
 };
 
 #endif // STDFUNCS_H
+

@@ -348,7 +348,7 @@ QColor brushHandler::getAffected() {
     green /= maxStrength;
     blue *= strength;
     blue /= maxStrength;
-    return QColor(red, green, blue, color.alpha());
+    return QColor(red, green, blue, alpha);
 }
 
 void brushHandler::additive(QImage *qi) {
@@ -457,7 +457,6 @@ void brushHandler::radialUpdate(int size, vector<int> pts) {
         for (int i = 0; i < fullSize; ++i)
             radialMap[i] = new float [fullSize];
     }
-    cout << size << " " << brush.getRadius() << endl;
     radialValues = pts;
     for (size_t i = 0; i < radialValues.size(); ++i)
         radialValues[i] = 255 - radialValues[i];
@@ -473,6 +472,7 @@ void brushHandler::radialUpdate(int size, vector<int> pts) {
 void brushHandler::radial(QImage *qi) {
     const unsigned char *const *const brushMap = brush.getBrushMap();
     int radius = brush.getRadius(), xMax = qi->width(), yMax = qi->height();
+    color.setAlpha(alpha);
     QRgb qc = color.rgba();
     while (toProcess.size() > 0) {
         QPoint p = toProcess.front();

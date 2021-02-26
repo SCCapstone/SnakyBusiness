@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <iostream>
 #include <string>
 #include <list>
 #include <functional>
@@ -44,8 +43,6 @@ using cv::destroyAllWindows;
 using graphics::filterNames;
 using graphics::Filter;
 
-using std::cout;
-using std::endl;
 using std::string;
 using std::list;
 using std::to_string;
@@ -109,14 +106,13 @@ public slots:
     void doSomething(string btnPress);
 
 private:
-    void setLastButton(MouseButton button);
     void setShiftFlag(bool b);
     void setSamplePt(QPoint qp);
 
     Ui::MainWindow *ui;
     screenRender *sr;
     Modes mode;
-    bool shiftFlag, ctrlFlag;
+    bool shiftFlag, ctrlFlag, onePress;
     MouseButton lastButton;
     DataIOHandler *ioh;
     brushHandler bh;
@@ -132,3 +128,4 @@ private:
 void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H
+

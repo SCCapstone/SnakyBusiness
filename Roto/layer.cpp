@@ -32,6 +32,12 @@ vector <unsigned char> Layer::getActiveVectors() {
     return activeVects;
 }
 
+void Layer::setVectorTaperType(int i) {
+    if (activeVects.size() != 1)
+        return;
+    vects[activeVects[0]].setTaperType(i);
+}
+
 float Layer::getipol(float a, float b, float ipol) {
     return a + static_cast<float>(b - a) * ipol;
 }
@@ -105,8 +111,7 @@ void Layer::calcLine() {
             }
             first = second;
         }
-        if (!shiftFlag)
-            vects[activeVect].calcBounds();
+        //vects[activeVect].calcBounds();
     }
 }
 
@@ -119,7 +124,8 @@ void Layer::spinWheel(int dy) {
 void Layer::release(MouseButton button) {
     activePt = -1;
     if (shiftFlag)
-        vects[activeVects[0]].cleanup();
+        for (unsigned char i : activeVects)
+            vects[i].cleanup();
     if (button >= 8)
         shiftFlag = false;
 }

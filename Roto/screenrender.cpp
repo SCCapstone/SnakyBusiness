@@ -2,9 +2,8 @@
 
 
 screenRender::screenRender(QWidget *parent) : QWidget(parent) {
+    brushLoc = QPoint(0,0);
     sizeDisplay = -1;
-    shiftFlag = false;
-    lastButton = NoButton;
     flashFlag = false;
     flasher = new QTimer(this);
     connect(flasher, SIGNAL(timeout()), this, SLOT(toggleFlasher()));
@@ -12,6 +11,7 @@ screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     adder = 0.1;
     samplePoint = QPoint(-1000, -1000);
     flasher->start(flashSpeed);
+    filter.setFilter("Green Filter");
 }
 
 screenRender::~screenRender() {
@@ -67,7 +67,6 @@ void screenRender::updateViews(Layer *working, QImage fg, QImage bg) {
 }
 
 void screenRender::paintEvent(QPaintEvent *event) {
-    long long t1 = stdFuncs::getTime();
     QPainter qp(this);
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
@@ -83,18 +82,17 @@ void screenRender::paintEvent(QPaintEvent *event) {
         pair <QRgb, QRgb> colors = vects[i].getColors();
         QColor ca = QColor (colors.first), cb = QColor(colors.second);
         ca.setAlpha(alpha);
-        unsigned char flag = 1;
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
-        if (bounds.first.x() < width || bounds.first.y() < width || bounds.second.x() >= w - width || bounds.second.y() >= h - width)
-            flag = 0;
-        if (flag && (!shiftFlag || lastButton == RightButton)) { //normal draw
+        bool flag = bounds.first.x() > width && bounds.first.y() > width && bounds.second.x() < w - width && bounds.second.y() < h - width;
+        if (flag) { //normal draw
             if (colors.first == colors.second) {
                 color = ca;
                 for (Triangle t : tris[i])
                     calcTri(t);
             }
             else {
+                cb.setAlpha(alpha);
                 float ccomp = 1.0 / static_cast<float>(tris[i].size());
                 float cnt = 0.0;
                 for (Triangle t : tris[i]) {
@@ -128,6 +126,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
                 }
             }
             else {
+                cb.setAlpha(alpha);
                 float ccomp = 1.0 / static_cast<float>(tris[i].size());
                 float cnt = 0.0;
                 for (Triangle t : tris[i]) {
@@ -335,14 +334,6 @@ void screenRender::fillTTriSafe(QPoint a, QPoint b, QPoint c) {
         curx1 += invslope1;
         curx2 += invslope2;
     }
-}
-
-void screenRender::setShiftFlag(bool sf) {
-    shiftFlag = sf;
-}
-
-void screenRender::setLastButton(MouseButton lb) {
-    lastButton = lb;
 }
 
 void screenRender::setSizeDisplay(int i) {

@@ -5,9 +5,11 @@
 #include <QPoint>
 #include <QColor>
 #include <stdfuncs.h>
+#include <graphics.h>
 
 using std::vector;
 using std::pair;
+using graphics::Filter;
 
 const int minTaper = 0;
 const int maxTaper = 10;
@@ -39,11 +41,15 @@ public:
     void setColor2(QRgb b);
     void setTaper1(int a);
     void setTaper2(int b);
+    void setFilter(Filter f);
+    void setTaperType(int i);
+    void setMode(int i);
+    int getMode();
+    Filter getFilter();
     char getTaperType();
     pair <char, char> getTaper();
     pair <QRgb, QRgb> getColors();
     pair <QPoint, QPoint> getBounds();
-    void calcBounds();
 
 private:
 
@@ -52,9 +58,10 @@ private:
     vector <QPoint> controlPts, backup;
     QPoint orig, offs;
     int minX, maxX, minY, maxY;
-    unsigned char width;
+    unsigned char width, mode;
     char taper1, taper2, taperType;
     QRgb color1, color2;
+    Filter filter;
 };
 
 #endif // VECTOR_H

@@ -17,6 +17,9 @@ const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
 
+#include <iostream>
+using namespace std;
+
 class Layer {
 
 public:
@@ -47,6 +50,7 @@ public:
     void setVectorTaper1(int a);
     void setVectorTaper2(int b);
     unsigned char getVectorTaperType();
+    void setVectorTaperType(int i);
     pair <char, char> getVectorTapers();
     pair <QRgb, QRgb> getVectorColors();
     void cleanUp();

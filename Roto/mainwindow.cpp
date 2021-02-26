@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     qtb.setText(file.readAll());
     file.close();
     mode = Brush_Mode;
+    onePress = false;
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -75,13 +76,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    if (ctrlFlag)
+    if (ctrlFlag || onePress)
         return;
+    onePress = true;
     if (event->button() >= 8) {
         setShiftFlag(true);
         return;
     }
-    setLastButton(event->button());
+    lastButton = event->button();
     QPoint qp = sr->getZoomCorrected(event->pos());
     if (mode == Brush_Mode) {
         if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
@@ -95,10 +97,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
     else if (mode == Spline_Mode) {
         Layer *layer = ioh->getWorkingLayer();
-        if(lastButton == RightButton) {
-           MouseButton button = layer->pressRight(qp);
-           setLastButton(button);
-        }
+        if(lastButton == RightButton)
+           lastButton = layer->pressRight(qp);
         else if (lastButton == LeftButton)
             layer->pressLeft(qp);
     }
@@ -110,6 +110,13 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
         bh.setInterpolationActive(false);
     else if (mode == Spline_Mode)
         ioh->getWorkingLayer()->release(event->button());
+    else if (event->button() >= 8) {
+        setShiftFlag(false);
+        if (onePress)
+            ioh->getWorkingLayer()->cleanUp();
+        return;
+    }
+    onePress = false;
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
@@ -166,11 +173,6 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
     refresh();
 }
 
-void MainWindow::setLastButton(MouseButton button) {
-    lastButton = button;
-    sr->setLastButton(button);
-}
-
 void MainWindow::setSamplePt(QPoint qp) {
     bh.setSamplePoint(qp);
     sr->setSamplePt(qp);
@@ -179,7 +181,6 @@ void MainWindow::setSamplePt(QPoint qp) {
 void MainWindow::setShiftFlag(bool b) {
     shiftFlag = b;
     ioh->getWorkingLayer()->setShiftFlag(b);
-    sr->setShiftFlag(b);
 }
 
 void MainWindow::createMenubar(string filename) {
@@ -247,12 +248,7 @@ void MainWindow::addAction(QMenu *menu, string item) {
 }
 
 void MainWindow::doSomething(string btnPress) {
-    cout << btnPress << endl;
-    // process the actions here
-
-    // first thing to do is load test images
-    // https://doc.qt.io/qt-5/qfiledialog.html
-    // for our custom dialogs it looks as though we must use the QDialog or QWidget classes to add components to
+    //cout << btnPress << endl;
     if (btnPress == "Import") {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), "/", tr("Media Files (*.png *.jpg *.bmp *.mp4 *.avi *.mkv)"));
         if (fileName == "")
@@ -313,7 +309,7 @@ void MainWindow::doSomething(string btnPress) {
         QColor color = QColorDialog::getColor(bh.getColor(), this);
         bh.setColor(color);
     }
-    else if (btnPress == "Radial Editor") {
+    else if (btnPress == "Radial Profiler") {
         radialProfiler->showRelative();
     }
     else if (btnPress == "Brush Radius") {
@@ -387,17 +383,15 @@ void MainWindow::doSomething(string btnPress) {
         refresh();
     }
     else if (btnPress == "Single Taper") {
-        vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
-        if (activeVects.size() != 1)
-            return;
+        ioh->getWorkingLayer()->setVectorTaperType(1);
         refresh();
     }
     else if (btnPress == "Double Taper") {
-        bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", bh.getDensity(), minDensity, maxDensity, 1, &ok );
-        if (ok)
-            bh.setDensity(ret);
+        ioh->getWorkingLayer()->setVectorTaperType(2);
         refresh();
+    }
+    else if (btnPress == "Layer Opacity (Alpha)") {
+
     }
     else if (btnPress == "Brush Mode") {
         mode = Brush_Mode;
@@ -485,10 +479,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             ioh->getWorkingLayer()->widthUp();
         break;
     case Key_Control:
-        ctrlFlag = true;
+        if (!shiftFlag)
+            ctrlFlag = true;
         break;
     case Key_Shift:
-        setShiftFlag(true);
+        if (!ctrlFlag)
+            setShiftFlag(true);
         break;
     case Key_Escape:
         ioh->getWorkingLayer()->deselect();
@@ -522,7 +518,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Key_Shift:
         setShiftFlag(false);
-        ioh->getWorkingLayer()->cleanUp();
+        if (onePress)
+            ioh->getWorkingLayer()->cleanUp();
         break;
     case Key_Control:
         ctrlFlag = false;
@@ -552,3 +549,4 @@ MainWindow::~MainWindow() {
         toDel.pop_front();
     }
 }
+

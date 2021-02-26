@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 #include <QWidget>
 #include <QScrollArea>
 #include <QPainter>
@@ -14,11 +13,6 @@
 
 using std::vector;
 using std::to_string;
-using std::cout;
-using std::endl;
-using Qt::MouseButton;
-using Qt::RightButton;
-using Qt::NoButton;
 using graphics::Filtering;
 using graphics::ImgSupport;
 
@@ -33,8 +27,6 @@ public:
     explicit screenRender(QWidget *parent = nullptr);
     ~screenRender();
     void updateViews(Layer *working, QImage fg, QImage bg);
-    void setLastButton(MouseButton lb);
-    void setShiftFlag(bool sf);
     double getZoom();
     void setZoom(double Zoom);
     void zoomIn();
@@ -57,18 +49,19 @@ private:
     void fillTTriSafe(QPoint a, QPoint b, QPoint c);
     void doZoom();
 
+    QPoint brushLoc;
     Layer *workLayer;
     QPixmap bgLayers, fgLayers;
     QImage qi, bgPrescaled, fgPrescaled;
     QTimer *flasher;
-    bool flashFlag, fgVisible, shiftFlag;
+    bool flashFlag, fgVisible;
     QColor flashColor;
     float adder;
     QColor color;
     QPoint samplePoint;
-    MouseButton lastButton;
     ImgSupport screenZoom;
     int sizeDisplay;
+    graphics::Filter filter;
 
 public slots:
 

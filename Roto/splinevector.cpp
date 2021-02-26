@@ -29,10 +29,43 @@ void SplineVector::addPt(QPoint qp, size_t index) {
             controlPts[i] = controlPts[i - 1];
         controlPts[index] = qp;
     }
+    if (qp.x() < minX)
+        minX = qp.x();
+    if (qp.x() > maxX)
+        maxX = qp.x();
+    if (qp.y() < minY)
+        minY = qp.y();
+    if (qp.y() > maxY)
+        maxY = qp.y();
 }
 
 void SplineVector::removePt(size_t index) {
+    QPoint qp = controlPts[index];
     controlPts.erase((controlPts.begin() + index));
+    if (qp.x() == minX) {
+        minX = INT_MAX;
+        for (QPoint pt : controlPts)
+            if (pt.x() < minX)
+                minX = pt.x();
+    }
+    else if (qp.x() == maxX) {
+        maxX = 0;
+        for (QPoint pt : controlPts)
+            if (pt.x() > maxX)
+                maxX = pt.x();
+    }
+    if (qp.y() == minY) {
+        minY = INT_MAX;
+        for (QPoint pt : controlPts)
+            if (pt.y() < minY)
+                minY = pt.y();
+    }
+    else if (qp.y() == maxY) {
+        maxY = 0;
+        for (QPoint pt : controlPts)
+            if (pt.y() > maxY)
+                maxY = pt.y();
+    }
 }
 
 void SplineVector::movePt(QPoint loc, size_t index) {
@@ -42,8 +75,50 @@ void SplineVector::movePt(QPoint loc, size_t index) {
         if (controlPts[0].x() == controlPts[1].x() && controlPts[0].y() == controlPts[1].y())
             controlPts[index] = qp;
     }
-    else
+    else {
+        QPoint qp = controlPts[index];
         controlPts[index] = loc;
+        if (qp.x() == minX) {
+            if (loc.x() <= minX)
+                minX = loc.x();
+            else {
+                minX = INT_MAX;
+                for (QPoint pt : controlPts)
+                    if (pt.x() < minX)
+                        minX = pt.x();
+            }
+        }
+        else if (qp.x() == maxX) {
+            if (loc.x() >= maxX)
+                maxX = loc.x();
+            else {
+                maxX = 0;
+                for (QPoint pt : controlPts)
+                    if (pt.x() > maxX)
+                        maxX = pt.x();
+            }
+        }
+        if (qp.y() == minY) {
+            if (loc.y() <= minY)
+                minY = loc.y();
+            else {
+                minY = INT_MAX;
+                for (QPoint pt : controlPts)
+                    if (pt.y() < minY)
+                        minY = pt.y();
+            }
+        }
+        else if (qp.y() == maxY) {
+            if (loc.y() >= maxY)
+                maxY = loc.y();
+            else {
+                maxY = 0;
+                for (QPoint pt : controlPts)
+                    if (pt.y() > maxY)
+                        maxY = pt.y();
+            }
+        }
+    }
 }
 
 void SplineVector::translate(int dx, int dy) {
@@ -51,25 +126,14 @@ void SplineVector::translate(int dx, int dy) {
         controlPts[i].setX(controlPts[i].x() + dx);
         controlPts[i].setY(controlPts[i].y() + dy);
     }
+    minX += dx;
+    maxX += dx;
+    minY += dy;
+    maxY += dy;
 }
 
 pair <QPoint, QPoint> SplineVector::getBounds() {
     return pair <QPoint, QPoint> (QPoint(minX, minY), QPoint(maxX, maxY));
-}
-
-void SplineVector::calcBounds() {
-    maxY = maxX = 0;
-    minY = minX = INT_MAX;
-    for (QPoint qp : controlPts) {
-        if (qp.x() < minX)
-            minX = qp.x();
-        if (qp.x() > maxX)
-            maxX = qp.x();
-        if (qp.y() < minY)
-            minY = qp.y();
-        if (qp.y() > maxY)
-            maxY = qp.y();
-    }
 }
 
 void SplineVector::setBounds(int mix, int miy, int max, int may) {
@@ -86,7 +150,6 @@ void SplineVector::scaleSpec(int mix, int miy, int max, int may) {
 pair <QPoint, QPoint> SplineVector::prescale(QPoint origin) {
     backup = controlPts;
     orig = origin;
-    calcBounds();
     return getBounds();
 }
 
@@ -106,6 +169,18 @@ void SplineVector::scale(QPoint qp) {
 
 void SplineVector::cleanup() {
     backup.clear();
+    maxY = maxX = 0;
+    minY = minX = INT_MAX;
+    for (QPoint qp : controlPts) {
+        if (qp.x() < minX)
+            minX = qp.x();
+        if (qp.x() > maxX)
+            maxX = qp.x();
+        if (qp.y() < minY)
+            minY = qp.y();
+        if (qp.y() > maxY)
+            maxY = qp.y();
+    }
 }
 
 void SplineVector::rotateSpec(int mix, int miy, int max, int may) {
@@ -116,7 +191,6 @@ void SplineVector::rotateSpec(int mix, int miy, int max, int may) {
 pair <QPoint, QPoint> SplineVector::prerotate(QPoint offset) {
     backup = controlPts;
     offs = offset;
-    calcBounds();
     orig = QPoint(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
     return getBounds();
 }
@@ -160,6 +234,26 @@ void SplineVector::setTaper1(int a) {
 
 void SplineVector::setTaper2(int b) {
     taper2 = static_cast<char>(stdFuncs::clamp(b, minTaper, maxTaper));
+}
+
+void SplineVector::setTaperType(int i) {
+    taperType = static_cast<char>(i);
+}
+
+void SplineVector::setFilter(Filter f) {
+    filter = f;
+}
+
+void SplineVector::setMode(int i) {
+    mode = static_cast<unsigned char>(i);
+}
+
+int SplineVector::getMode() {
+    return static_cast<int>(mode);
+}
+
+Filter SplineVector::getFilter() {
+    return filter;
 }
 
 char SplineVector::getTaperType() {
