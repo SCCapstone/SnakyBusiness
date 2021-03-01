@@ -22,6 +22,60 @@ Layer * DataIOHandler::getWorkingLayer() {
     return frames[activeFrame][activeLayer];
 }
 
+void DataIOHandler::addLayer(QImage qi) {
+    if (frames.empty())
+        frames.push_back(vector <Layer *> ());
+    Layer *layer = qi.isNull() ? new Layer(dims) : new Layer(qi, 255);
+    frames[activeFrame].push_back(layer);
+    correctRender();
+}
+
+void DataIOHandler::copyLayer() {
+    layerCopySlot = Layer(*frames[activeFrame][activeLayer]);
+    correctRender();
+}
+
+void DataIOHandler::pasteLayer() {
+    if (layerCopySlot.getCanvas()->isNull())
+        return;
+    activeLayer = frames[activeFrame].size();
+    frames[activeFrame].push_back(new Layer(layerCopySlot));
+    correctRender();
+}
+
+void DataIOHandler::deleteLayer() {
+    delete frames[activeFrame][activeLayer];
+    frames[activeFrame].erase((frames[activeFrame].begin() + activeFrame));
+    if (activeLayer == frames[activeFrame].size()) {
+        if (frames[activeFrame].size() == 0)
+            deleteFrame();
+        else {
+            --activeLayer;
+            correctRender();
+        }
+    }
+}
+
+void DataIOHandler::moveBackward() {
+    if (activeLayer != 0)
+        iter_swap(frames[activeFrame].begin() + (activeLayer - 1), frames[activeFrame].begin() + activeLayer);
+}
+
+void DataIOHandler::moveForward() {
+    if (activeLayer != frames[activeFrame].size() - 2)
+        iter_swap(frames[activeFrame].begin() + activeLayer, frames[activeFrame].begin() + (activeLayer + 1));
+}
+
+void DataIOHandler::deleteFrame() {
+    // set new active layer to the new frame's number of layers - 1
+    //check if last / only frame
+    correctRender();
+}
+
+void DataIOHandler::correctRender() {
+
+}
+
 QImage DataIOHandler::getBackground() {
     if (activeLayer == 0)
         return QImage();
@@ -50,6 +104,28 @@ QImage DataIOHandler::getForeground() {
     return qi;
 }
 
+void DataIOHandler::copyVectors() {
+    vectorCopySlot.clear();
+    Layer *layer = getWorkingLayer();
+    vector <unsigned char> activeVectors = layer->getActiveVectors();
+    vector <SplineVector> vects = layer->getVectors();
+    for (unsigned char i : activeVectors)
+        vectorCopySlot.push_back(vects[i]);
+}
+
+void DataIOHandler::cutVectors() {
+    copyVectors();
+    deleteVectors();
+}
+
+void DataIOHandler::deleteVectors() {
+    getWorkingLayer()->deleteSelected();
+}
+
+void DataIOHandler::pasteVectors() {
+    getWorkingLayer()->pasteVectors(vectorCopySlot);
+}
+
 void DataIOHandler::setScreenFilter(string filterName) {
     screenFilter.setFilter(filterName);
     applyFilter();
@@ -72,6 +148,13 @@ void DataIOHandler::applyFilter() {
 }
 
 bool DataIOHandler::importImage(QString fileName) {
+    //call add layer
+    // ask whether to resize to project res by keeping scale or not
+    // in a future version, a class needs to exist, similar to splinevector, that renders the image and treats it as an object.
+
+
+
+
 //    file = fileName;
 //    QImage qiTemp(fileName);
 //    bool askResize = mediaLayer->size() != qiTemp.size();

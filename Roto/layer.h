@@ -24,11 +24,15 @@ class Layer {
 
 public:
 
+    Layer();
     Layer(QSize qs);
+    Layer(QImage in, int alphaValue);
+    Layer(const Layer &layer);
     ~Layer();
     QImage *getCanvas();
     vector <list <Triangle> > getTriangles();
     vector <SplineVector> getVectors();
+    void pasteVectors(list <SplineVector> svs);
     vector <unsigned char> getActiveVectors();
     void spinWheel(int dy);
     void release(MouseButton button);
@@ -51,6 +55,10 @@ public:
     void setVectorTaper2(int b);
     unsigned char getVectorTaperType();
     void setVectorTaperType(int i);
+    void setVectorFilter(string s);
+    void setVectorMode(int m);
+    void swapColors();
+    void swapTapers();
     pair <char, char> getVectorTapers();
     pair <QRgb, QRgb> getVectorColors();
     void cleanUp();

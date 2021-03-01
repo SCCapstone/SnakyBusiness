@@ -1,5 +1,12 @@
 #include "layer.h"
 
+Layer::Layer() {
+    activePt = -1;
+    alpha = 0;
+    qi = new QImage();
+    shiftFlag = false;
+    ipolPts = ipolMin;
+}
 
 Layer::Layer(QSize qs) {
     activePt = -1;
@@ -8,8 +15,45 @@ Layer::Layer(QSize qs) {
     for (int i = 0; i < qs.width(); ++i)
         for (int j = 0; j < qs.height(); ++j)
             qi->setPixelColor(i, j, 0xFFFFFFFF);
+//    multicolor for filter testing.
+//    for (int i = 0; i < qs.width(); ++i)
+//        for (int j = 0; j < qs.height(); ++j)
+//            qi->setPixelColor(i, j, QColor(255.0 * static_cast<float>(i) / qi->width(), 255.0 * static_cast<float>(j) / qi->height(), 255.0 * (1.0 - static_cast<float>(i) / qi->width())));
     shiftFlag = false;
     ipolPts = ipolMin;
+}
+
+Layer::Layer(QImage in, int alphaValue) {
+    activePt = -1;
+    alpha = alphaValue;
+    qi = new QImage(in);
+    shiftFlag = false;
+    ipolPts = ipolMin;
+}
+
+Layer::Layer(const Layer &layer) {
+    vects = layer.vects;
+    tris = layer.tris;  //create assignment op and copy con
+    activeVects = layer.activeVects;
+    activePt = -1;
+    qi = new QImage(layer.qi->copy());
+    ipolPts = layer.ipolPts;
+    limiter = layer.limiter;
+    limitCnt = layer.limitCnt;
+    alpha = layer.alpha;
+    shiftFlag = false;
+    deltaMove = QPoint(-1000, -1000);
+}
+
+void Layer::pasteVectors(list<SplineVector> svs) {
+    deselect();
+    unsigned char i = vects.size();
+    vects.insert(vects.end(), svs.begin(), svs.end());
+    while (tris.size() < vects.size())
+        tris.push_back(list <Triangle> ());
+    while (i < vects.size())
+        activeVects.push_back(i++);
+    calcLine();
 }
 
 Layer::~Layer() {
@@ -36,6 +80,7 @@ void Layer::setVectorTaperType(int i) {
     if (activeVects.size() != 1)
         return;
     vects[activeVects[0]].setTaperType(i);
+    calcLine();
 }
 
 float Layer::getipol(float a, float b, float ipol) {
@@ -58,7 +103,7 @@ void Layer::calcLine() {
         for (float ipol = 0.0; ipol <= 1.0; ipol += ipolPts) {
             float twidth = static_cast<float>(sv.getWidth());
             if (taper.first != 0 || taper.second != 0) {
-                if (sv.getTaperType() == 1)
+                if (sv.getTaperType() == Single)
                     twidth *= pow(ipol, taper1);
                 else {
                     float f = 2.0 * abs(abs(ipol - 0.5) - 0.5);
@@ -325,10 +370,16 @@ void Layer::setShiftFlag(bool b) {
 }
 
 void Layer::setAlpha(int a) {
-    QImage alphaLayer (qi->size(), QImage::Format_Alpha8);
+    QColor qc;
+    for (int i = 0; i < qi->width(); ++i)
+        for (int j = 0; j < qi->height(); ++j) {
+            qc = qi->pixelColor(i, j);
+            if (qc.alpha() != 0) {
+                qc.setAlpha(a);
+                qi->setPixelColor(i, j, qc);
+            }
+        }
     alpha = a;
-    alphaLayer.fill(static_cast<unsigned int>(alpha));
-    qi->setAlphaChannel(alphaLayer);
 }
 
 int Layer::getAlpha() {
@@ -387,6 +438,26 @@ void Layer::setVectorTaper2(int b) {
     if (activeVects.size() != 1)
         return;
     vects[activeVects[0]].setTaper2(b);
+    calcLine();
+}
+
+void Layer::setVectorFilter(string s) {
+    vects[activeVects[0]].setFilter(s);
+}
+
+void Layer::setVectorMode(int m) {
+    if (activeVects.size() == 1)
+        vects[activeVects[0]].setMode(m);
+}
+
+void Layer::swapColors() {
+    if (activeVects.size() == 1)
+        vects[activeVects[0]].swapColors();
+}
+
+void Layer::swapTapers() {
+    if (activeVects.size() == 1)
+        vects[activeVects[0]].swapTapers();
     calcLine();
 }
 

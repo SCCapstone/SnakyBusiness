@@ -10,18 +10,23 @@
 using std::vector;
 using std::pair;
 using graphics::Filter;
+using graphics::Filtering;
 
 const int minTaper = 0;
 const int maxTaper = 10;
 const int minWidth = 0;
 const int maxWidth = UCHAR_MAX;
 
+enum VectorMode {ColorFill, Filtered};
+enum Taper {Single, Double};
+
 class SplineVector {
 
 public:
 
     SplineVector(QPoint a, QPoint b, int Width = 1);
-    SplineVector operator = (const SplineVector &sv);
+    SplineVector(const SplineVector &sv);
+    SplineVector& operator = (const SplineVector &sv);
     vector <QPoint> getControls();
     void addPt(QPoint qp, size_t index);
     void removePt(size_t index);
@@ -41,9 +46,11 @@ public:
     void setColor2(QRgb b);
     void setTaper1(int a);
     void setTaper2(int b);
-    void setFilter(Filter f);
+    void setFilter(string s);
     void setTaperType(int i);
     void setMode(int i);
+    void swapColors();
+    void swapTapers();
     int getMode();
     Filter getFilter();
     char getTaperType();

@@ -6,6 +6,18 @@ graphics::Filter::Filter(int str, string filterName) {
     setFilter(filterName);
 }
 
+graphics::Filter::Filter(const Filter &filter) {
+    strength = filter.strength;
+    filterApplicator = filter.filterApplicator;
+    filterIndex = filter.filterIndex;
+}
+
+graphics::Filter& graphics::Filter::operator=(const Filter &rhs) {
+    strength = rhs.strength;
+    filterIndex = rhs.filterIndex;
+    filterApplicator = rhs.filterApplicator;
+    return *this;
+}
 void graphics::Filter::applyTo(QImage *qi) {
     int h = qi->height(), w = qi->width();
     for (int y = 0; y < h; ++y)
@@ -24,7 +36,7 @@ int graphics::Filter::getStrength() {
 }
 
 void graphics::Filter::setStrength(int value) {
-    strength = value > 255 ? 255 : (value < 1 ? 1 : value);
+    strength = stdFuncs::clamp(value, 1, 255);
 }
 
 void graphics::Filter::strengthUp() {
@@ -94,63 +106,60 @@ QRgb graphics::Filtering::blueChannel(QColor qc, int strength) {
 }
 
 QRgb graphics::Filtering::redPass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.red() > qc.blue() && qc.red() > qc.green() && qc.red() - max(qc.green(), qc.blue()) > abs(qc.green() - qc.blue()))
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, red;
-    if (qc.red() > grey) {
-        combined = filter;
-        red = qc.red();
-    }
-    else {
-        combined = grey;
-        red = grey;
-    }
-    return toRGB(qc.alpha(), red, combined, combined);
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::greenPass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.green() > qc.blue() && qc.green() > qc.red() && qc.green() - max(qc.red(), qc.blue()) > abs(qc.red() - qc.blue()))
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, green;
-    if (qc.green() > grey) {
-        combined = filter;
-        green = qc.green();
-    }
-    else {
-        combined = grey;
-        green = grey;
-    }
-    return toRGB(qc.alpha(), combined, green, combined);
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::bluePass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.blue() > qc.red() && qc.blue() > qc.green())
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, blue;
-    if (qc.blue() > grey) {
-        combined = filter;
-        blue = qc.blue();
-    }
-    else {
-        combined = grey;
-        blue = grey;
-    }
-    return toRGB(qc.alpha(), combined, combined, blue);
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::magentaPass(QColor qc, int strength) {
+    if (max(qc.red(), qc.blue()) - min(qc.red(), qc.blue()) < min(qc.red(), qc.blue()) - qc.green())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::yellowPass(QColor qc, int strength) {
+    if (max(qc.red(), qc.green()) - min(qc.red(), qc.green()) < min(qc.red(), qc.green()) - qc.blue())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::cyanPass(QColor qc, int strength) {
+    if (max(qc.green(), qc.blue()) - min(qc.green(), qc.blue()) < min(qc.green(), qc.blue()) - qc.red())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::redFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.red() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.red() > qc.green() && qc.red() > qc.blue()) ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::greenFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.green() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.green() > qc.blue() && qc.green() > qc.blue()) ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::blueFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.blue() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.blue() > qc.red() && qc.blue() > qc.green())  ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::rgb(QColor qc, int strength) {
