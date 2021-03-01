@@ -21,7 +21,7 @@
 #include <QInputDialog>
 #include <QTimer>
 #include <QTextBrowser>
-#include <QScrollArea>
+#include <QScrollBar>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -35,15 +35,18 @@
 #include <resizewindow.h>
 #include <screenrender.h>
 #include <radialprofiler.h>
+#include <viewscroller.h>
 
 using cv::VideoCapture;
 using cv::Mat;
 using cv::destroyAllWindows;
 
+using graphics::vectorFilters;
 using graphics::filterNames;
 using graphics::Filter;
 
 using std::string;
+using std::to_string;
 using std::list;
 using std::to_string;
 using std::function;
@@ -66,12 +69,15 @@ using Qt::Key_Right;
 using Qt::Key_Escape;
 using Qt::Key_Delete;
 using Qt::Key_Backspace;
+using Qt::Key_X;
+using Qt::Key_C;
+using Qt::Key_V;
 
 const string UI_FileType = ".txt";
 const string UI_FileName = "mainMenubar";
 const int trackDrawSpeed = 0;
 
-enum Modes {Brush_Mode, Spline_Mode};
+enum EditMode {Brush_Mode, Spline_Mode};
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -91,14 +97,16 @@ public:
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+    void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
     void log(string title, QObject *obj);
-    void createMenubar(string filename);
+    void createMenubar();
     void addItems(QMenu *menu, string items);
     void addAction(QMenu *menu, string s);
     void refresh();
 
 public slots:
+    void changeVectorFilter(string s);
     void changeScreenFilter(string s);
     void changeBrushFilter(string s);
     void changeBrushMethod(string s);
@@ -111,7 +119,8 @@ private:
 
     Ui::MainWindow *ui;
     screenRender *sr;
-    Modes mode;
+    viewScroller *vs;
+    EditMode mode;
     bool shiftFlag, ctrlFlag, onePress;
     MouseButton lastButton;
     DataIOHandler *ioh;

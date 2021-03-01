@@ -3,7 +3,6 @@
 
 screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     brushLoc = QPoint(0,0);
-    sizeDisplay = -1;
     flashFlag = false;
     flasher = new QTimer(this);
     connect(flasher, SIGNAL(timeout()), this, SLOT(toggleFlasher()));
@@ -11,7 +10,7 @@ screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     adder = 0.1;
     samplePoint = QPoint(-1000, -1000);
     flasher->start(flashSpeed);
-    filter.setFilter("Green Filter");
+    filter.setFilter("Greyscale");
 }
 
 screenRender::~screenRender() {
@@ -67,12 +66,13 @@ void screenRender::updateViews(Layer *working, QImage fg, QImage bg) {
 }
 
 void screenRender::paintEvent(QPaintEvent *event) {
+    if (workLayer == nullptr)
+        return;
     QPainter qp(this);
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
-    if (workLayer == nullptr)
-        return;
     qi = workLayer->getCanvas()->copy();
+    setFixedSize(qi.size());
     int w = qi.width(), h = qi.height();
     vector <list <Triangle> > tris = workLayer->getTriangles();
     vector <SplineVector> vects = workLayer->getVectors();
@@ -85,30 +85,86 @@ void screenRender::paintEvent(QPaintEvent *event) {
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
         bool flag = bounds.first.x() > width && bounds.first.y() > width && bounds.second.x() < w - width && bounds.second.y() < h - width;
-        if (flag) { //normal draw
-            if (colors.first == colors.second) {
-                color = ca;
-                for (Triangle t : tris[i])
-                    calcTri(t);
+        if (vects[i].getMode() == ColorFill) {
+            if (flag) { //normal draw
+                if (colors.first == colors.second) {
+                    color = ca;
+                    for (Triangle t : tris[i])
+                        fillTri(t);
+                }
+                else {
+                    cb.setAlpha(alpha);
+                    float ccomp = 1.0 / static_cast<float>(tris[i].size());
+                    float cnt = 0.0;
+                    for (Triangle t : tris[i]) {
+                        float ccc = ccomp * cnt;
+                        int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
+                        int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
+                        int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
+                        color = QColor(r, g, b, alpha);
+                        fillTri(t);
+                        cnt += 1.0;
+                    }
+                }
             }
-            else {
-                cb.setAlpha(alpha);
-                float ccomp = 1.0 / static_cast<float>(tris[i].size());
-                float cnt = 0.0;
-                for (Triangle t : tris[i]) {
-                    float ccc = ccomp * cnt;
-                    int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
-                    int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
-                    int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                    color = QColor(r, g, b, alpha);
-                    calcTri(t);
-                    cnt += 1.0;
+            else {  // safe draw
+                if (colors.first == colors.second) {
+                    color = ca;
+                    for (Triangle t : tris[i]) {
+                        unsigned char flag = 0;
+                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
+                            ++flag;
+                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            ++flag;
+                        if (flag > 0)
+                            fillTriSafe(t);
+                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            ++flag;
+                        if (flag == 0)
+                            fillTri(t);
+                        else if (flag != 3)
+                            fillTriSafe(t);
+                    }
+                }
+                else {
+                    cb.setAlpha(alpha);
+                    float ccomp = 1.0 / static_cast<float>(tris[i].size());
+                    float cnt = 0.0;
+                    for (Triangle t : tris[i]) {
+                        unsigned char flag = 0;
+                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
+                            ++flag;
+                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            ++flag;
+                        if (flag > 0)
+                            fillTriSafe(t);
+                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            ++flag;
+                        if (flag == 3) {
+                            cnt += 1.0;
+                            continue;
+                        }
+                        float ccc = ccomp * cnt;
+                        int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
+                        int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
+                        int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
+                        color = QColor(r, g, b, alpha);
+                        if (flag == 0)
+                            fillTri(t);
+                        else
+                            fillTriSafe(t);
+                        cnt += 1.0;
+                    }
                 }
             }
         }
-        else {  // safe draw
-            if (colors.first == colors.second) {
-                color = ca;
+        else {
+            //filter.setFilter(graphics::filterNames[vects[i].getFilter().getFilterIndex()]);
+            filter = vects[i].getFilter();
+            if (flag) //normal draw
+                for (Triangle t : tris[i])
+                    filterTri(t);
+            else  // safe draw
                 for (Triangle t : tris[i]) {
                     unsigned char flag = 0;
                     if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
@@ -116,45 +172,16 @@ void screenRender::paintEvent(QPaintEvent *event) {
                     if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
                         ++flag;
                     if (flag > 0)
-                        calcTriSafe(t);
+                        fillTriSafe(t);
                     if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
                         ++flag;
-                    if (flag == 0)
-                        calcTri(t);
-                    else if (flag != 3)
-                        calcTriSafe(t);
-                }
-            }
-            else {
-                cb.setAlpha(alpha);
-                float ccomp = 1.0 / static_cast<float>(tris[i].size());
-                float cnt = 0.0;
-                for (Triangle t : tris[i]) {
-                    unsigned char flag = 0;
-                    if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                        ++flag;
-                    if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                        ++flag;
-                    if (flag > 0)
-                        calcTriSafe(t);
-                    if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                        ++flag;
-                    if (flag == 3) {
-                        cnt += 1.0;
+                    if (flag == 3)
                         continue;
-                    }
-                    float ccc = ccomp * cnt;
-                    int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
-                    int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
-                    int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                    color = QColor(r, g, b, alpha);
                     if (flag == 0)
-                        calcTri(t);
+                        filterTri(t);
                     else
-                        calcTriSafe(t);
-                    cnt += 1.0;
+                        filterTriSafe(t);
                 }
-            }
         }
     }
     for (unsigned char activeVect : activeVects) {
@@ -177,14 +204,6 @@ void screenRender::paintEvent(QPaintEvent *event) {
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
-    if (sizeDisplay != -1) {
-        qp.drawRoundRect(0, 25, 40, 20);
-        qp.setPen(QPen(Qt::black));
-        qp.setFont(QFont("Arial", 9, QFont::Bold));
-        qp.drawText(10, 40, QString(to_string(sizeDisplay).c_str()));
-        sizeDisplay = -1;
-        flasher->start(flashSpeed);
-    }
     //cout << stdFuncs::getChange(t1) << endl;
 }
 
@@ -202,7 +221,7 @@ void screenRender::showFg(bool shown) {
     fgVisible = shown;
 }
 
-void screenRender::calcTri(Triangle t) {
+void screenRender::fillTri(Triangle t) {
     QPoint a = t.A(), b = t.B(), c = t.C();
     if (a.y() > b.y()) {
         QPoint tmp = a;
@@ -268,7 +287,7 @@ void screenRender::fillTTri(QPoint a, QPoint b, QPoint c) {
     }
 }
 
-void screenRender::calcTriSafe(Triangle t) {
+void screenRender::fillTriSafe(Triangle t) {
     QPoint a = t.A(), b = t.B(), c = t.C();
     if (a.y() > b.y()) {
         QPoint tmp = a;
@@ -336,8 +355,145 @@ void screenRender::fillTTriSafe(QPoint a, QPoint b, QPoint c) {
     }
 }
 
-void screenRender::setSizeDisplay(int i) {
-    sizeDisplay = i;
-    flasher->stop();
+void screenRender::filterTri(Triangle t) {
+    QPoint a = t.A(), b = t.B(), c = t.C();
+    if (a.y() > b.y()) {
+        QPoint tmp = a;
+        a = b;
+        b = tmp;
+    }
+    if (b.y() > c.y()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+        if (a.y() > b.y()) {
+            tmp = a;
+            a = b;
+            b = tmp;
+        }
+    }
+    if (b.y() == a.y())
+        filterBTri(c, b, a);
+    else if (b.y() == c.y())
+        filterTTri(a, b, c);
+    else {
+        QPoint d (a.x() + static_cast<float>(c.x() - a.x()) * (static_cast<float>(b.y() - a.y()) / static_cast<float>(c.y() - a.y())) , b.y());
+        filterBTri(c, b, d);
+        filterTTri(a, b, d);
+    }
+}
+
+void screenRender::filterBTri(QPoint a, QPoint b, QPoint c) {
+    if (b.x() > c.x()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+    }
+    float invslope1 = adder * static_cast<float>(b.x() - a.x()) / static_cast<float>(b.y() - a.y());
+    float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
+    float curx1 = static_cast<float>(a.x());
+    float curx2 = static_cast<float>(a.x());
+    for (float y = a.y(); y >= b.y(); y -= adder)
+    {
+        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x) {
+            int Y = static_cast<int>(y);
+            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
+        }
+        curx1 -= invslope1;
+        curx2 -= invslope2;
+    }
+}
+
+void screenRender::filterTTri(QPoint a, QPoint b, QPoint c) {
+    if (b.x() > c.x()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+    }
+    float invslope1 = adder * static_cast<float>(b.x() - a.x()) / static_cast<float>(b.y() - a.y());
+    float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
+    float curx1 = static_cast<float>(a.x());
+    float curx2 = static_cast<float>(a.x());
+    for (float y = a.y(); y <= b.y(); y += adder)
+    {
+        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x) {
+            int Y = static_cast<int>(y);
+            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
+        }
+        curx1 += invslope1;
+        curx2 += invslope2;
+    }
+}
+
+void screenRender::filterTriSafe(Triangle t) {
+    QPoint a = t.A(), b = t.B(), c = t.C();
+    if (a.y() > b.y()) {
+        QPoint tmp = a;
+        a = b;
+        b = tmp;
+    }
+    if (b.y() > c.y()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+        if (a.y() > b.y()) {
+            tmp = a;
+            a = b;
+            b = tmp;
+        }
+    }
+    if (b.y() == a.y())
+        filterBTriSafe(c, b, a);
+    else if (b.y() == c.y())
+        filterTTriSafe(a, b, c);
+    else {
+        QPoint d (a.x() + static_cast<float>(c.x() - a.x()) * (static_cast<float>(b.y() - a.y()) / static_cast<float>(c.y() - a.y())) , b.y());
+        filterBTriSafe(c, b, d);
+        filterTTriSafe(a, b, d);
+    }
+}
+
+void screenRender::filterBTriSafe(QPoint a, QPoint b, QPoint c) {
+    if (b.x() > c.x()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+    }
+    float invslope1 = adder * static_cast<float>(b.x() - a.x()) / static_cast<float>(b.y() - a.y());
+    float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
+    float curx1 = static_cast<float>(a.x());
+    float curx2 = static_cast<float>(a.x());
+    float endY = b.y() < 0 ? 0 : b.y();
+    for (float y = a.y() >= qi.height() ? qi.height() - 1 : a.y(); y >= endY; y -= adder)  {
+        int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
+        for (int x = startX; x <= endX; ++x) {
+            int Y = static_cast<int>(y);
+            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
+        }
+        curx1 -= invslope1;
+        curx2 -= invslope2;
+    }
+}
+
+void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
+    if (b.x() > c.x()) {
+        QPoint tmp = b;
+        b = c;
+        c = tmp;
+    }
+    float invslope1 = adder * static_cast<float>(b.x() - a.x()) / static_cast<float>(b.y() - a.y());
+    float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
+    float curx1 = static_cast<float>(a.x());
+    float curx2 = static_cast<float>(a.x());
+    float endY = b.y() >= qi.height() ? qi.height() - 1 : b.y();
+    for (float y = a.y() < 0 ? 0 : a.y(); y <= endY; y += adder) {
+        int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
+        for (int x = startX; x <= endX; ++x) {
+            int Y = static_cast<int>(y);
+            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
+        }
+        curx1 += invslope1;
+        curx2 += invslope2;
+    }
 }
 

@@ -7,17 +7,18 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    statusBar()->hide();
     shiftFlag = false;
     ctrlFlag = false;
     lastButton = NoButton;
-    sr = new screenRender(this);
+    vs = new viewScroller(this);
+    vs->setWidgetResizable(true);
+    sr = new screenRender(vs);
     ioh = new DataIOHandler();
     sr->updateViews(ioh->getWorkingLayer(), ioh->getForeground(), ioh->getBackground());
-    setCentralWidget(sr);
+    setCentralWidget(vs);
     setGeometry(0,0, defaultSize.width(), defaultSize.height());
     setWindowTitle("Glass Opus");
-    createMenubar("mainMenubar");
+    createMenubar();
     QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Layer Filter"));
     QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filter"));
     for (string name : filterNames) {
@@ -27,6 +28,12 @@ MainWindow::MainWindow(QWidget *parent)
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushFilter(bAction->text().toStdString()); });
         log(name, sAction);
         log(name, bAction);
+    }
+    QMenu* vFiltering = static_cast<QMenu *>(objFetch.at("Vector Filter"));
+    for (string name : vectorFilters) {
+        QAction *vAction = vFiltering->addAction((name).c_str());
+        connect(vAction, &QAction::triggered, this, [=]() { this->changeVectorFilter(vAction->text().toStdString()); });
+        log(name, vAction);
     }
     QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
     for (string name : brushShapes) {
@@ -51,17 +58,22 @@ MainWindow::MainWindow(QWidget *parent)
     file.close();
     mode = Brush_Mode;
     onePress = false;
+    vs->setWidget(sr);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    QPoint qp = sr->getZoomCorrected(event->pos());
+    QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
+    statusBar()->showMessage((to_string(qp.x()) + "," + to_string(qp.y())).c_str(), 1000);
     if (mode == Brush_Mode) {
         if (lastButton == LeftButton) {
-            QImage *qi = ioh->getWorkingLayer()->getCanvas();
-            bh.applyBrush(qi, qp);
+            bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
         }
-        else if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
-            setSamplePt(qp);
+        else if (lastButton == RightButton) {
+            if (bh.getMethodIndex() == appMethod::sample)
+                setSamplePt(qp);
+            else
+                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+        }
     }
     else if (mode == Spline_Mode) {
         if (ctrlFlag)
@@ -84,14 +96,20 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
         return;
     }
     lastButton = event->button();
-    QPoint qp = sr->getZoomCorrected(event->pos());
+    QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     if (mode == Brush_Mode) {
-        if (lastButton == RightButton && bh.getMethodIndex() == appMethod::sample)
-            setSamplePt(qp);
+        if (lastButton == RightButton) {
+            if (bh.getMethodIndex() == appMethod::sample)
+                setSamplePt(qp);
+            else {
+                bh.setAlpha(0);
+                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+                bh.setInterpolationActive(true);
+            }
+        }
         else if (lastButton == LeftButton) {
             bh.setRelativePoint(qp);
-            QImage *qi = ioh->getWorkingLayer()->getCanvas();
-            bh.applyBrush(qi, qp);
+            bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
             bh.setInterpolationActive(true);
         }
     }
@@ -106,8 +124,10 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
-    if (mode == Brush_Mode)
+    if (mode == Brush_Mode) {
         bh.setInterpolationActive(false);
+        bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
+    }
     else if (mode == Spline_Mode)
         ioh->getWorkingLayer()->release(event->button());
     else if (event->button() >= 8) {
@@ -120,7 +140,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
-    QPoint qp = sr->getZoomCorrected(event->pos());
+    QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     MouseButton button = event->button();
     if (mode == Spline_Mode) {
         if (shiftFlag)
@@ -141,15 +161,15 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
     if (mode == Brush_Mode) {
         if (shiftFlag) {
             bh.setStrength(bh.getStength() + dy);
-            sr->setSizeDisplay(bh.getStength());
+            statusBar()->showMessage(("Brush Strength: " + to_string(bh.getStength())).c_str(), 1000);
         }
         else if (ctrlFlag) {
             bh.setDensity(bh.getDensity() + dy);
-            sr->setSizeDisplay(bh.getDensity());
+            statusBar()->showMessage(("Brush Density: " + to_string(bh.getDensity())).c_str(), 1000);
         }
         else {
             radialProfiler->updateSize(bh.getSize() + dy);
-            sr->setSizeDisplay(bh.getSize());
+            statusBar()->showMessage(("Brush Radius: " + to_string(bh.getSize())).c_str(), 1000);
         }
     }
     else if (mode == Spline_Mode) {
@@ -158,16 +178,19 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
             if (activeVects.size() != 1)
                 return;
             ioh->getWorkingLayer()->setVectorTaper1(ioh->getWorkingLayer()->getVectorTapers().first + dy);
+            statusBar()->showMessage(("Vector Taper 1: " + to_string(ioh->getWorkingLayer()->getVectorTapers().first)).c_str(), 1000);
         }
         else if (ctrlFlag) {
             vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
             if (activeVects.size() != 1)
                 return;
             ioh->getWorkingLayer()->setVectorTaper2(ioh->getWorkingLayer()->getVectorTapers().second + dy);
+            statusBar()->showMessage(("Vector Taper 2: " + to_string(ioh->getWorkingLayer()->getVectorTapers().second)).c_str(), 1000);
         }
         else {
             ioh->getWorkingLayer()->spinWheel(dy);
-            sr->setSizeDisplay(ioh->getWorkingLayer()->getWidth());
+            if (ioh->getWorkingLayer()->getActiveVectors().size() == 1)
+                statusBar()->showMessage(("Vector Width: " + to_string(ioh->getWorkingLayer()->getWidth())).c_str(), 1000);
         }
     }
     refresh();
@@ -183,12 +206,12 @@ void MainWindow::setShiftFlag(bool b) {
     ioh->getWorkingLayer()->setShiftFlag(b);
 }
 
-void MainWindow::createMenubar(string filename) {
+void MainWindow::createMenubar() {
     QMenuBar *menubar = new QMenuBar(this);
     menubar->setGeometry(QRect(0, 0, 800, 20));
-    log(filename + UI_FileType, menubar);
+    log(UI_FileName + UI_FileType, menubar);
     fstream uiFile;
-    uiFile.open(filename + UI_FileType,ios::in);
+    uiFile.open(UI_FileName + UI_FileType,ios::in);
     if (uiFile.is_open()){
         string fromFile;
         while(getline(uiFile, fromFile)) {
@@ -275,7 +298,6 @@ void MainWindow::doSomething(string btnPress) {
                 if (frame.empty())
                     break;
                 list.push_back(frame);
-                cout << stdFuncs::getChange(l);
                 l = stdFuncs::getTime();
                 QImage qi = QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
                 for(int r = 0; r < frame.rows; ++r)
@@ -283,7 +305,6 @@ void MainWindow::doSomething(string btnPress) {
                         RGB& rgb = frame.ptr<RGB>(r)[c];
                         qi.setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
                     }
-                cout << "\t" << stdFuncs::getChange(l) << "\t" << list.size() << endl;
                 //ioh->setMediaLayer(qi);
                 refresh();
             }
@@ -383,15 +404,35 @@ void MainWindow::doSomething(string btnPress) {
         refresh();
     }
     else if (btnPress == "Single Taper") {
-        ioh->getWorkingLayer()->setVectorTaperType(1);
+        ioh->getWorkingLayer()->setVectorTaperType(Single);
         refresh();
     }
     else if (btnPress == "Double Taper") {
-        ioh->getWorkingLayer()->setVectorTaperType(2);
+        ioh->getWorkingLayer()->setVectorTaperType(Double);
+        refresh();
+    }
+    else if (btnPress == "Swap Colors") {
+        ioh->getWorkingLayer()->swapColors();
+        refresh();
+    }
+    else if (btnPress == "Swap Tapers") {
+        ioh->getWorkingLayer()->swapTapers();
+        refresh();
+    }
+    else if (btnPress == "Color Vector") {
+        ioh->getWorkingLayer()->setVectorMode(ColorFill);
+        refresh();
+    }
+    else if (btnPress == "Filter Vector") {
+        ioh->getWorkingLayer()->setVectorMode(Filtered);
         refresh();
     }
     else if (btnPress == "Layer Opacity (Alpha)") {
-
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a layer alpha", ioh->getWorkingLayer()->getAlpha(), 1, graphics::maxColor, 1, &ok );
+        if (ok)
+            ioh->getWorkingLayer()->setAlpha(ret);
+        bh.setAlpha(ret);
     }
     else if (btnPress == "Brush Mode") {
         mode = Brush_Mode;
@@ -401,10 +442,34 @@ void MainWindow::doSomething(string btnPress) {
         mode = Spline_Mode;
         setSamplePt(QPoint(-1000, -1000));
     }
+    else if (btnPress == "Copy") {
+        if (mode == Spline_Mode)
+            ioh->copyVectors();
+    }
+    else if (btnPress == "Cut") {
+        if (mode == Spline_Mode)
+            ioh->cutVectors();
+        refresh();
+    }
+    else if (btnPress == "Delete") {
+        if (mode == Spline_Mode)
+            ioh->deleteVectors();
+        refresh();
+    }
+    else if (btnPress == "Paste") {
+        if (mode == Spline_Mode)
+            ioh->pasteVectors();
+        refresh();
+    }
     else if (btnPress == "Help") {
         qtb.move(0,0);
         qtb.show();
     }
+}
+
+void MainWindow::changeVectorFilter(string s) {
+    ioh->getWorkingLayer()->setVectorFilter(s);
+    refresh();
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
@@ -446,15 +511,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         if (mode == Brush_Mode) {
             if (shiftFlag) {
                 bh.strengthDown();
-                sr->setSizeDisplay(bh.getStength());
+                statusBar()->showMessage(("Brush Strength: " + to_string(bh.getStength())).c_str(), 1000);
             }
             else if (ctrlFlag) {
                 bh.densityDown();
-                sr->setSizeDisplay(bh.getDensity());
+                statusBar()->showMessage(("Brush Density: " + to_string(bh.getDensity())).c_str(), 1000);
             }
             else {
                 radialProfiler->updateSize(bh.getSize() - 1);
-                sr->setSizeDisplay(bh.getSize());
+                statusBar()->showMessage(("Brush Radius: " + to_string(bh.getSize())).c_str(), 1000);
             }
         }
         else if (mode == Spline_Mode)
@@ -464,15 +529,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         if (mode == Brush_Mode) {
             if (shiftFlag) {
                 bh.strengthUp();
-                sr->setSizeDisplay(bh.getStength());
+                statusBar()->showMessage(("Brush Strength: " + to_string(bh.getStength())).c_str(), 1000);
             }
             else if (ctrlFlag) {
                 bh.densityUp();
-                sr->setSizeDisplay(bh.getDensity());
+                statusBar()->showMessage(("Brush Density: " + to_string(bh.getDensity())).c_str(), 1000);
             }
             else {
                 radialProfiler->updateSize(bh.getSize() + 1);
-                sr->setSizeDisplay(bh.getSize());
+                statusBar()->showMessage(("Brush Radius: " + to_string(bh.getSize())).c_str(), 1000);
             }
         }
         else if (mode == Spline_Mode)
@@ -492,6 +557,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Key_Backspace:
     case Key_Delete:
         ioh->getWorkingLayer()->deleteSelected();
+        break;
+    case Key_X:
+        if (ctrlFlag && mode == Spline_Mode)
+            ioh->cutVectors();
+        break;
+    case Key_C:
+        if (ctrlFlag && mode == Spline_Mode)
+            ioh->copyVectors();
+        break;
+    case Key_V:
+        if (ctrlFlag && mode == Spline_Mode)
+            ioh->pasteVectors();
         break;
         /*
     case Qt::Key_I:
@@ -526,6 +603,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
         break;
     }
 }
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    QMenuBar *menu = dynamic_cast<QMenuBar *>(objFetch.at(UI_FileName + UI_FileType));
+    menu->resize(width(), menu->height());
+}
 
 void MainWindow::refresh() {
     sr->repaint();
@@ -541,6 +622,7 @@ MainWindow::~MainWindow() {
     hide();
     delete ioh;
     delete sr;
+    delete vs;
     delete ui;
     objFetch.clear();
     while (!toDel.empty()) {

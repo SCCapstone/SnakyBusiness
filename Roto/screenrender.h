@@ -1,18 +1,20 @@
 #ifndef SCREENRENDER_H
 #define SCREENRENDER_H
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <QWidget>
-#include <QScrollArea>
 #include <QPainter>
 #include <QTimer>
 #include <stdfuncs.h>
 #include <graphics.h>
 #include <layer.h>
 
+using std::find;
 using std::vector;
 using std::to_string;
+using graphics::Filter;
 using graphics::Filtering;
 using graphics::ImgSupport;
 
@@ -37,16 +39,21 @@ public:
     void setSamplePt(QPoint qp);
     void stopFlashing();
     void showFg(bool shown);
-    void setSizeDisplay(int i);
 
 private:
 
-    void calcTri(Triangle t);
+    void fillTri(Triangle t);
     void fillBTri(QPoint a, QPoint b, QPoint c);
     void fillTTri(QPoint a, QPoint b, QPoint c);
-    void calcTriSafe(Triangle t);
+    void filterTri(Triangle t);
+    void filterBTri(QPoint a, QPoint b, QPoint c);
+    void filterTTri(QPoint a, QPoint b, QPoint c);
+    void fillTriSafe(Triangle t);
     void fillBTriSafe(QPoint a, QPoint b, QPoint c);
     void fillTTriSafe(QPoint a, QPoint b, QPoint c);
+    void filterTriSafe(Triangle t);
+    void filterBTriSafe(QPoint a, QPoint b, QPoint c);
+    void filterTTriSafe(QPoint a, QPoint b, QPoint c);
     void doZoom();
 
     QPoint brushLoc;
@@ -60,8 +67,7 @@ private:
     QColor color;
     QPoint samplePoint;
     ImgSupport screenZoom;
-    int sizeDisplay;
-    graphics::Filter filter;
+    Filter filter;
 
 public slots:
 

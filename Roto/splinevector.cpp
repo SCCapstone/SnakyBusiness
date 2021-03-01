@@ -8,14 +8,28 @@ SplineVector::SplineVector(QPoint a, QPoint b, int Width) {
     color1 = color2 = 0xFF000000;
     taper1 = taper2 = 0;
     taperType = 2;
+    filter.setFilter("Greyscale");
 }
 
-SplineVector SplineVector::operator = (const SplineVector &sv) {
-    vector <QPoint> cpts = sv.controlPts;
-    SplineVector ret(cpts.front(), cpts.back(), sv.width);
-    for (size_t i = 1; i < cpts.size() - 1; ++i)
-        ret.addPt(cpts[i], i);
-    return ret;
+SplineVector::SplineVector(const SplineVector &sv) {
+    *this = sv;
+}
+
+SplineVector& SplineVector::operator = (const SplineVector &sv) {
+    controlPts = sv.controlPts;
+    width = sv.width;
+    color1 = sv.color1;
+    color2 = sv.color2;
+    taper1 = sv.taper1;
+    taper2 = sv.taper2;
+    taperType = sv.taperType;
+    filter = sv.filter;
+    mode = sv.mode;
+    minX = sv.minX;
+    maxX = sv.maxX;
+    minY = sv.minY;
+    maxY = sv.maxY;
+    return *this;
 }
 
 vector <QPoint> SplineVector::getControls() {
@@ -240,12 +254,24 @@ void SplineVector::setTaperType(int i) {
     taperType = static_cast<char>(i);
 }
 
-void SplineVector::setFilter(Filter f) {
-    filter = f;
+void SplineVector::setFilter(string s) {
+    filter.setFilter(s);
+    filter.setStrength(255);
 }
 
 void SplineVector::setMode(int i) {
     mode = static_cast<unsigned char>(i);
+}
+
+void SplineVector::swapColors() {
+    QRgb qc = color1;
+    color1 = color2;
+    color2 = qc;
+}
+
+void SplineVector::swapTapers() {
+    reverse(controlPts.begin(), controlPts.end());
+    swapColors();
 }
 
 int SplineVector::getMode() {
