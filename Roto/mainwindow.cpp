@@ -38,12 +38,18 @@ MainWindow::MainWindow(QWidget *parent)
     QMenu* bShape = static_cast<QMenu *>(objFetch.at("Brush Shape"));
     for (string name : brushShapes) {
         QAction *bAction = bShape->addAction((name).c_str());
+        QFile qf(("icons/" + name + ".png").c_str());
+        if (qf.exists())
+            bAction->setIcon(QIcon(qf.fileName()));
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushShape(bAction->text().toStdString()); });
         log(name, bAction);
     }
     QMenu* bMethod = static_cast<QMenu *>(objFetch.at("Brush Method"));
     for (string name : appMethods) {
         QAction *bAction = bMethod->addAction((name).c_str());
+        QFile qf(("icons/" + name + ".png").c_str());
+        if (qf.exists())
+            bAction->setIcon(QIcon(qf.fileName()));
         connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushMethod(bAction->text().toStdString()); });
         log(name, bAction);
     }
@@ -238,6 +244,9 @@ void MainWindow::addItems(QMenu *menu, string menuItems) {
         }
         else if (menuItems[i] == '>') {
             QMenu *subMenu = menu->addMenu(item.c_str());
+            QFile qf(("icons/" + item + ".png").c_str());
+            if (qf.exists())
+                subMenu->setIcon(QIcon(qf.fileName()));
             log(item, subMenu);
             if (menuItems[i + 1] == '(') {
                 string subItems = "";
@@ -266,6 +275,9 @@ void MainWindow::addItems(QMenu *menu, string menuItems) {
 
 void MainWindow::addAction(QMenu *menu, string item) {
     QAction *action = menu->addAction(item.c_str());
+    QFile qf(("icons/" + item + ".png").c_str());
+    if (qf.exists())
+        action->setIcon(QIcon(qf.fileName()));
     connect(action, &QAction::triggered, this, [=]() { this->doSomething(item); });
     log(item, action);
 }
