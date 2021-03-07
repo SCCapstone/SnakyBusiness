@@ -16,6 +16,9 @@ using std::pair;
 using std::iter_swap;
 using graphics::Filter;
 
+enum scaleType {dontScale, bestFit, aspectRatio, toWidth, toHeight};
+enum importType {image, video};
+
 const QSize defaultSize (1200, 900);
 
 struct RGB {
@@ -30,6 +33,10 @@ public:
 
     DataIOHandler();
     ~DataIOHandler();
+    void setActiveLayer(int i);
+    int getNumLayers();
+    int getActiveLayer();
+    bool wasUpdated();
     void copyVectors();
     void cutVectors();
     void deleteVectors();
@@ -51,6 +58,8 @@ public:
     // Update the menu file to match.
     */
 
+    void scale(scaleType option);
+
     // almost everything below is outdated
     bool importImage(QString fileName);
     void exportImage(QString fileName);
@@ -65,11 +74,10 @@ public:
     Layer *getWorkingLayer();
     QImage getBackground();
     QImage getForeground();
-    void scale(int option1, int option2);
+
 
 private:
 
-    void correctRender();
     void scaleLayers(int option1, int option2);
     void scaleLists(int layer, int scaleType);
     void applyFilter();
@@ -81,6 +89,9 @@ private:
     QString file;
     Filter screenFilter;
     unsigned char activeLayer, activeFrame;
+    QImage importImg;
+    importType importType;
+    bool updated;
 };
 
 #endif // DATAIO_H

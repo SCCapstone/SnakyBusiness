@@ -36,7 +36,8 @@ public:
     void setDensity(int density);
     void setStrength(int str);
     void setShape(string shape);
-    void setColor(QColor qc);
+    void setBrushColor(QColor qc);
+    void setFillColor(QColor qc);
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
@@ -50,7 +51,8 @@ public:
     bool getPatternInUse();
     int getMethodIndex();
     int getFilterIndex();
-    QColor getColor();
+    QColor getBrushColor();
+    QColor getFillColor();
     int getDensity();
     int getStength();
     int getSize();
@@ -86,7 +88,7 @@ private:
     unsigned char strength, patternXDim, patternYDim, **patternMap, **checkMap;
     appMethod method;
     Brush brush;
-    QColor color;
+    QColor brushColor, fillColor;
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;

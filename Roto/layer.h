@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <QImage>
+#include <QPainter>
 #include <splinevector.h>
 #include <triangle.h>
 
@@ -17,8 +18,8 @@ const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
 
-#include <iostream>
-using namespace std;
+enum EditMode {Brush_Mode, Spline_Mode, Raster_Mode};
+enum Selection {TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, BodySelect, NoSelect};
 
 class Layer {
 
@@ -30,18 +31,22 @@ public:
     Layer(const Layer &layer);
     ~Layer();
     QImage *getCanvas();
+    QImage getRenderCanvas();
+    vector <QPoint> getRasterEdges();
     vector <list <Triangle> > getTriangles();
     vector <SplineVector> getVectors();
     void pasteVectors(list <SplineVector> svs);
     vector <unsigned char> getActiveVectors();
     void spinWheel(int dy);
-    void release(MouseButton button);
+    void release(QPoint qp, MouseButton button);
     void moveLeft(QPoint qp);
     void moveRight(QPoint qp);
     void pressLeft(QPoint qp);
     MouseButton pressRight(QPoint qp);
     void doubleClickLeft(QPoint qp, bool ctrlFlag);
     void doubleClickRight(QPoint qp);
+    void setMode(EditMode m);
+    void fillColor(QPoint qp, QColor qc);
     void setShiftFlag(bool b);
     void setAlpha(int a);
     int getAlpha();
@@ -68,17 +73,21 @@ public:
 private:
 
     void calcLine();
+    void drawRasterSelection(QImage *img);
+    void findSelection(QPoint qp);
     float getipol(float a, float b, float ipol);
 
+    EditMode mode;
+    Selection selection;
     vector <SplineVector> vects;
     vector <list <Triangle>> tris;
     vector <unsigned char> activeVects;
     char activePt;
-    QImage *qi;
-    float ipolPts, limiter = ipolMin, limitCnt = 2.0;
+    QImage *qi, rasterselectOg;
+    float ipolPts, limiter = ipolMin, limitCnt = 2.0, postAngle;
     int alpha;
-    bool shiftFlag;
-    QPoint deltaMove;
+    bool shiftFlag, selectOgActive, selecting;
+    QPoint deltaMove, boundPt1, boundPt2, rotateAnchor;
 
 };
 

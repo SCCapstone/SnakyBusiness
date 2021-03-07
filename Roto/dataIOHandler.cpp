@@ -8,6 +8,7 @@ DataIOHandler::DataIOHandler() {
     vector <Layer *> frame;
     frame.push_back(l);
     frames.push_back(frame);
+    updated = true;
 }
 
 DataIOHandler::~DataIOHandler() {
@@ -16,6 +17,25 @@ DataIOHandler::~DataIOHandler() {
             delete frames[i][j];
         frames[i].clear();
     }
+}
+
+void DataIOHandler::setActiveLayer(int i) {
+    activeLayer = i - 1;
+    updated = true;
+}
+
+int DataIOHandler::getNumLayers() {
+    return frames[activeFrame].size();
+}
+
+int DataIOHandler::getActiveLayer() {
+    return activeLayer + 1;
+}
+
+bool DataIOHandler::wasUpdated() {
+    bool b = updated;
+    updated = false;
+    return b;
 }
 
 Layer * DataIOHandler::getWorkingLayer() {
@@ -27,12 +47,12 @@ void DataIOHandler::addLayer(QImage qi) {
         frames.push_back(vector <Layer *> ());
     Layer *layer = qi.isNull() ? new Layer(dims) : new Layer(qi, 255);
     frames[activeFrame].push_back(layer);
-    correctRender();
+    updated = true;
 }
 
 void DataIOHandler::copyLayer() {
     layerCopySlot = Layer(*frames[activeFrame][activeLayer]);
-    correctRender();
+    updated = true;
 }
 
 void DataIOHandler::pasteLayer() {
@@ -40,7 +60,7 @@ void DataIOHandler::pasteLayer() {
         return;
     activeLayer = frames[activeFrame].size();
     frames[activeFrame].push_back(new Layer(layerCopySlot));
-    correctRender();
+    updated = true;
 }
 
 void DataIOHandler::deleteLayer() {
@@ -51,7 +71,7 @@ void DataIOHandler::deleteLayer() {
             deleteFrame();
         else {
             --activeLayer;
-            correctRender();
+            updated = true;
         }
     }
 }
@@ -69,11 +89,7 @@ void DataIOHandler::moveForward() {
 void DataIOHandler::deleteFrame() {
     // set new active layer to the new frame's number of layers - 1
     //check if last / only frame
-    correctRender();
-}
-
-void DataIOHandler::correctRender() {
-
+    updated = true;
 }
 
 QImage DataIOHandler::getBackground() {
@@ -81,7 +97,6 @@ QImage DataIOHandler::getBackground() {
         return QImage();
     vector <Layer *> layers = frames[activeFrame];
     QImage qi = *layers[0]->getCanvas();
-    QPixmap qpix;
     QPainter p;
     p.begin(&qi);
     for (size_t i = 0; i < activeLayer; ++i)
@@ -148,28 +163,46 @@ void DataIOHandler::applyFilter() {
 }
 
 bool DataIOHandler::importImage(QString fileName) {
-    //call add layer
-    // ask whether to resize to project res by keeping scale or not
-    // in a future version, a class needs to exist, similar to splinevector, that renders the image and treats it as an object.
-
-
-
-
-//    file = fileName;
-//    QImage qiTemp(fileName);
-//    bool askResize = mediaLayer->size() != qiTemp.size();
-//    delete mediaLayer;
-//    mediaLayer = new QImage(qiTemp.convertToFormat(QImage::Format_ARGB32_Premultiplied));
-//    return askResize;
-    // tf keep aspect ratio, scale import to draw, scale draw to import, do nothing.
-    // scale to longest or shortest side.
-    return false;
+    importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    importType = image;
+    bool match = importImg.width() == defaultSize.width() && importImg.height() == defaultSize.height();
+    if (match)
+        scale(dontScale);
+    return !match;
 }
 
-void DataIOHandler::scale(int layer, int scaleType) {
-    scaleLayers(layer, scaleType);
-    scaleLists(layer, scaleType);
-    applyFilter();
+void DataIOHandler::scale(scaleType type) {
+    QImage toLayer(defaultSize, QImage::Format_ARGB32_Premultiplied);
+    toLayer.fill(0x00000000);
+    QPainter qp;
+    qp.begin(&toLayer);
+    switch (type) {
+    case dontScale:
+        qp.drawImage(0, 0, importImg);
+        break;
+    case bestFit:
+        if (toLayer.width() > toLayer.height())
+            qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
+        else
+            qp.drawImage(0, 0, importImg.scaledToWidth(toLayer.width()));
+        break;
+    case aspectRatio:
+        qp.drawImage(0, 0, importImg.scaled(toLayer.width(), toLayer.height()));
+        break;
+    case toWidth:
+        qp.drawImage(0,0, importImg.scaledToWidth(toLayer.width()));
+        break;
+    case toHeight:
+        qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
+        break;
+    }
+    qp.end();
+    importImg = toLayer;
+    if (importType == image) {
+        frames[activeFrame].insert(frames[activeFrame].begin(), new Layer(importImg, 255));
+        updated = true;
+        activeLayer = 0;
+    }
 }
 
 void DataIOHandler::scaleLayers(int layer, int scaleType) {
