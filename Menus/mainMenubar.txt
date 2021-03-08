@@ -1,5 +1,5 @@
 File;Save,Save As,Open Recent>,Open,Import,Export,Exit,
-Edit;Brush Mode,Spline Mode,Raster Mode,Copy,Cut,Paste,Delete,Select All,Undo,Redo,
+Edit;Brush Mode,Spline Mode,Raster Mode,Copy,Cut,Paste,Delete,Select All,
 Brush;Brush Radius,Brush Color,Take Color,Brush Strength,Spray Density,Brush Shape>,Brush Filter>,Brush Method>,Brush Profilers>(Radial Profiler,Pattern Profiler,Shape Profiler,),
 Vector;Vector Width,Vector Mode>(Color Vector,Filter Vector,),Vector Color>(Vector Color 1,Vector Color 2,Swap Colors,),Vector Taper>(Taper 1,Taper 2,Swap Tapers,Taper Style>(Single Taper,Double Taper,),),Vector Filter>,
 Raster;Fill Color,Take Color,
