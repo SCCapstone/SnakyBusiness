@@ -1,7 +1,7 @@
 #include <screenrender.h>
 
 
-screenRender::screenRender(QWidget *parent) : QWidget(parent) {
+screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(parent) {
     brushLoc = QPoint(0,0);
     flashFlag = false;
     flasher = new QTimer(this);
@@ -9,6 +9,7 @@ screenRender::screenRender(QWidget *parent) : QWidget(parent) {
     fgVisible = true;
     adder = 0.1;
     samplePoint = QPoint(-1000, -1000);
+    ioh = dioh;
     flasher->start(flashSpeed);
     filter.setFilter("Greyscale");
 }
@@ -44,8 +45,12 @@ QPoint screenRender::getZoomCorrected(QPoint qp) {
 void screenRender::doZoom() {
     if (!fgPrescaled.isNull())
         fgLayers.convertFromImage(screenZoom.zoomImg(fgPrescaled));
+    else
+        fgLayers = QPixmap();
     if (!bgPrescaled.isNull())
         bgLayers.convertFromImage(screenZoom.zoomImg(bgPrescaled));
+    else
+        bgLayers = QPixmap();
     repaint();
 }
 
@@ -58,20 +63,24 @@ void screenRender::toggleFlasher() {
     repaint();
 }
 
-void screenRender::updateViews(Layer *working, QImage fg, QImage bg) {
-    workLayer = working;
-    bgPrescaled = bg;
-    fgPrescaled = fg;
+void screenRender::updateViews() {
+    flasher->stop();
+    workLayer = ioh->getWorkingLayer();
+    bgPrescaled = ioh->getBackground();
+    fgPrescaled = ioh->getForeground();
     doZoom();
+    flasher->start(flashSpeed);
 }
 
 void screenRender::paintEvent(QPaintEvent *event) {
+    if (ioh->wasUpdated())
+        updateViews();
     if (workLayer == nullptr)
         return;
     QPainter qp(this);
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
-    qi = workLayer->getCanvas()->copy();
+    qi = workLayer->getRenderCanvas();
     setFixedSize(qi.size());
     int w = qi.width(), h = qi.height();
     vector <list <Triangle> > tris = workLayer->getTriangles();
@@ -159,7 +168,6 @@ void screenRender::paintEvent(QPaintEvent *event) {
             }
         }
         else {
-            //filter.setFilter(graphics::filterNames[vects[i].getFilter().getFilterIndex()]);
             filter = vects[i].getFilter();
             if (flag) //normal draw
                 for (Triangle t : tris[i])
@@ -172,7 +180,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
                     if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
                         ++flag;
                     if (flag > 0)
-                        fillTriSafe(t);
+                        filterTriSafe(t);
                     if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
                         ++flag;
                     if (flag == 3)
@@ -201,6 +209,14 @@ void screenRender::paintEvent(QPaintEvent *event) {
             if ((flashFlag || dist >= ptSize - 1) && dist <= ptSize)
                 qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
         }
+    for (QPoint qp : workLayer->getRasterEdges()) {
+        for (int i = stdFuncs::clamp(qp.x() - ptSize, 0, w); i < stdFuncs::clamp(qp.x() + ptSize + 1, 0, w); ++i)
+            for (int j = stdFuncs::clamp(qp.y() - ptSize, 0, h); j < stdFuncs::clamp(qp.y() + ptSize + 1, 0, h); ++j) {
+                int dist = abs(i - qp.x()) + abs(j - qp.y());
+                if ((flashFlag || dist >= ptSize - 1) && dist <= ptSize)
+                    qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
+            }
+    }
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);

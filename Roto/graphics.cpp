@@ -287,11 +287,11 @@ void graphics::ImgSupport::setZoom(double Zoom) {
 }
 
 void graphics::ImgSupport::zoomIn() {
-    setZoom(zoom + 0.01);
+    setZoom(stdFuncs::clamp(3.0 * zoom / 2.0, graphics::minZoom, graphics::maxZoom));
 }
 
 void graphics::ImgSupport::zoomOut() {
-    setZoom(zoom - 0.01);
+    setZoom(stdFuncs::clamp(2.0 * zoom / 3.0, graphics::minZoom, graphics::maxZoom));
 }
 
 int graphics::ImgSupport::getSize(double dim, double zoom) {

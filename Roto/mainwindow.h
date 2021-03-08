@@ -9,7 +9,6 @@
 #include <fstream>
 #include <thread>
 #include <algorithm>
-
 #include <QMainWindow>
 #include <QImage>
 #include <QPainter>
@@ -20,8 +19,15 @@
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
-#include <QTextBrowser>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QMessageBox>
+#include <QErrorMessage>
+#include <QFileSystemWatcher>
+#include <QDir>
 #include <QScrollBar>
+#include <QProcess>
+#include <QVBoxLayout>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -37,14 +43,6 @@
 #include <radialprofiler.h>
 #include <viewscroller.h>
 
-using cv::VideoCapture;
-using cv::Mat;
-using cv::destroyAllWindows;
-
-using graphics::vectorFilters;
-using graphics::filterNames;
-using graphics::Filter;
-
 using std::string;
 using std::to_string;
 using std::list;
@@ -55,7 +53,6 @@ using std::map;
 using std::fstream;
 using std::ios;
 using std::pair;
-
 using Qt::MouseButton;
 using Qt::NoButton;
 using Qt::LeftButton;
@@ -72,12 +69,24 @@ using Qt::Key_Backspace;
 using Qt::Key_X;
 using Qt::Key_C;
 using Qt::Key_V;
+using Qt::Key_A;
 
-const string UI_FileType = ".txt";
-const string UI_FileName = "mainMenubar";
-const int trackDrawSpeed = 0;
+using cv::VideoCapture;
+using cv::Mat;
+using cv::destroyAllWindows;
 
-enum EditMode {Brush_Mode, Spline_Mode};
+using graphics::vectorFilters;
+using graphics::filterNames;
+using graphics::Filter;
+
+const QString UI_FileName = "mainMenubar.txt";
+const QString Doc_FileName = "Glass_Opus_Documentation.pdf";
+const QString UI_Loc = "/Menus/";
+const QString Icon_Loc = UI_Loc + "Icons/";
+const QString Doc_Loc = "/Documentation/";
+const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
+
+enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -98,12 +107,7 @@ public:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     void resizeEvent(QResizeEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void log(string title, QObject *obj);
-    void createMenubar();
-    void addItems(QMenu *menu, string items);
-    void addAction(QMenu *menu, string s);
-    void refresh();
+
 
 public slots:
     void changeVectorFilter(string s);
@@ -112,10 +116,18 @@ public slots:
     void changeBrushMethod(string s);
     void changeBrushShape(string s);
     void doSomething(string btnPress);
+    void downloadFinished();
+    void downloadTimeout();
 
 private:
+    void log(string title, QObject *obj);
+    bool createMenubar();
+    void addItems(QMenu *menu, string items);
+    void addAction(QMenu *menu, string s);
+    void refresh();
     void setShiftFlag(bool b);
     void setSamplePt(QPoint qp);
+    void downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText);
 
     Ui::MainWindow *ui;
     screenRender *sr;
@@ -128,9 +140,14 @@ private:
     resizeWindow *resizeCheck;
     RadialProfiler *radialProfiler;
     QColorDialog cd;
-    QTextBrowser qtb;
+    QFileSystemWatcher downloadWatcher;
+    QTimer downloadTimer;
+    QErrorMessage *qme;
     unordered_map <string, QObject *> objFetch;
     list <QObject *> toDel;
+    QString dSubfolder, dFileName;
+    downloadAction dAction;
+    bool takeFlag;
 
 };
 

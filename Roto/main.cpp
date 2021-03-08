@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <Windows.h>
+
+
+#pragma comment(lib, "urlmon.lib")
 
 int main(int argc, char *argv[])
 {

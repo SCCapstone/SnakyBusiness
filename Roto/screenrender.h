@@ -10,6 +10,7 @@
 #include <stdfuncs.h>
 #include <graphics.h>
 #include <layer.h>
+#include <dataIOHandler.h>
 
 using std::find;
 using std::vector;
@@ -26,9 +27,8 @@ class screenRender : public QWidget {
 
 public:
 
-    explicit screenRender(QWidget *parent = nullptr);
+    explicit screenRender(DataIOHandler *dioh, QWidget *parent = nullptr);
     ~screenRender();
-    void updateViews(Layer *working, QImage fg, QImage bg);
     double getZoom();
     void setZoom(double Zoom);
     void zoomIn();
@@ -42,6 +42,7 @@ public:
 
 private:
 
+    void updateViews();
     void fillTri(Triangle t);
     void fillBTri(QPoint a, QPoint b, QPoint c);
     void fillTTri(QPoint a, QPoint b, QPoint c);
@@ -68,6 +69,7 @@ private:
     QPoint samplePoint;
     ImgSupport screenZoom;
     Filter filter;
+    DataIOHandler *ioh;
 
 public slots:
 

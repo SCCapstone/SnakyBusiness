@@ -6,7 +6,8 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
     setStrength(str);
     setDensity(density);
     setAppMethod(type);
-    setColor(qc);
+    setBrushColor(qc);
+    setFillColor(qc);
     brush.setRadius(size);
     checkEdgeSize = size / 2;
     size_t rad = static_cast<size_t>(2 * (checkEdgeSize + size) + 1);
@@ -49,6 +50,8 @@ brushHandler::~brushHandler() {
 
 void brushHandler::setAlpha(int val) {
     alpha = static_cast<unsigned int>(val);
+    brushColor.setAlpha(alpha);
+    fillColor.setAlpha(alpha);
 }
 
 void brushHandler::setAppMethod(string type) {
@@ -220,15 +223,26 @@ int brushHandler::getFilterIndex() {
     return brushFilter.getFilterIndex();
 }
 
-void brushHandler::setColor(QColor qc) {
-    color = qc;
-    color.setAlpha(alpha);
+void brushHandler::setBrushColor(QColor qc) {
+    brushColor = qc;
+    brushColor.setAlpha(alpha);
 }
 
-QColor brushHandler::getColor() {
-    QColor toRet = color;
+void brushHandler::setFillColor(QColor qc) {
+    fillColor = qc;
+    fillColor.setAlpha(alpha);
+}
+
+QColor brushHandler::getBrushColor() {
+    QColor toRet = brushColor;
     toRet.setAlpha(255);
-    return color;
+    return toRet;
+}
+
+QColor brushHandler::getFillColor() {
+    QColor toRet = fillColor;
+    toRet.setAlpha(255);
+    return toRet;
 }
 
 void brushHandler::applyBrush(QImage *qi, QPoint qp) {
@@ -321,7 +335,7 @@ void brushHandler::shiftDown() {
 void brushHandler::overwrite(QImage *qi) {
     const unsigned char *const *const brushMap = brush.getBrushMap();
     int radius = brush.getRadius(), xMax = qi->width(), yMax = qi->height();
-    QRgb qc = alpha == 0 ? 0x00FFFFFF : color.rgba();
+    QRgb qc = alpha == 0 ? 0x00FFFFFF : brushColor.rgba();
     while (toProcess.size() > 0) {
         QPoint p = toProcess.front();
         lastPnt = currPnt;
@@ -341,7 +355,7 @@ void brushHandler::overwrite(QImage *qi) {
 }
 
 QColor brushHandler::getAffected() {
-    int red = color.red(), green = color.green(), blue = color.blue();
+    int red = brushColor.red(), green = brushColor.green(), blue = brushColor.blue();
     red *= strength;
     red /= maxStrength;
     green *= strength;
@@ -370,9 +384,9 @@ void brushHandler::additive(QImage *qi) {
                 if (onScreen(i, j, xMax, yMax) && brushMap[x][y] && (!sprayDensity || !(rand() % sprayDensity)) && (!patternInUse || patternMap[i % patternXDim][j % patternYDim])) {
                     if (!checkMap[x + checkEdgeSize][y + checkEdgeSize]) {
                         QColor qc = qi->pixelColor(i, j);
-                        setColor.setRed(min(255, qc.red() + r));
-                        setColor.setGreen(min(255, qc.green() + g));
-                        setColor.setBlue(min(255, qc.blue() + b));
+                        setColor.setRed((qc.red() + r) & 255);
+                        setColor.setGreen((qc.green() + r) & 255);
+                        setColor.setBlue((qc.blue() + r) & 255);
                         qi->setPixel(i, j, setColor.rgba());
                         checkMap[x + checkEdgeSize][y + checkEdgeSize] = 255;
                     }
@@ -472,8 +486,7 @@ void brushHandler::radialUpdate(int size, vector<int> pts) {
 void brushHandler::radial(QImage *qi) {
     const unsigned char *const *const brushMap = brush.getBrushMap();
     int radius = brush.getRadius(), xMax = qi->width(), yMax = qi->height();
-    color.setAlpha(alpha);
-    QRgb qc = color.rgba();
+    QRgb qc = brushColor.rgba();
     while (toProcess.size() > 0) {
         QPoint p = toProcess.front();
         lastPnt = currPnt;

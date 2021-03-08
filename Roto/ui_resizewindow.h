@@ -12,8 +12,9 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QFormLayout>
 #include <QtWidgets/QFrame>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
@@ -31,22 +32,25 @@ public:
     QLabel *label_3;
     QWidget *verticalLayoutWidget;
     QVBoxLayout *verticalLayout;
+    QHBoxLayout *horizontalLayout;
+    QSpacerItem *horizontalSpacer_4;
     QLabel *label_4;
+    QSpacerItem *horizontalSpacer_5;
     QFrame *line;
-    QFormLayout *formLayout;
-    QLabel *label;
-    QComboBox *comboBox;
-    QLabel *label_2;
+    QGridLayout *gridLayout;
+    QSpacerItem *horizontalSpacer;
     QComboBox *comboBox_2;
-    QSpacerItem *verticalSpacer;
+    QLabel *label_2;
+    QSpacerItem *horizontalSpacer_2;
     QPushButton *pushButton;
+    QSpacerItem *horizontalSpacer_3;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *resizeWindow)
     {
         if (resizeWindow->objectName().isEmpty())
             resizeWindow->setObjectName(QString::fromUtf8("resizeWindow"));
-        resizeWindow->resize(323, 186);
+        resizeWindow->resize(322, 191);
         centralwidget = new QWidget(resizeWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         label_3 = new QLabel(centralwidget);
@@ -54,14 +58,27 @@ public:
         label_3->setGeometry(QRect(40, 20, 47, 13));
         verticalLayoutWidget = new QWidget(centralwidget);
         verticalLayoutWidget->setObjectName(QString::fromUtf8("verticalLayoutWidget"));
-        verticalLayoutWidget->setGeometry(QRect(10, 10, 301, 151));
+        verticalLayoutWidget->setGeometry(QRect(-1, -1, 321, 171));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalSpacer_4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_4);
+
         label_4 = new QLabel(verticalLayoutWidget);
         label_4->setObjectName(QString::fromUtf8("label_4"));
 
-        verticalLayout->addWidget(label_4);
+        horizontalLayout->addWidget(label_4);
+
+        horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_5);
+
+
+        verticalLayout->addLayout(horizontalLayout);
 
         line = new QFrame(verticalLayoutWidget);
         line->setObjectName(QString::fromUtf8("line"));
@@ -70,45 +87,42 @@ public:
 
         verticalLayout->addWidget(line);
 
-        formLayout = new QFormLayout();
-        formLayout->setObjectName(QString::fromUtf8("formLayout"));
-        label = new QLabel(verticalLayoutWidget);
-        label->setObjectName(QString::fromUtf8("label"));
+        gridLayout = new QGridLayout();
+        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        formLayout->setWidget(0, QFormLayout::LabelRole, label);
-
-        comboBox = new QComboBox(verticalLayoutWidget);
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->setObjectName(QString::fromUtf8("comboBox"));
-
-        formLayout->setWidget(0, QFormLayout::FieldRole, comboBox);
-
-        label_2 = new QLabel(verticalLayoutWidget);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-
-        formLayout->setWidget(1, QFormLayout::LabelRole, label_2);
+        gridLayout->addItem(horizontalSpacer, 2, 4, 1, 1);
 
         comboBox_2 = new QComboBox(verticalLayoutWidget);
         comboBox_2->addItem(QString());
         comboBox_2->addItem(QString());
         comboBox_2->addItem(QString());
         comboBox_2->addItem(QString());
+        comboBox_2->addItem(QString());
         comboBox_2->setObjectName(QString::fromUtf8("comboBox_2"));
 
-        formLayout->setWidget(1, QFormLayout::FieldRole, comboBox_2);
+        gridLayout->addWidget(comboBox_2, 0, 3, 1, 1);
 
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        label_2 = new QLabel(verticalLayoutWidget);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
 
-        formLayout->setItem(2, QFormLayout::FieldRole, verticalSpacer);
+        gridLayout->addWidget(label_2, 0, 1, 1, 1);
+
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer_2, 2, 2, 1, 1);
 
         pushButton = new QPushButton(verticalLayoutWidget);
         pushButton->setObjectName(QString::fromUtf8("pushButton"));
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, pushButton);
+        gridLayout->addWidget(pushButton, 2, 3, 1, 1);
+
+        horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer_3, 0, 0, 1, 1);
 
 
-        verticalLayout->addLayout(formLayout);
+        verticalLayout->addLayout(gridLayout);
 
         resizeWindow->setCentralWidget(centralwidget);
         statusbar = new QStatusBar(resizeWindow);
@@ -125,16 +139,13 @@ public:
         resizeWindow->setWindowTitle(QCoreApplication::translate("resizeWindow", "resizeWindow", nullptr));
         label_3->setText(QString());
         label_4->setText(QCoreApplication::translate("resizeWindow", "The Canvas and Import Media have Different Dimensions.", nullptr));
-        label->setText(QCoreApplication::translate("resizeWindow", "Layer to Scale", nullptr));
-        comboBox->setItemText(0, QCoreApplication::translate("resizeWindow", "Canvas Layer", nullptr));
-        comboBox->setItemText(1, QCoreApplication::translate("resizeWindow", "Media Layer", nullptr));
-
-        label_2->setText(QCoreApplication::translate("resizeWindow", "Method of Scaling to Other Layer", nullptr));
         comboBox_2->setItemText(0, QCoreApplication::translate("resizeWindow", "Do Not Scale", nullptr));
-        comboBox_2->setItemText(1, QCoreApplication::translate("resizeWindow", "Scale to Width", nullptr));
-        comboBox_2->setItemText(2, QCoreApplication::translate("resizeWindow", "Scale to Height", nullptr));
-        comboBox_2->setItemText(3, QCoreApplication::translate("resizeWindow", "Scale to Aspect Ratio", nullptr));
+        comboBox_2->setItemText(1, QCoreApplication::translate("resizeWindow", "Scale to Best Fit", nullptr));
+        comboBox_2->setItemText(2, QCoreApplication::translate("resizeWindow", "Scale to Aspect Ratio", nullptr));
+        comboBox_2->setItemText(3, QCoreApplication::translate("resizeWindow", "Scale to Width", nullptr));
+        comboBox_2->setItemText(4, QCoreApplication::translate("resizeWindow", "Scale to Height", nullptr));
 
+        label_2->setText(QCoreApplication::translate("resizeWindow", "Method of Scaling to Layer", nullptr));
         pushButton->setText(QCoreApplication::translate("resizeWindow", "Finish", nullptr));
     } // retranslateUi
 
