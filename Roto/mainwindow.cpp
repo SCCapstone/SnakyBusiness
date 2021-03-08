@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     else {
         downloadItem(UI_Loc, UI_FileName, DownloadThenRestart, "Menu Configuration Not Found", "Menu configuration not found locally/offline.\nFetch and download menu configuration online?");
     }
+    ui->menubar->setCornerWidget(dynamic_cast<QMenuBar *>(objFetch.at(UI_FileName.toStdString())), Qt::TopLeftCorner);
     resizeCheck = new resizeWindow(this, ioh);
     radialProfiler = new RadialProfiler(&bh, this);
     mode = Brush_Mode;
@@ -104,7 +105,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
     lastButton = event->button();
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
-    if (mode == Raster_Mode && event->button() == RightButton && !shiftFlag)
+    if (mode == Raster_Mode && event->button() == RightButton && !shiftFlag && !ioh->getWorkingLayer()->isRotating())
         ioh->getWorkingLayer()->fillColor(qp, bh.getFillColor());
     else if (mode == Brush_Mode) {
         if (lastButton == RightButton) {
@@ -360,6 +361,10 @@ void MainWindow::doSomething(string btnPress) {
 
         }
     }
+    else if (btnPress == "On")
+        sr->showFg(true);
+    else if (btnPress == "Off")
+        sr->showFg(false);
     else if (btnPress == "Brush Color") {
         QColor color = QColorDialog::getColor(bh.getBrushColor(), this);
         bh.setBrushColor(color);
@@ -493,28 +498,70 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Copy") {
         if (mode == Spline_Mode)
             ioh->copyVectors();
+        else if (mode == Raster_Mode)
+            ioh->copyRaster();
     }
     else if (btnPress == "Cut") {
         if (mode == Spline_Mode)
             ioh->cutVectors();
+        else if (mode == Raster_Mode)
+            ioh->cutRaster();
         refresh();
     }
     else if (btnPress == "Delete") {
         if (mode == Spline_Mode)
             ioh->deleteVectors();
+        else if (mode == Raster_Mode)
+            ioh->deleteRaster();
         refresh();
     }
     else if (btnPress == "Paste") {
         if (mode == Spline_Mode)
             ioh->pasteVectors();
+        else if (mode == Raster_Mode)
+            ioh->pasteRaster();
         refresh();
     }
+    else if (btnPress == "Select All")
+        ioh->getWorkingLayer()->selectAll();
     else if (btnPress == "Set Active Layer") {
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer(), 1, ioh->getNumLayers(), 1, &ok);
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok)
-            bh.setStrength(ret);
+            ioh->setActiveLayer(ret, mode);
     }
+    else if (btnPress == "Layer Filter Strength") {
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Set current layer's filter strength", ioh->getWorkingLayer()->getFilterStrength(), 1, graphics::maxColor, 1, &ok) - 1;
+        if (ok)
+            ioh->getWorkingLayer()->setFilterStrength(ret);
+    }
+    else if (btnPress == "Move To Front")
+        ioh->moveToFront();
+    else if (btnPress == "Move Backward")
+        ioh->moveBackward();
+    else if (btnPress == "Move Forward")
+        ioh->moveForward();
+    else if (btnPress == "Move To Back")
+        ioh->moveToBack();
+    else if (btnPress == "Move To Front")
+        ioh->moveToFront();
+    else if (btnPress == "Insert Layer" && false)
+        ioh->addLayer();
+    else if (btnPress == "Copy Layer" && false)
+        ioh->copyLayer();
+    else if (btnPress == "Cut Layer" && false) {
+        ioh->copyLayer();
+        ioh->deleteLayer();
+    }
+    else if (btnPress == "Paste Layer" && false)
+        ioh->pasteLayer();
+    else if (btnPress == "Delete Layer" && false)
+        ioh->deleteLayer();
+    else if (btnPress == "Compile Layer")
+        ioh->compileLayer();
+    else if (btnPress == "Compile Frame")
+        ioh->compileFrame();
     else if (btnPress == "Zoom 100%") {
         sr->setZoom(1.0);
     }
@@ -689,27 +736,32 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         ioh->getWorkingLayer()->deleteSelected();
         break;
     case Key_X:
-        if (ctrlFlag && mode == Spline_Mode)
-            ioh->cutVectors();
+        if (ctrlFlag) {
+            if (mode == Spline_Mode)
+                ioh->cutVectors();
+            else if (mode == Raster_Mode)
+                ioh->cutRaster();
+        }
         break;
     case Key_C:
-        if (ctrlFlag && mode == Spline_Mode)
-            ioh->copyVectors();
+        if (ctrlFlag) {
+            if (mode == Spline_Mode)
+                ioh->copyVectors();
+            else if (mode == Raster_Mode)
+                ioh->copyRaster();
+        }
         break;
     case Key_V:
-        if (ctrlFlag && mode == Spline_Mode)
-            ioh->pasteVectors();
+        if (ctrlFlag) {
+            if (mode == Spline_Mode)
+                ioh->pasteVectors();
+            else if (mode == Raster_Mode)
+                ioh->pasteRaster();
+        }
         break;
     case Key_A:
         if (ctrlFlag) {
-            if (mode == Spline_Mode) {
-
-            }
-            else if (mode == Raster_Mode) {
-                ioh->getWorkingLayer()->pressLeft(QPoint(0,0));
-                QImage *img = ioh->getWorkingLayer()->getCanvas();
-                ioh->getWorkingLayer()->release(QPoint(img->width(), img->height()), LeftButton);
-            }
+            ioh->getWorkingLayer()->selectAll();
         }
         /*
     case Qt::Key_I:

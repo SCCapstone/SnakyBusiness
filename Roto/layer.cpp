@@ -16,9 +16,7 @@ Layer::Layer(QSize qs) {
     activePt = -1;
     alpha = 255;
     qi = new QImage(qs, QImage::Format_ARGB32_Premultiplied);
-    for (int i = 0; i < qs.width(); ++i)
-        for (int j = 0; j < qs.height(); ++j)
-            qi->setPixel(i, j, 0x00000000);
+    qi->fill(0x00000000);
     for (int i = 0; i < qs.width(); ++i)
         for (int j = 0; j < qs.height(); ++j)
             qi->setPixelColor(i, j, QColor(255.0 * static_cast<float>(i) / qi->width(), 255.0 * static_cast<float>(j) / qi->height(), 255.0 * (1.0 - static_cast<float>(i) / qi->width())));
@@ -58,6 +56,7 @@ Layer::Layer(const Layer &layer) {
     selection = NoSelect;
     postAngle = 0.0;
     selectOgActive = false;
+    filter = layer.filter;
 }
 
 void Layer::pasteVectors(list<SplineVector> svs) {
@@ -69,6 +68,35 @@ void Layer::pasteVectors(list<SplineVector> svs) {
     while (i < vects.size())
         activeVects.push_back(i++);
     calcLine();
+}
+
+void Layer::pasteRaster(QImage rasterIn, double angleIn, pair<QPoint, QPoint> bounds) {
+    boundPt1 = bounds.first;
+    boundPt2 = bounds.second;
+    rasterselectOg = rasterIn;
+    postAngle = angleIn;
+    selectOgActive = true;
+    deltaMove = rotateAnchor = boundPt1;
+    for (int i = 0; i < rasterselectOg.width(); ++i)
+        for (int j = 0; j < rasterselectOg.height(); ++j) {
+            QColor qc = rasterselectOg.pixelColor(i, j);
+            if (rasterselectOg.pixelColor(i, j).alpha() != 0) {
+                qc.setAlpha(alpha);
+                rasterselectOg.setPixelColor(i, j, qc);
+            }
+        }
+}
+
+QImage Layer::getRaster() {
+    return rasterselectOg;
+}
+
+double Layer::getAngle() {
+    return postAngle;
+}
+
+pair <QPoint, QPoint> Layer::getBounds() {
+    return pair <QPoint, QPoint> (boundPt1, boundPt2);
 }
 
 Layer::~Layer() {
@@ -391,6 +419,8 @@ void Layer::pressLeft(QPoint qp) {
             bool isLeftElseRight = abs(qp.x() - boundPt1.x()) < abs(qp.x() - boundPt2.x()) ? true : false;
             bool validVert = isTopElseBottom ? abs(qp.y() - boundPt1.y()) <= 5 : abs(qp.y() - boundPt2.y()) <= 5;
             bool validHori = isLeftElseRight ? abs(qp.x() - boundPt1.x()) <= 5 : abs(qp.x() - boundPt2.x()) <= 5;
+            int ox = (boundPt1.x() + boundPt2.x()) / 2, oy = (boundPt1.y() + boundPt2.y()) / 2;
+            postAngle += atan2(rotateAnchor.y() - oy, rotateAnchor.x() - ox) - atan2(deltaMove.y() - oy, deltaMove.x() - ox);
             deltaMove = qp;
             rotateAnchor = qp;
             if (validHori || validVert) {
@@ -491,11 +521,10 @@ MouseButton Layer::pressRight(QPoint qp) {
                     vects[activeVects[0]].removePt(index);
             }
             else if (flag) {
-                size_t minDist1 = INT_MAX, minDist2 = INT_MAX, index1 = 1, index2 = 1, dist;
+                size_t minDist1 = INT_MAX, index1 = 1, index2 = 1, dist;
                 for (size_t i = 0; i < controlPts.size(); ++i) {
                     dist = abs(qp.x() - controlPts[i].x()) + abs(qp.y() - controlPts[i].y());
                     if (dist < minDist1) {
-                        minDist2 = minDist1;
                         minDist1 = dist;
                         index2 = index1;
                         index1 = i;
@@ -522,32 +551,34 @@ MouseButton Layer::pressRight(QPoint qp) {
 
 void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
     if (mode == Spline_Mode) {
-        if (activeVects.size() != 0 && !ctrlFlag)
-            activeVects.clear();
-        else {
-            int dist = INT_MAX;
-            char index = -1, size = static_cast<char>(vects.size());
-            for (char i = 0; i < size; ++i) {
-                vector <QPoint> pts = vects[i].getControls();
-                int tdist = abs(qp.x() - pts[0].x()) + abs(qp.y() - pts[0].y());
-                if (tdist < dist) {
-                    dist = tdist;
-                    index = i;
+        if (activeVects.size() != 0) {
+            if (!ctrlFlag)
+                activeVects.clear();
+            else {
+                int dist = INT_MAX;
+                char index = -1, size = static_cast<char>(vects.size());
+                for (char i = 0; i < size; ++i) {
+                    vector <QPoint> pts = vects[i].getControls();
+                    int tdist = abs(qp.x() - pts[0].x()) + abs(qp.y() - pts[0].y());
+                    if (tdist < dist) {
+                        dist = tdist;
+                        index = i;
+                    }
+                    tdist = abs(qp.x() - pts[pts.size() - 1].x()) + abs(qp.y() - pts[pts.size() - 1].y());
+                    if (tdist < dist) {
+                        dist = tdist;
+                        index = i;
+                    }
                 }
-                tdist = abs(qp.x() - pts[pts.size() - 1].x()) + abs(qp.y() - pts[pts.size() - 1].y());
-                if (tdist < dist) {
-                    dist = tdist;
-                    index = i;
-                }
+                bool flag = true;
+                for (char c : activeVects)
+                    if (c == index) {
+                        flag = false;
+                        break;
+                    }
+                if (flag)
+                    activeVects.push_back(index);
             }
-            bool flag = true;
-            for (char c : activeVects)
-                if (c == index) {
-                    flag = false;
-                    break;
-                }
-            if (flag)
-                activeVects.push_back(index);
         }
     }
     else if (mode == Raster_Mode)
@@ -729,11 +760,53 @@ void Layer::drawRasterSelection(QImage *img) {
     qp.end();
 }
 
+void Layer::selectAll() {
+    if (mode == Spline_Mode) {
+        for (size_t i = 0; i < vects.size(); ++i)
+            activeVects.push_back(static_cast<unsigned char>(i));
+    }
+    else if (mode == Raster_Mode) {
+        deselect();
+        boundPt1 = QPoint(0, 0);
+        boundPt2 = QPoint(qi->width() - 1, qi->height() - 1);
+        rasterselectOg = qi->copy();
+        qi->fill(0x00000000);
+        deltaMove = rotateAnchor = boundPt1;
+        selectOgActive = true;
+    }
+}
+
 void Layer::deselect() {
     activeVects.clear();
     drawRasterSelection(qi);
     selection = NoSelect;
     selectOgActive = false;
     postAngle = 0.0;
+    activePt = -1;
+}
+
+void Layer::clearVectors() {
+    vects.clear();
+    tris.clear();
+}
+
+Filter Layer::getFilter() {
+    return filter;
+}
+
+int Layer::getFilterStrength() {
+    return filter.getStrength();
+}
+
+void Layer::setFilterStrength(int str) {
+    filter.setStrength(str);
+}
+
+void Layer::setFilter(string filterName) {
+    filter.setFilter(filterName);
+}
+
+bool Layer::isRotating() {
+    return selectOgActive;
 }
 

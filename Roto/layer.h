@@ -36,6 +36,11 @@ public:
     vector <list <Triangle> > getTriangles();
     vector <SplineVector> getVectors();
     void pasteVectors(list <SplineVector> svs);
+    void pasteRaster(QImage rasterIn, double angleIn, pair <QPoint, QPoint> bounds);
+    QImage getRaster();
+    double getAngle();
+    bool isRotating();
+    pair <QPoint, QPoint> getBounds();
     vector <unsigned char> getActiveVectors();
     void spinWheel(int dy);
     void release(QPoint qp, MouseButton button);
@@ -67,15 +72,21 @@ public:
     pair <char, char> getVectorTapers();
     pair <QRgb, QRgb> getVectorColors();
     void cleanUp();
+    void selectAll();
     void deselect();
     void deleteSelected();
+    void clearVectors();
+    Filter getFilter();
+    int getFilterStrength();
+    void setFilterStrength(int str);
+    void setFilter(string filterName);
+    static float getipol(float a, float b, float ipol);
 
 private:
 
     void calcLine();
     void drawRasterSelection(QImage *img);
     void findSelection(QPoint qp);
-    float getipol(float a, float b, float ipol);
 
     EditMode mode;
     Selection selection;
@@ -88,6 +99,7 @@ private:
     int alpha;
     bool shiftFlag, selectOgActive, selecting;
     QPoint deltaMove, boundPt1, boundPt2, rotateAnchor;
+    Filter filter;
 
 };
 

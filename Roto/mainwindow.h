@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QScrollBar>
 #include <QProcess>
+#include <QVBoxLayout>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>

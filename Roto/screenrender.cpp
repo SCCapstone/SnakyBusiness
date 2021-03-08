@@ -45,8 +45,12 @@ QPoint screenRender::getZoomCorrected(QPoint qp) {
 void screenRender::doZoom() {
     if (!fgPrescaled.isNull())
         fgLayers.convertFromImage(screenZoom.zoomImg(fgPrescaled));
+    else
+        fgLayers = QPixmap();
     if (!bgPrescaled.isNull())
         bgLayers.convertFromImage(screenZoom.zoomImg(bgPrescaled));
+    else
+        bgLayers = QPixmap();
     repaint();
 }
 
@@ -164,7 +168,6 @@ void screenRender::paintEvent(QPaintEvent *event) {
             }
         }
         else {
-            //filter.setFilter(graphics::filterNames[vects[i].getFilter().getFilterIndex()]);
             filter = vects[i].getFilter();
             if (flag) //normal draw
                 for (Triangle t : tris[i])
@@ -177,7 +180,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
                     if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
                         ++flag;
                     if (flag > 0)
-                        fillTriSafe(t);
+                        filterTriSafe(t);
                     if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
                         ++flag;
                     if (flag == 3)
