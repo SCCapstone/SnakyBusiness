@@ -134,8 +134,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+    QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     if (takeFlag) {
-        QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
         if (mode == Brush_Mode)
             bh.setBrushColor(ioh->getWorkingLayer()->getCanvas()->pixelColor(qp.x(), qp.y()));
         else if (mode == Raster_Mode)
@@ -148,7 +148,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
         bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
     }
     else if (mode == Spline_Mode || (mode == Raster_Mode && event->button() != Qt::RightButton))
-        ioh->getWorkingLayer()->release(event->pos(), event->button());
+        ioh->getWorkingLayer()->release(qp, event->button());
     else if (event->button() >= 8) {
         setShiftFlag(false);
         if (onePress)

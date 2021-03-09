@@ -10,6 +10,6 @@ void viewScroller::wheelEvent(QWheelEvent *event) {
 
 QPoint viewScroller::getScrollCorrected(QPoint qp) {
     qp.setX(qp.x() + horizontalScrollBar()->value());
-    qp.setY(qp.y() + verticalScrollBar()->value());
+    qp.setY(qp.y() + verticalScrollBar()->value() - 20);
     return qp;
 }

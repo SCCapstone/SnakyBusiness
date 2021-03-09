@@ -381,6 +381,7 @@ void Layer::pressLeft(QPoint qp) {
                         activePt = i;
                         break;
                     }
+                cout << controlPts[0].x() << "," << controlPts[0].y() << endl;
                 if (activePt == -1)
                     deltaMove = qp;
             }

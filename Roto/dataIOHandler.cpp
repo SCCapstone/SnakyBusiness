@@ -616,7 +616,7 @@ void DataIOHandler::moveToFront() {
 }
 
 void DataIOHandler::moveToBack() {
-    if (activeLayer != 0) {
+    while (activeLayer != 0) {
         swap(frames[activeFrame][activeLayer - 1], frames[activeFrame][activeLayer]);
         --activeLayer;
     }
