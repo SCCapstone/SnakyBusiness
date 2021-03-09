@@ -679,6 +679,7 @@ void DataIOHandler::pasteVectors() {
 }
 
 void DataIOHandler::copyRaster() {
+    cout << "here" << endl;
     Layer *layer = getWorkingLayer();
     rasterCopySlot = layer->getRaster();
     angleCopySlot = layer->getAngle();

@@ -725,20 +725,24 @@ void Layer::cleanUp() {
 }
 
 void Layer::deleteSelected() {
-    if (activeVects.size() == 0)
-        return;
-    sort(activeVects.begin(), activeVects.end());
-    for (int i = activeVects.size() - 1; i >= 0; --i) {
-        unsigned char activeVect = activeVects[i];
-        vects.erase(vects.begin() + activeVect);
-        tris.erase(tris.begin() + activeVect);
+    if (mode == Spline_Mode && activeVects.size() != 0) {
+        sort(activeVects.begin(), activeVects.end());
+        for (int i = activeVects.size() - 1; i >= 0; --i) {
+            unsigned char activeVect = activeVects[i];
+            vects.erase(vects.begin() + activeVect);
+            tris.erase(tris.begin() + activeVect);
+        }
     }
-    rasterselectOg = QImage();
+    else {
+
+        rasterselectOg = QImage();
+    }
     deselect();
-    activeVects.clear();
 }
 
 void Layer::drawRasterSelection(QImage *img) {
+    if (rasterselectOg.isNull())
+        return;
     QImage rasterEdit = rasterselectOg.scaled(1 + boundPt2.x() - boundPt1.x(), 1 + boundPt2.y() - boundPt1.y());
     int ox = (boundPt1.x() + boundPt2.x()) / 2, oy = (boundPt1.y() + boundPt2.y()) / 2;
     float angle = atan2(rotateAnchor.y() - oy, rotateAnchor.x() - ox) - atan2(deltaMove.y() - oy, deltaMove.x() - ox);
@@ -778,12 +782,16 @@ void Layer::selectAll() {
 }
 
 void Layer::deselect() {
-    activeVects.clear();
-    drawRasterSelection(qi);
-    selection = NoSelect;
-    selectOgActive = false;
-    postAngle = 0.0;
-    activePt = -1;
+    if (mode == Spline_Mode) {
+        activeVects.clear();
+        activePt = -1;
+    }
+    else if (mode == Raster_Mode) {
+        drawRasterSelection(qi);
+        selection = NoSelect;
+        selectOgActive = false;
+        postAngle = 0.0;
+    }
 }
 
 void Layer::clearVectors() {
