@@ -464,6 +464,14 @@ void Layer::pressLeft(QPoint qp) {
             }
             else if (qp.x() > boundPt1.x() && qp.x() < boundPt2.x() && qp.y() > boundPt1.y() && qp.y() < boundPt2.y())
                 selection = BodySelect;
+            else {
+                deselect();
+                rasterselectOg = QImage();
+                boundPt1 = qp;
+                postAngle = 0.0;
+                deltaMove = qp;
+                selecting = true;
+            }
         }
     }
 }
@@ -582,8 +590,6 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
             }
         }
     }
-    else if (mode == Raster_Mode)
-        deselect();
 }
 
 void Layer::doubleClickRight(QPoint qp) {

@@ -17,6 +17,7 @@ using Qt::RightButton;
 const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
+const float pi = 3.14159;
 
 enum EditMode {Brush_Mode, Spline_Mode, Raster_Mode};
 enum Selection {TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, BodySelect, NoSelect};

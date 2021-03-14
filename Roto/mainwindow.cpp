@@ -172,9 +172,6 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
         sr->showPts();
         refresh();
     }
-    else if (mode == Raster_Mode) {
-        ioh->getWorkingLayer()->doubleClickLeft(qp, ctrlFlag);
-    }
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event) {
@@ -404,7 +401,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
         if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
-        refresh();
     }
     else if (btnPress == "Vector Taper 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -414,7 +410,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
-        refresh();
     }
     else if (btnPress == "Vector Taper 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -424,7 +419,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
-        refresh();
     }
     else if (btnPress == "Vector Color 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -432,7 +426,6 @@ void MainWindow::doSomething(string btnPress) {
             return;
         QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().second, this);
         ioh->getWorkingLayer()->setVectorColor2(color.rgba());
-        refresh();
     }
     else if (btnPress == "Vector Color 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -440,31 +433,24 @@ void MainWindow::doSomething(string btnPress) {
             return;
         QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().first, this);
         ioh->getWorkingLayer()->setVectorColor1(color.rgba());
-        refresh();
     }
     else if (btnPress == "Single Taper") {
         ioh->getWorkingLayer()->setVectorTaperType(Single);
-        refresh();
     }
     else if (btnPress == "Double Taper") {
         ioh->getWorkingLayer()->setVectorTaperType(Double);
-        refresh();
     }
     else if (btnPress == "Swap Colors") {
         ioh->getWorkingLayer()->swapColors();
-        refresh();
     }
     else if (btnPress == "Swap Tapers") {
         ioh->getWorkingLayer()->swapTapers();
-        refresh();
     }
     else if (btnPress == "Color Vector") {
         ioh->getWorkingLayer()->setVectorMode(ColorFill);
-        refresh();
     }
     else if (btnPress == "Filter Vector") {
         ioh->getWorkingLayer()->setVectorMode(Filtered);
-        refresh();
     }
     else if (btnPress == "Fill Color") {
         QColor color = QColorDialog::getColor(bh.getFillColor(), this);
@@ -506,29 +492,28 @@ void MainWindow::doSomething(string btnPress) {
             ioh->cutVectors();
         else if (mode == Raster_Mode)
             ioh->cutRaster();
-        refresh();
     }
     else if (btnPress == "Delete") {
         if (mode == Spline_Mode)
             ioh->deleteVectors();
         else if (mode == Raster_Mode)
             ioh->deleteRaster();
-        refresh();
     }
     else if (btnPress == "Paste") {
         if (mode == Spline_Mode)
             ioh->pasteVectors();
         else if (mode == Raster_Mode)
             ioh->pasteRaster();
-        refresh();
     }
     else if (btnPress == "Select All")
         ioh->getWorkingLayer()->selectAll();
     else if (btnPress == "Set Active Layer") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
-        if (ok)
+        if (ok && ret != ioh->getActiveLayer()) {
+            ioh->getWorkingLayer()->deselect();
             ioh->setActiveLayer(ret, mode);
+        }
     }
     else if (btnPress == "Layer Filter Strength") {
         bool ok = false;
@@ -587,6 +572,7 @@ void MainWindow::doSomething(string btnPress) {
         if (choice == QMessageBox::Yes)
             QApplication::exit();
     }
+    refresh();
 }
 
 void MainWindow::downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText) {

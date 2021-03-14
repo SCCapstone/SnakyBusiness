@@ -335,7 +335,7 @@ void brushHandler::shiftDown() {
 void brushHandler::overwrite(QImage *qi) {
     const unsigned char *const *const brushMap = brush.getBrushMap();
     int radius = brush.getRadius(), xMax = qi->width(), yMax = qi->height();
-    QRgb qc = alpha == 0 ? 0x00FFFFFF : brushColor.rgba();
+    QRgb qc = alpha == 0 ? 0x00000000 : brushColor.rgba();
     while (toProcess.size() > 0) {
         QPoint p = toProcess.front();
         lastPnt = currPnt;
