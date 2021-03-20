@@ -9,6 +9,7 @@ SplineVector::SplineVector(QPoint a, QPoint b, int Width) {
     taper1 = taper2 = 0;
     taperType = 2;
     filter.setFilter("Greyscale");
+    mode = ColorFill;
 }
 
 SplineVector::SplineVector(const SplineVector &sv) {
@@ -259,8 +260,8 @@ void SplineVector::setFilter(string s) {
     filter.setStrength(255);
 }
 
-void SplineVector::setMode(int i) {
-    mode = static_cast<unsigned char>(i);
+void SplineVector::setMode(VectorMode vm) {
+    mode = vm;
 }
 
 void SplineVector::swapColors() {

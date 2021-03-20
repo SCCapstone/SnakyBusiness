@@ -636,7 +636,7 @@ void MainWindow::changeVectorFilter(string s) {
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
-    ioh->setScreenFilter(filterName);
+    ioh->getWorkingLayer()->setFilter(filterName);
     refresh();
 }
 

@@ -220,7 +220,6 @@ void screenRender::paintEvent(QPaintEvent *event) {
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
-    //cout << stdFuncs::getChange(t1) << endl;
 }
 
 void screenRender::setSamplePt(QPoint qp) {

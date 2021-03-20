@@ -29,6 +29,7 @@ void DataIOHandler::compileFrame() {
         delete frames[temp][i];
         frames[temp].pop_back();
     }
+    delete qi;
     updated = true;
 }
 

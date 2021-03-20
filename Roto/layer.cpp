@@ -530,24 +530,23 @@ MouseButton Layer::pressRight(QPoint qp) {
                     vects[activeVects[0]].removePt(index);
             }
             else if (flag) {
-                size_t minDist1 = INT_MAX, index1 = 1, index2 = 1, dist;
+                size_t minDist1 = INT_MAX, dist;
+                index = 1;
                 for (size_t i = 0; i < controlPts.size(); ++i) {
-                    dist = abs(qp.x() - controlPts[i].x()) + abs(qp.y() - controlPts[i].y());
+                    dist = stdFuncs::sqrDist(qp, controlPts[i]);
                     if (dist < minDist1) {
                         minDist1 = dist;
-                        index2 = index1;
-                        index1 = i;
+                        index = i;
                     }
                 }
-                index = index2 > index1 ? index1 + 1 : index1;
-                if (index1 == 0)
+                if (index == 0)
                     index = 1;
+                if (index != 0 && index != controlPts.size() - 1 && stdFuncs::sqrDist(qp, controlPts[index - 1]) > stdFuncs::sqrDist(qp, controlPts[index + 1]) && stdFuncs::sqrDist(qp, controlPts[0]) > stdFuncs::sqrDist(qp, controlPts[controlPts.size() - 1]))
+                        index = index + 1;
                 vects[activeVects[0]].addPt(qp, index);
                 activePt = index;
                 response = LeftButton;
             }
-            if (limitCnt > 1.0)
-                limitCnt -= 1.0;
             calcLine();
         }
     }
@@ -568,12 +567,12 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
                 char index = -1, size = static_cast<char>(vects.size());
                 for (char i = 0; i < size; ++i) {
                     vector <QPoint> pts = vects[i].getControls();
-                    int tdist = abs(qp.x() - pts[0].x()) + abs(qp.y() - pts[0].y());
+                    int tdist = stdFuncs::sqrDist(qp, pts[0]);
                     if (tdist < dist) {
                         dist = tdist;
                         index = i;
                     }
-                    tdist = abs(qp.x() - pts[pts.size() - 1].x()) + abs(qp.y() - pts[pts.size() - 1].y());
+                    tdist = stdFuncs::sqrDist(qp, pts[pts.size() - 1]);
                     if (tdist < dist) {
                         dist = tdist;
                         index = i;
@@ -588,6 +587,24 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
                 if (flag)
                     activeVects.push_back(index);
             }
+        }
+        else {
+            int dist = INT_MAX;
+            char index = -1, size = static_cast<char>(vects.size());
+            for (char i = 0; i < size; ++i) {
+                vector <QPoint> pts = vects[i].getControls();
+                int tdist = stdFuncs::sqrDist(qp, pts[0]);
+                if (tdist < dist) {
+                    dist = tdist;
+                    index = i;
+                }
+                tdist = stdFuncs::sqrDist(qp, pts[pts.size() - 1]);
+                if (tdist < dist) {
+                    dist = tdist;
+                    index = i;
+                }
+            }
+            activeVects.push_back(index);
         }
     }
 }
@@ -697,9 +714,9 @@ void Layer::setVectorFilter(string s) {
     vects[activeVects[0]].setFilter(s);
 }
 
-void Layer::setVectorMode(int m) {
+void Layer::setVectorMode(VectorMode vm) {
     if (activeVects.size() == 1)
-        vects[activeVects[0]].setMode(m);
+        vects[activeVects[0]].setMode(vm);
 }
 
 void Layer::swapColors() {
