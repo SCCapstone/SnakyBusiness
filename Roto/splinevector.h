@@ -24,6 +24,7 @@ class SplineVector {
 
 public:
 
+    SplineVector();
     SplineVector(QPoint a, QPoint b, int Width = 1);
     SplineVector(const SplineVector &sv);
     SplineVector& operator = (const SplineVector &sv);

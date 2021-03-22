@@ -1,5 +1,12 @@
 #include <splinevector.h>
 
+SplineVector::SplineVector() {
+    width = 0;
+    color1 = color2 = 0xFF000000;
+    taper1 = taper2 = 0;
+    taperType = 2;
+    filter.setFilter("Greyscale");
+}
 
 SplineVector::SplineVector(QPoint a, QPoint b, int Width) {
     controlPts.push_back(a);

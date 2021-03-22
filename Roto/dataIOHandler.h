@@ -79,6 +79,7 @@ public:
     void addLayer();
     void copyLayer();
     void pasteLayer();
+    void pasteLayer(quint32 alpha);
     void deleteLayer();
     void moveBackward();
     void moveForward();
@@ -108,6 +109,7 @@ public:
     Layer *getWorkingLayer();
     QImage getBackground();
     QImage getForeground();
+    vector<int> findPoints(QImage *qi);
 
 
 private:

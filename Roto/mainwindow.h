@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QProcess>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -148,6 +149,7 @@ private:
     QString dSubfolder, dFileName;
     downloadAction dAction;
     bool takeFlag;
+    QString saveFileName;
 
 };
 

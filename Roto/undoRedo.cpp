@@ -1,4 +1,4 @@
-#include "undoRedo.h"
+/*#include "undoRedo.h"
 
 void UndoRedo::undoAction() {
     undoStack = new QUndoStack(this);
@@ -10,4 +10,4 @@ UndoRedo::UndoRedo()
 {
 
     undoRedoAction();
-}
+}*/

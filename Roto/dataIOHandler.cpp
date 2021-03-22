@@ -578,6 +578,16 @@ void DataIOHandler::pasteLayer() {
     updated = true;
 }
 
+void DataIOHandler::pasteLayer(quint32 alpha) {
+    if (layerCopySlot.getCanvas()->isNull())
+        return;
+    activeLayer = frames[activeFrame].size();
+    Layer *l = new Layer(layerCopySlot);
+    l->setAlpha(alpha);
+    frames[activeFrame].push_back(new Layer(*l));
+    updated = true;
+}
+
 void DataIOHandler::deleteLayer() {
     delete frames[activeFrame][activeLayer];
     frames[activeFrame].erase((frames[activeFrame].begin() + activeFrame));
@@ -769,6 +779,130 @@ void DataIOHandler::scale(scaleType type) {
         frames[activeFrame].push_back(new Layer(importImg, 255));
         updated = true;
         activeLayer = frames[activeFrame].size() - 1;
+    }
+}
+
+//vector<int> DataIOHandler::findPoints(QImage *qi) {
+//    vector<int> points;
+//    for (unsigned int i = 0; i < qi->width(); i++) {
+//        for (unsigned int j = 0; j < qi->height(); j++) {
+//
+//        }
+//    }
+//}
+
+void DataIOHandler::save(QString projectName) {
+    QFile file(projectName);
+    QDataStream out(&file);
+    file.open(QIODevice::WriteOnly);
+    out << (quint32)frames.at(0).size();
+    for (unsigned int i = 0; i < frames.at(0).size(); ++i) {
+        int a = frames.at(0).at(i)->getAlpha();
+        out << (quint32)a;
+        out << *(frames.at(0).at(i)->getCanvas());
+        for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
+            // Write size of vects
+            out << (uchar)frames[0][i]->getVectors().size();
+            // write number of points in this vector
+            uchar ptNum = (uchar)frames[0][i]->getVectors()[j].getNumPts();
+            out << ptNum;
+            for (uchar h = 0; h < ptNum; h++) {
+                // Write the QPoints
+                out << frames[0][i]->getVectors()[j].getControls()[h];
+            }
+            // Writing filter
+            out << (uchar)frames[0][i]->getVectors()[j].getFilter().getFilterIndex();
+            // Write first color
+            out << frames[0][i]->getVectors()[j].getColors().first;
+            // Write second color
+            out << frames[0][i]->getVectors()[j].getColors().second;
+            // Write width
+            out << (uchar)frames[0][i]->getVectors()[j].getWidth();
+            // Write first taper
+            out << (uchar)frames[0][i]->getVectors()[j].getTaper().first;
+            // Write second taper
+            out << (uchar)frames[0][i]->getVectors()[j].getTaper().second;
+            // Write taper type
+            out << (uchar)frames[0][i]->getVectors()[j].getTaperType();
+            // Write mode (fill type)
+            out << (uchar)frames[0][i]->getVectors()[j].getMode();
+        }
+    }
+    file.flush();
+    file.close();
+}
+
+void DataIOHandler::load(QString projectName) {
+    vectorCopySlot.clear();
+    QFile file(projectName);
+    QDataStream in(&file);
+    file.open(QIODevice::ReadOnly);
+    quint32 length;
+    in >> length;
+    quint32 a;
+    QImage qi;
+    for (unsigned int i = 0; i < length; ++i) {
+        in >> a;
+        in >> qi;
+        uchar b;
+        uchar pts;
+        QRgb color;
+        // Read size of vects
+        in >> b;
+        frames[0][i]->getVectors().resize(b);
+        // Read number of points
+        for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
+            SplineVector *sv = new SplineVector();
+            frames[0][i]->getVectors()[j] = *sv;
+            in >> pts;
+            for (uchar h = 0; h < pts; h++) {
+                QPoint point;
+                in >> point;
+                //frames[0][i]->getVectors()[i].addPt(point,h);
+                sv->addPt(point,h);
+            }
+        // Read filter
+        in >> b;
+        //frames[0][i]->getVectors()[j].setFilter(graphics::filterNames[b]);
+        sv->setFilter(graphics::filterNames[b]);
+        // Read first color
+        in >> color;
+        //frames[0][i]->getVectors()[j].setColor1(color);
+        sv->setColor1(color);
+        // Read second color
+        in >> color;
+        //frames[0][i]->getVectors()[j].setColor2(color);
+        sv->setColor2(color);
+        // Read width
+        in >> b;
+        //frames[0][i]->getVectors()[j].setWidth(b);
+        sv->setWidth(b);
+        // Read first taper
+        in >> b;
+        //frames[0][i]->getVectors()[j].setTaper1(b);
+        sv->setTaper1(b);
+        // Read second taper
+        in >> b;
+        //frames[0][i]->getVectors()[j].setTaper2(b);
+        sv->setTaper2(b);
+        // Read taper type
+        in >> b;
+        //frames[0][i]->getVectors()[j].setTaperType(b);
+        sv->setTaperType(b);
+        //Read mode (fill type)
+        in >> b;
+        //frames[0][i]->getVectors()[j].setMode(b);
+        sv->setMode(b);
+        vectorCopySlot.push_back(*sv);
+        }
+        qi.save("C:/Users/Matthew Pollard/Desktop/test.png");
+        qi.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        Layer *l = new Layer(qi, 255);
+        l->setAlpha(a);
+        layerCopySlot = *l;
+        pasteLayer(a);
+        pasteVectors();
+
     }
 }
 
