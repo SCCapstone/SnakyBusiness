@@ -367,7 +367,7 @@ void MainWindow::doSomething(string btnPress) {
         ioh->save(saveFileName);
     }
     else if (btnPress == "Save As") {
-        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.opus)"));
+        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.opus)"));
         ioh->save(saveFileName);
     }
     else if (btnPress == "Open") {

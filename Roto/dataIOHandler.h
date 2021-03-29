@@ -110,6 +110,7 @@ public:
     QImage getBackground();
     QImage getForeground();
     vector<int> findPoints(QImage *qi);
+    void vectorCheck(SplineVector sv);
 
 
 private:
