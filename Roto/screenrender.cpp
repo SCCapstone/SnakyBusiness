@@ -93,6 +93,16 @@ void screenRender::paintEvent(QPaintEvent *event) {
         ca.setAlpha(alpha);
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
+        if (bounds.first.x() > bounds.second.x()) {
+            int temp = bounds.first.x();
+            bounds.first.setX(bounds.second.x());
+            bounds.second.setX(temp);
+        }
+        if (bounds.first.y() > bounds.second.y()) {
+            int temp = bounds.first.y();
+            bounds.first.setY(bounds.second.y());
+            bounds.second.setY(temp);
+        }
         bool flag = bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
         if (vects[i].getMode() == ColorFill) {
             if (flag) { //normal draw

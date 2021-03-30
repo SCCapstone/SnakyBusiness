@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (file.exists()) {
         QImage qi(file.fileName());
         logo.setPixmap(QPixmap::fromImage(qi));
-        center = QGuiApplication::screens().first()->availableGeometry().center();
+        center = QGuiApplication::screens().front()->availableGeometry().center();
         logo.setFixedSize(qi.size());
         logo.setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
         logo.move(center - logo.rect().center());
@@ -553,17 +553,17 @@ void MainWindow::doSomething(string btnPress) {
         ioh->moveToBack();
     else if (btnPress == "Move To Front")
         ioh->moveToFront();
-    else if (btnPress == "Insert Layer" && false)
+    else if (btnPress == "Insert Layer")
         ioh->addLayer();
-    else if (btnPress == "Copy Layer" && false)
+    else if (btnPress == "Copy Layer")
         ioh->copyLayer();
-    else if (btnPress == "Cut Layer" && false) {
+    else if (btnPress == "Cut Layer") {
         ioh->copyLayer();
         ioh->deleteLayer();
     }
-    else if (btnPress == "Paste Layer" && false)
+    else if (btnPress == "Paste Layer")
         ioh->pasteLayer();
-    else if (btnPress == "Delete Layer" && false)
+    else if (btnPress == "Delete Layer")
         ioh->deleteLayer();
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();

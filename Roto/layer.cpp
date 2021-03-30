@@ -42,22 +42,30 @@ Layer::Layer(QImage in, int alphaValue) {
 }
 
 Layer::Layer(const Layer &layer) {
+    *this = layer;
+}
+
+Layer& Layer::operator=(const Layer &layer) {
+    mode = Brush_Mode;
+    selection = NoSelect;
     vects = layer.vects;
-    tris = layer.tris;  //create assignment op and copy con
-    activeVects = layer.activeVects;
+    tris = layer.tris;
+    //active vects don't get copied.
     activePt = -1;
     qi = new QImage(layer.qi->copy());
+    // raster select og doesn't get copied
     ipolPts = layer.ipolPts;
     limiter = layer.limiter;
     limitCnt = layer.limitCnt;
+    postAngle = 0.0;
     alpha = layer.alpha;
     shiftFlag = false;
-    deltaMove = QPoint(-1000, -1000);
-    mode = Brush_Mode;
-    selection = NoSelect;
-    postAngle = 0.0;
     selectOgActive = false;
+    selecting = false;
+    deltaMove = QPoint(-1000, -1000);
+    boundPt1 = boundPt2 = rotateAnchor = QPoint(0, 0);
     filter = layer.filter;
+    return *this;
 }
 
 void Layer::pasteVectors(list<SplineVector> svs) {

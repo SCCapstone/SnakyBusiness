@@ -30,6 +30,7 @@ public:
     Layer(QSize qs);
     Layer(QImage in, int alphaValue);
     Layer(const Layer &layer);
+    Layer& operator = (const Layer &layer);
     ~Layer();
     QImage *getCanvas();
     QImage getRenderCanvas();

@@ -561,35 +561,32 @@ Layer * DataIOHandler::getWorkingLayer() {
 }
 
 void DataIOHandler::addLayer() {
-    frames[activeFrame].push_back(new Layer(dims));
-    activeLayer = frames[activeFrame].size() - 1;
+    frames[activeFrame].push_back(new Layer(defaultSize));
     updated = true;
+    activeLayer = frames[activeFrame].size() - 1;
 }
 
 void DataIOHandler::copyLayer() {
     layerCopySlot = Layer(*frames[activeFrame][activeLayer]);
-    updated = true;
 }
 
 void DataIOHandler::pasteLayer() {
     if (layerCopySlot.getCanvas()->isNull())
         return;
-    activeLayer = frames[activeFrame].size();
     frames[activeFrame].push_back(new Layer(layerCopySlot));
     updated = true;
+    activeLayer = frames[activeFrame].size() - 1;
 }
 
 void DataIOHandler::deleteLayer() {
-    delete frames[activeFrame][activeLayer];
-    frames[activeFrame].erase((frames[activeFrame].begin() + activeFrame));
-    if (activeLayer == frames[activeFrame].size()) {
-        if (frames[activeFrame].size() == 0)
-            deleteFrame();
-        else {
-            --activeLayer;
-            updated = true;
-        }
-    }
+    unsigned char temp = activeLayer;
+    if (activeLayer == frames[activeFrame].size() - 1)
+        --activeLayer;
+    delete frames[activeFrame][temp];
+    frames[activeFrame].erase((frames[activeFrame].begin() + temp));
+    if (temp == 0)
+        deleteFrame();
+    updated = true;
 }
 
 void DataIOHandler::moveBackward() {
@@ -680,7 +677,6 @@ void DataIOHandler::pasteVectors() {
 }
 
 void DataIOHandler::copyRaster() {
-    cout << "here" << endl;
     Layer *layer = getWorkingLayer();
     rasterCopySlot = layer->getRaster();
     angleCopySlot = layer->getAngle();
