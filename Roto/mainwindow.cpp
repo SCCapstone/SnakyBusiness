@@ -10,8 +10,9 @@ MainWindow::MainWindow(QWidget *parent)
     this->hide();
     QLabel logo;
     QFile file(QDir::currentPath() + "/Menus/Logo.png");
+    bool logoFound = file.exists();
     QPoint center;
-    if (file.exists()) {
+    if (logoFound) {
         QImage qi(file.fileName());
         logo.setPixmap(QPixmap::fromImage(qi));
         center = QGuiApplication::screens().front()->availableGeometry().center();
@@ -82,7 +83,8 @@ MainWindow::MainWindow(QWidget *parent)
     if (file.exists())
         setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
-    std::this_thread::sleep_for (std::chrono::seconds(2));
+    if (logoFound)
+        std::this_thread::sleep_for (std::chrono::seconds(2));
     move(center - rect().center());
     this->show();
 }
