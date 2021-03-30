@@ -28,6 +28,9 @@
 #include <QScrollBar>
 #include <QProcess>
 #include <QVBoxLayout>
+#include <QDesktopWidget>
+#include <QScreen>
+#include <QLabel>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>

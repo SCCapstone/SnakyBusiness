@@ -7,6 +7,20 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->hide();
+    QLabel logo;
+    QFile file(QDir::currentPath() + "/Menus/Logo.png");
+    QPoint center;
+    if (file.exists()) {
+        QImage qi(file.fileName());
+        logo.setPixmap(QPixmap::fromImage(qi));
+        center = QGuiApplication::screens().first()->availableGeometry().center();
+        logo.setFixedSize(qi.size());
+        logo.setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+        logo.move(center - logo.rect().center());
+        logo.show();
+        QCoreApplication::processEvents();
+    }
     qme = new QErrorMessage(this);
     shiftFlag = false;
     ctrlFlag = false;
@@ -64,8 +78,13 @@ MainWindow::MainWindow(QWidget *parent)
     mode = Brush_Mode;
     onePress = false;
     vs->setWidget(sr);
-    move(5, 5);
+    file.setFileName(QDir::currentPath() + "/Menus/Icons/Window.png");
+    if (file.exists())
+        setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
+    std::this_thread::sleep_for (std::chrono::seconds(2));
+    move(center - rect().center());
+    this->show();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
