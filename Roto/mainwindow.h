@@ -128,6 +128,7 @@ private:
     void setShiftFlag(bool b);
     void setSamplePt(QPoint qp);
     void downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText);
+    void createDocImgs();
 
     Ui::MainWindow *ui;
     screenRender *sr;
@@ -148,6 +149,7 @@ private:
     QString dSubfolder, dFileName;
     downloadAction dAction;
     bool takeFlag;
+    appMethod tempMethod = overwrite;
 
 };
 

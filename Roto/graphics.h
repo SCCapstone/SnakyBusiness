@@ -109,6 +109,7 @@ public:
     void zoomIn();
     void zoomOut();
     QPoint getZoomCorrected(QPoint qp);
+    QSize getZoomCorrected(QSize qs);
     static void rotate90Right(QImage *&qi);
     static void rotate90Left(QImage *&qi);
     static void rotate180(QImage *qi);

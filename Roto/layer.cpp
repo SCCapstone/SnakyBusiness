@@ -16,10 +16,10 @@ Layer::Layer(QSize qs) {
     activePt = -1;
     alpha = 255;
     qi = new QImage(qs, QImage::Format_ARGB32_Premultiplied);
-    qi->fill(0x00000000);
-    for (int i = 0; i < qs.width(); ++i)
-        for (int j = 0; j < qs.height(); ++j)
-            qi->setPixelColor(i, j, QColor(255.0 * static_cast<float>(i) / qi->width(), 255.0 * static_cast<float>(j) / qi->height(), 255.0 * (1.0 - static_cast<float>(i) / qi->width())));
+    qi->fill(0xFFFFFFFF);
+//    for (int i = 0; i < qs.width(); ++i)
+//        for (int j = 0; j < qs.height(); ++j)
+//            qi->setPixelColor(i, j, QColor(255.0 * static_cast<float>(i) / qi->width(), 255.0 * static_cast<float>(j) / qi->height(), 255.0 * (1.0 - static_cast<float>(i) / qi->width())));
     shiftFlag = false;
     ipolPts = ipolMin;
     mode = Brush_Mode;
@@ -31,6 +31,7 @@ Layer::Layer(QSize qs) {
 Layer::Layer(QImage in, int alphaValue) {
     activePt = -1;
     alpha = alphaValue;
+    // need to fill alpha?
     qi = new QImage(in);
     shiftFlag = false;
     ipolPts = ipolMin;
@@ -806,6 +807,19 @@ void Layer::selectAll() {
 
 void Layer::deselect() {
     if (mode == Spline_Mode) {
+        int w = qi->width(), h = qi->height();
+        for (unsigned char i : activeVects) {
+            int width = vects[i].getWidth();
+            pair <QPoint, QPoint> bounds = vects[i].getBounds();
+            bool flag = bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
+            if (flag) {
+                list <Triangle> newList;
+                for (Triangle t : tris[i])
+                    if ((t.A().x() >= 0 && t.A().y() >= 0 && t.A().x() < w && t.A().y() < h) || (t.B().x() >= 0 && t.B().y() >= 0 && t.B().x() < w && t.B().y() < h) || (t.C().x() >= 0 && t.C().y() >= 0 && t.C().x() < w && t.C().y() < h))
+                        newList.push_back(t);
+                tris[i] = newList;
+            }
+        }
         activeVects.clear();
         activePt = -1;
     }

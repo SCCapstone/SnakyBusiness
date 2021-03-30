@@ -120,7 +120,7 @@ QRgb graphics::Filtering::greenPass(QColor qc, int strength) {
 }
 
 QRgb graphics::Filtering::bluePass(QColor qc, int strength) {
-    if (qc.blue() > qc.red() && qc.blue() > qc.green())
+    if (qc.blue() > qc.red() && qc.blue() > qc.green() && qc.blue() - max(qc.red(), qc.green()) > abs(qc.green() - qc.red()))
         return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
     return toRGB(qc.alpha(), grey, grey, grey);
@@ -307,6 +307,10 @@ QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
     qp.setX(static_cast<int>(static_cast<double>(qp.x()) / zoom));
     qp.setY(static_cast<int>(static_cast<double>(qp.y()) / zoom));
     return qp;
+}
+
+QSize graphics::ImgSupport::getZoomCorrected(QSize qs) {
+    return QSize(static_cast<int>(static_cast<float>(qs.width()) * zoom), static_cast<int>(static_cast<float>(qs.height()) * zoom));
 }
 
 void graphics::ImgSupport::rotate90Right(QImage *&qi) {

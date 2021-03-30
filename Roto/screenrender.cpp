@@ -81,7 +81,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
     qi = workLayer->getRenderCanvas();
-    setFixedSize(qi.size());
+    setFixedSize(screenZoom.getZoomCorrected(qi.size()));
     int w = qi.width(), h = qi.height();
     vector <list <Triangle> > tris = workLayer->getTriangles();
     vector <SplineVector> vects = workLayer->getVectors();
@@ -93,19 +93,19 @@ void screenRender::paintEvent(QPaintEvent *event) {
         ca.setAlpha(alpha);
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
-        bool flag = bounds.first.x() > width && bounds.first.y() > width && bounds.second.x() < w - width && bounds.second.y() < h - width;
+        bool flag = bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
         if (vects[i].getMode() == ColorFill) {
             if (flag) { //normal draw
                 if (colors.first == colors.second) {
                     color = ca;
-                    for (Triangle t : tris[i])
+                    for (Triangle &t : tris[i])
                         fillTri(t);
                 }
                 else {
                     cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>(tris[i].size());
                     float cnt = 0.0;
-                    for (Triangle t : tris[i]) {
+                    for (Triangle &t : tris[i]) {
                         float ccc = ccomp * cnt;
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));

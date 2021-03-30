@@ -18,7 +18,7 @@ class Brush {
 
 public:
 
-    Brush(string brushName = brushShapes[0], int Radius = 30);
+    Brush(string brushName = brushShapes[0], int Radius = 10);
     ~Brush();
     void setShape(string brushName);
     void setRadius(int r);

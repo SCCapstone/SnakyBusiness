@@ -1,7 +1,6 @@
 #ifndef DATAIO_H
 #define DATAIO_H
 
-#include <mutex>
 #include <thread>
 #include <vector>
 #include <list>
@@ -12,7 +11,6 @@
 #include <layer.h>
 #include <graphics.h>
 
-using std::mutex;
 using std::thread;
 using std::vector;
 using std::list;
@@ -25,10 +23,6 @@ enum scaleType {dontScale, bestFit, aspectRatio, toWidth, toHeight};
 enum importType {image, video};
 
 const QSize defaultSize (1200, 900);
-
-//mutex vectCalc, imgCalc;
-//int imgCompleted = 0;
-//vector <int> vectCompleted;
 
 struct RGB {
     uchar blue;

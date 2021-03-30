@@ -80,7 +80,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
             else
-                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+                bh.erase(ioh->getWorkingLayer()->getCanvas(), qp);
         }
     }
     else if (mode == Spline_Mode || mode == Raster_Mode) {
@@ -112,8 +112,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
             else {
-                bh.setAlpha(0);
-                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+                bh.erase(ioh->getWorkingLayer()->getCanvas(), qp);
                 bh.setInterpolationActive(true);
             }
         }
@@ -393,6 +392,10 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             bh.setDensity(ret);
     }
+    else if (btnPress == "Pattern On")
+        bh.setPatternInUse(true);
+    else if (btnPress == "Pattern Off")
+        bh.setPatternInUse(false);
     else if (btnPress == "Vector Width") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
