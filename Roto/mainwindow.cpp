@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
     mode = Brush_Mode;
     onePress = false;
     vs->setWidget(sr);
-    file.setFileName(QDir::currentPath() + "/Menus/Icons/Window.png");
+    file.setFileName(QDir::currentPath() + "/Menus/Icons/execIco.png");
     if (file.exists())
         setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
