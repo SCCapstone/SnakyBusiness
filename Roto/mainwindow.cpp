@@ -353,6 +353,7 @@ void MainWindow::addAction(QMenu *menu, string item) {
 void MainWindow::doSomething(string btnPress) {
     //cout << btnPress << endl;
     if (btnPress == "Import") {
+        QRect reset = geometry();
         string formats = "";
         for (string s : acceptedImportImageFormats)
             formats += " *." + s;
@@ -367,6 +368,7 @@ void MainWindow::doSomething(string btnPress) {
         string fileType = fn.substr(index + 1);
         if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
             bool flag = ioh->importImage(fileName);
+            setGeometry(reset);
             if (flag)
                 resizeCheck->showRelative();
         }
