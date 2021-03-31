@@ -732,10 +732,10 @@ void DataIOHandler::scale(scaleType type) {
         qp.drawImage(0, 0, importImg);
         break;
     case bestFit:
-        if (toLayer.width() > toLayer.height())
-            qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
-        else
+        if (importImg.scaledToHeight(toLayer.height()).width() > toLayer.width())
             qp.drawImage(0, 0, importImg.scaledToWidth(toLayer.width()));
+        else
+            qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
         break;
     case aspectRatio:
         qp.drawImage(0, 0, importImg.scaled(toLayer.width(), toLayer.height()));
