@@ -31,6 +31,9 @@
 #include <QDesktopWidget>
 #include <QScreen>
 #include <QLabel>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QDragEnterEvent>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -45,6 +48,7 @@
 #include <screenrender.h>
 #include <radialprofiler.h>
 #include <viewscroller.h>
+#include <algorithm>
 
 using std::string;
 using std::to_string;
@@ -55,6 +59,7 @@ using std::unordered_map;
 using std::map;
 using std::fstream;
 using std::ios;
+using std::find;
 using std::pair;
 using Qt::MouseButton;
 using Qt::NoButton;
@@ -84,10 +89,16 @@ using graphics::Filter;
 
 const QString UI_FileName = "mainMenubar.txt";
 const QString Doc_FileName = "Glass_Opus_Documentation.pdf";
+const QString WinIco_FileName = "execIco.png";
+const QString Logo_FileName = "Logo.png";
 const QString UI_Loc = "/Menus/";
 const QString Icon_Loc = UI_Loc + "Icons/";
 const QString Doc_Loc = "/Documentation/";
 const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
+const vector <string> acceptedImportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm", "gif", "pbm", "pgm"};
+const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm"};
+const vector <string> acceptedImportVideoFormats = {"mp4", "avi", "mkv"};
+const vector <string> acceptedExportVideoFormats = acceptedImportVideoFormats;
 
 enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
@@ -109,8 +120,10 @@ public:
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
     void resizeEvent(QResizeEvent *event);
-
+    void closeEvent(QCloseEvent *event);
 
 public slots:
     void changeVectorFilter(string s);

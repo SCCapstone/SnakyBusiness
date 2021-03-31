@@ -66,9 +66,11 @@ void screenRender::toggleFlasher() {
 void screenRender::updateViews() {
     flasher->stop();
     workLayer = ioh->getWorkingLayer();
-    bgPrescaled = ioh->getBackground();
-    fgPrescaled = ioh->getForeground();
-    doZoom();
+    if (workLayer != nullptr) {
+        bgPrescaled = ioh->getBackground();
+        fgPrescaled = ioh->getForeground();
+        doZoom();
+    }
     flasher->start(flashSpeed);
 }
 

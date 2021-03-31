@@ -172,10 +172,10 @@ vector <unsigned char> Layer::getActiveVectors() {
     return activeVects;
 }
 
-void Layer::setVectorTaperType(int i) {
+void Layer::setVectorTaperType(Taper t) {
     if (activeVects.size() != 1)
         return;
-    vects[activeVects[0]].setTaperType(i);
+    vects[activeVects[0]].setTaperType(t);
     calcLine();
 }
 
@@ -390,7 +390,6 @@ void Layer::pressLeft(QPoint qp) {
                         activePt = i;
                         break;
                     }
-                cout << controlPts[0].x() << "," << controlPts[0].y() << endl;
                 if (activePt == -1)
                     deltaMove = qp;
             }

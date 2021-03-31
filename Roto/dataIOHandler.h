@@ -22,8 +22,6 @@ using graphics::Filter;
 enum scaleType {dontScale, bestFit, aspectRatio, toWidth, toHeight};
 enum importType {image, video};
 
-const QSize defaultSize (1200, 900);
-
 struct RGB {
     uchar blue;
     uchar green;
@@ -53,6 +51,8 @@ public:
     static void filterBTri(QImage *toProcess, QPoint a, QPoint b, QPoint c, Filter f);
     static void filterTTri(QImage *toProcess, QPoint a, QPoint b, QPoint c, Filter f);
 
+    void setDims(QSize size);
+    QSize getdims();
     void scale(scaleType option);
     bool importImage(QString fileName);
     void exportImage(QString fileName);
@@ -79,7 +79,6 @@ public:
     void moveToBack();
     void moveToFront();
 
-    void deleteFrame();
     /*
     void addFrame(int num);
     void duplicateFrame(int count);
@@ -95,10 +94,6 @@ public:
     void exportVideo(QString fileName);
     void save(QString projectName);
     void load(QString projectName);
-    void setScreenFilter(string filterName);
-    void setFilterStrength(int strength);
-    int getFilterIndex();
-    int getFilterStrength();
     Layer *getWorkingLayer();
     QImage getBackground();
     QImage getForeground();
@@ -115,7 +110,6 @@ private:
     list <SplineVector> vectorCopySlot;
     Layer layerCopySlot;
     QString file;
-    Filter screenFilter;
     unsigned char activeLayer, activeFrame;
     QImage importImg, rasterCopySlot;
     importType importType;

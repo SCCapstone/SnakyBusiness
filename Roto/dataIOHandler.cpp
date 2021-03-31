@@ -2,11 +2,8 @@
 
 
 DataIOHandler::DataIOHandler() {
-    activeFrame = 0;
-    activeLayer = 0;
-    Layer *l = new Layer(defaultSize);
+    activeFrame = activeLayer = 0;
     vector <Layer *> frame;
-    frame.push_back(l);
     frames.push_back(frame);
     updated = true;
 }
@@ -17,6 +14,14 @@ DataIOHandler::~DataIOHandler() {
             delete frames[i][j];
         frames[i].clear();
     }
+}
+
+void DataIOHandler::setDims(QSize size) {
+    dims = size;
+}
+
+QSize DataIOHandler::getdims() {
+    return dims;
 }
 
 void DataIOHandler::compileFrame() {
@@ -555,13 +560,13 @@ bool DataIOHandler::wasUpdated() {
 }
 
 Layer * DataIOHandler::getWorkingLayer() {
-    if (frames.empty())
+    if (frames.empty() || frames[activeFrame].empty())
         return nullptr;
     return frames[activeFrame][activeLayer];
 }
 
 void DataIOHandler::addLayer() {
-    frames[activeFrame].push_back(new Layer(defaultSize));
+    frames[activeFrame].push_back(new Layer(dims));
     updated = true;
     activeLayer = frames[activeFrame].size() - 1;
 }
@@ -584,8 +589,12 @@ void DataIOHandler::deleteLayer() {
         --activeLayer;
     delete frames[activeFrame][temp];
     frames[activeFrame].erase((frames[activeFrame].begin() + temp));
-    if (temp == 0)
-        deleteFrame();
+//    if (temp == 0)
+//        deleteFrame();
+    if (activeFrame > 0) {
+        //delete frame
+        --activeFrame;
+    }
     updated = true;
 }
 
@@ -618,12 +627,6 @@ void DataIOHandler::moveToBack() {
         swap(frames[activeFrame][activeLayer - 1], frames[activeFrame][activeLayer]);
         --activeLayer;
     }
-    updated = true;
-}
-
-void DataIOHandler::deleteFrame() {
-    // set new active layer to the new frame's number of layers - 1
-    //check if last / only frame
     updated = true;
 }
 
@@ -698,22 +701,6 @@ void DataIOHandler::deleteRaster() {
     getWorkingLayer()->deleteSelected();
 }
 
-void DataIOHandler::setScreenFilter(string filterName) {
-    screenFilter.setFilter(filterName);
-    applyFilter();
-}
-
-void DataIOHandler::setFilterStrength(int strength) {
-    screenFilter.setStrength(strength);
-}
-
-int DataIOHandler::getFilterIndex() {
-    return screenFilter.getFilterIndex();
-}
-
-int DataIOHandler::getFilterStrength() {
-    return screenFilter.getStrength();
-}
 
 void DataIOHandler::applyFilter() {
 
@@ -722,7 +709,7 @@ void DataIOHandler::applyFilter() {
 bool DataIOHandler::importImage(QString fileName) {
     importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     importType = image;
-    bool match = importImg.width() == defaultSize.width() && importImg.height() == defaultSize.height();
+    bool match = importImg.width() == dims.width() && importImg.height() == dims.height();
     if (match)
         scale(dontScale);
     return !match;
@@ -730,13 +717,13 @@ bool DataIOHandler::importImage(QString fileName) {
 
 
 void DataIOHandler::exportImage(QString fileName) {
-    QImage *out = new QImage(defaultSize, QImage::Format_ARGB32_Premultiplied);
+    QImage *out = new QImage(dims, QImage::Format_ARGB32_Premultiplied);
     renderFrame(out, frames[activeFrame]);
     out->save(fileName);
 }
 
 void DataIOHandler::scale(scaleType type) {
-    QImage toLayer(defaultSize, QImage::Format_ARGB32_Premultiplied);
+    QImage toLayer(dims, QImage::Format_ARGB32_Premultiplied);
     toLayer.fill(0x00000000);
     QPainter qp;
     qp.begin(&toLayer);

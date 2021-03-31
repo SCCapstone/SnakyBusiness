@@ -66,7 +66,7 @@ public:
     void setVectorTaper1(int a);
     void setVectorTaper2(int b);
     unsigned char getVectorTaperType();
-    void setVectorTaperType(int i);
+    void setVectorTaperType(Taper t);
     void setVectorFilter(string s);
     void setVectorMode(VectorMode vm);
     void swapColors();
