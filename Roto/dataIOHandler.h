@@ -6,8 +6,11 @@
 #include <list>
 #include <QImageReader>
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <QImage>
 #include <QPainter>
+#include <atomic>
+#include <mutex>
 #include <layer.h>
 #include <graphics.h>
 
@@ -17,6 +20,8 @@ using std::list;
 using std::pair;
 using std::iter_swap;
 using std::swap;
+using std::atomic_int;
+using std::mutex;
 using graphics::Filter;
 
 enum scaleType {dontScale, bestFit, aspectRatio, toWidth, toHeight};
@@ -28,15 +33,18 @@ struct RGB {
     uchar red;
 };
 
+static mutex locker;
+static atomic_int progressMarker;
+
 class DataIOHandler {
 
 public:
 
-    DataIOHandler();
+    DataIOHandler(QProgressDialog *progress);
     ~DataIOHandler();
 
-    static void renderFrame(QImage *ret, vector <Layer *> layers);
-    static void renderLayer(QImage *toProcess, int alpha, Filter filter, vector <SplineVector> vects, vector<list <Triangle> > tris = vector <list <Triangle> > ());
+    static void renderFrame(QProgressDialog *fqpd, QImage *ret, vector <Layer *> layers);
+    static void renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QImage *toProcess, int alpha, Filter filter, vector <SplineVector> vects, vector<list <Triangle> > tris = vector <list <Triangle> > ());
     static void calcLine(SplineVector sv, list <Triangle> *tris);
     static void fillTri(QImage *toProcess, Triangle t, QRgb color);
     static void fillTriSafe(QImage *toProcess, Triangle t, QRgb color);
@@ -101,10 +109,6 @@ public:
 
 private:
 
-    void scaleLayers(int option1, int option2);
-    void scaleLists(int layer, int scaleType);
-    void applyFilter();
-
     QSize dims;
     vector <vector <Layer *> > frames;
     list <SplineVector> vectorCopySlot;
@@ -116,6 +120,7 @@ private:
     bool updated;
     double angleCopySlot;
     pair <QPoint, QPoint> boundCopySlot;
+    QProgressDialog *progress;
 };
 
 #endif // DATAIO_H

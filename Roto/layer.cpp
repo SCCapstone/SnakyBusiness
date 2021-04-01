@@ -144,6 +144,7 @@ void Layer::fillColor(QPoint qp, QColor qc) {
     toProcess.push_back(qp);
     QRgb og = qi->pixel(qp.x(), qp.y());
     QRgb nu = qc.rgba();
+
     if (og == nu)
         return;
     while (!toProcess.empty()) {
@@ -157,7 +158,48 @@ void Layer::fillColor(QPoint qp, QColor qc) {
             toProcess.push_back(QPoint(pt.x(), pt.y() + 1));
         }
     }
+}
 
+void Layer::patternFill(QPoint qp, QColor qc) {
+    int w = qi->width(), h = qi->height();
+    list <QPoint> toProcess;
+    toProcess.push_back(qp);
+    QRgb og = qi->pixel(qp.x(), qp.y());
+    QRgb nu = qc.rgba();
+    int xpsize = 20, ypsize = 20;
+    unsigned char **arr = new unsigned char *[xpsize];
+    for (int i = 0; i < xpsize; ++i) {
+        arr[i] = new unsigned char[ypsize];
+        for (int j = 0; j < ypsize; ++j)
+            arr[i][j] = (j > i) ? 1 : 0;
+    }
+    unsigned char **check = new unsigned char *[qi->width()];
+    for (int i = 0; i < qi->width(); ++i) {
+        check[i] = new unsigned char[qi->height()];
+        for (int j = 0; j < qi->height(); ++j)
+            check[i][j] = 1;
+    }
+    if (og == nu)
+        return;
+    while (!toProcess.empty()) {
+        QPoint pt = toProcess.front();
+        toProcess.pop_front();
+        if (pt.x() >= 0 && pt.x() < w && pt.y() >= 0 && pt.y() < h && qi->pixel(pt.x(), pt.y()) == og && check[pt.x()][pt.y()]) {
+            check[pt.x()][pt.y()] = 0;
+            if (arr[pt.x() % xpsize][pt.y() % ypsize])
+                qi->setPixel(pt.x(), pt.y(), nu);
+            toProcess.push_front(QPoint(pt.x() - 1, pt.y()));
+            toProcess.push_front(QPoint(pt.x() + 1, pt.y()));
+            toProcess.push_front(QPoint(pt.x(), pt.y() - 1));
+            toProcess.push_front(QPoint(pt.x(), pt.y() + 1));
+        }
+    }
+    for (int i = 0; i < xpsize; ++i)
+        delete [] arr[i];
+    delete [] arr;
+    for (int i = 0; i < qi->width(); ++i)
+        delete [] check[i];
+    delete [] check;
 }
 
 vector <list <Triangle> > Layer::getTriangles() {
@@ -642,6 +684,10 @@ void Layer::setMode(EditMode m) {
     mode = m;
 }
 
+bool Layer::isShiftActive() {
+    return shiftFlag;
+}
+
 void Layer::setShiftFlag(bool b) {
     shiftFlag = b;
 }
@@ -841,6 +887,7 @@ void Layer::deselect() {
 void Layer::clearVectors() {
     vects.clear();
     tris.clear();
+    activeVects.clear();
 }
 
 Filter Layer::getFilter() {

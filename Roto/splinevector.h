@@ -46,6 +46,7 @@ public:
     void setColor2(QRgb b);
     void setTaper1(int a);
     void setTaper2(int b);
+    void setFilterStrength(int val);
     void setFilter(string s);
     void setTaperType(Taper t);
     void setMode(VectorMode vm);

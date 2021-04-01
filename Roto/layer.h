@@ -54,7 +54,9 @@ public:
     void doubleClickRight(QPoint qp);
     void setMode(EditMode m);
     void fillColor(QPoint qp, QColor qc);
+    void patternFill(QPoint qp, QColor qc);
     void setShiftFlag(bool b);
+    bool isShiftActive();
     void setAlpha(int a);
     int getAlpha();
     int getWidth();

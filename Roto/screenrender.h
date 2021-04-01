@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
+#include <QProgressDialog>
 #include <stdfuncs.h>
 #include <graphics.h>
 #include <layer.h>
@@ -38,6 +39,7 @@ public:
     void paintEvent(QPaintEvent *event);
     void setSamplePt(QPoint qp);
     void stopFlashing();
+    void resume();
     void showFg(bool shown);
 
 private:

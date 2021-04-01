@@ -185,6 +185,7 @@ void RadialProfiler::paintEvent(QPaintEvent *event) {
     QImage final = qi->scaled(wSize, wSize);
     QPainter qp(this);
     qp.drawImage(0, 0, final);
+    qp.end();
 }
 
 void RadialProfiler::updateSize(int size) {

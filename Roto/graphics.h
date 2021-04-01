@@ -17,7 +17,7 @@ namespace graphics {
 
 //  TODO, polarize rgbycm (via mono), neg rgbycm, noise rgbycm, rainbow filter (h, v, ld, rd), vignette filter
 const string filterNames[] =   {"Normal (rgb)", "Greyscale", "Polarize", "Negative", "Burn", "Dodge", "Enshadow", "Red Channel", "Green Channel", "Blue Channel", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter", "Burn Red", "Burn Green", "Burn Blue", "Burn Yellow", "Burn Cyan", "Burn Magenta", "Dodge Red", "Dodge Green", "Dodge Blue", "Dodge Yellow", "Dodge Cyan", "Dodge Magenta", "RBG", "GRB", "GBR", "BRG", "BGR"};
-const string vectorFilters[] = {"Greyscale", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter"};
+const string vectorFilters[] = {"Greyscale", "Polarize", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter"};
 const int filterPresets[] =    {0             , 255        , 128        , 0         , 20    , 20     , 64,        255          , 255            , 255           , 255       , 255         , 255        , 255           , 255          , 255        , 255         , 255           , 255          , 20        , 20          , 20         , 20           , 20         , 20            , 20         , 20           , 20          , 20            , 20          , 20             , 0    , 0    , 0    , 0    , 0    };
 const int numFilters = 36;
 const double minZoom = 1.0 / 4.0;

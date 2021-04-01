@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->hide();
+    hide();
     setAcceptDrops(true);
     QLabel logo;
     QFile file(QDir::currentPath() + UI_Loc + Logo_FileName);
@@ -30,7 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     lastButton = NoButton;
     vs = new viewScroller(this);
     vs->setWidgetResizable(true);
-    ioh = new DataIOHandler();
+    progress = new QProgressDialog("Updating Views", "", 0, 0, this, Qt::WindowType::FramelessWindowHint);
+    progress->setCancelButton(nullptr);
+    progress->close();
+    ioh = new DataIOHandler(progress);
     sr = new screenRender(ioh, vs);
     setCentralWidget(vs);
     setGeometry(screenRect.width() / 4, screenRect.height() / 4, screenRect.width() / 2, screenRect.height() / 2);
@@ -87,7 +90,6 @@ MainWindow::MainWindow(QWidget *parent)
     if (logoFound)
         std::this_thread::sleep_for (std::chrono::seconds(2));
     move(center - rect().center());
-    this->show();
     QInputDialog resPrompt;
     QStringList items;
     items.push_back("360p");
@@ -101,7 +103,9 @@ MainWindow::MainWindow(QWidget *parent)
     resPrompt.setComboBoxItems(items);
     resPrompt.setTextValue(items.first());
     resPrompt.setWindowTitle("New Project Resolution");
-    resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");
+    resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");    
+    show();
+    logo.hide();
     resPrompt.exec();
     int sizeY = stoi(resPrompt.textValue().toStdString());
     ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
@@ -400,6 +404,7 @@ void MainWindow::doSomething(string btnPress) {
         refresh();
     }
     else if (btnPress == "Export") {    //TODO
+        sr->stopFlashing();
         string formats = "";
         for (string s : acceptedExportImageFormats)
             formats += " *." + s;
@@ -418,6 +423,7 @@ void MainWindow::doSomething(string btnPress) {
         else {
 
         }
+        sr->resume();
     }
     else if (btnPress == "Help") {
         bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
@@ -724,7 +730,8 @@ void appTo(QImage *qi, Filter f) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    QImage *qi = ioh->getWorkingLayer()->getCanvas();
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     switch (event->key()) {
     case Key_Up:
         sr->zoomIn();

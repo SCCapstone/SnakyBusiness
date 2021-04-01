@@ -34,6 +34,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QProgressDialog>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -166,6 +167,7 @@ private:
     downloadAction dAction;
     bool takeFlag;
     appMethod tempMethod = overwrite;
+    QProgressDialog *progress;
 
 };
 
