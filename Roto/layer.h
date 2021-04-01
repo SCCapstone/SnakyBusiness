@@ -17,6 +17,7 @@ using Qt::RightButton;
 const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
+const float pi = 3.14159;
 
 enum EditMode {Brush_Mode, Spline_Mode, Raster_Mode};
 enum Selection {TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, BodySelect, NoSelect};
@@ -29,6 +30,7 @@ public:
     Layer(QSize qs);
     Layer(QImage in, int alphaValue);
     Layer(const Layer &layer);
+    Layer& operator = (const Layer &layer);
     ~Layer();
     QImage *getCanvas();
     QImage getRenderCanvas();
@@ -64,9 +66,9 @@ public:
     void setVectorTaper1(int a);
     void setVectorTaper2(int b);
     unsigned char getVectorTaperType();
-    void setVectorTaperType(int i);
+    void setVectorTaperType(Taper t);
     void setVectorFilter(string s);
-    void setVectorMode(int m);
+    void setVectorMode(VectorMode vm);
     void swapColors();
     void swapTapers();
     pair <char, char> getVectorTapers();

@@ -10,7 +10,7 @@ resizeWindow::resizeWindow(QWidget *parent, DataIOHandler *ioh)
     setWindowFlags(flags | Qt::WindowStaysOnTopHint);
     ui->setupUi(this);
 
-    ///* dark mode
+    /* dark mode
 
     this->setStyle(QStyleFactory::create("Fusion"));
 
@@ -37,7 +37,7 @@ resizeWindow::resizeWindow(QWidget *parent, DataIOHandler *ioh)
 
     this->setPalette(newPalette);
 
-    //*/
+    */
 
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(finish()));
     setFixedSize(size());

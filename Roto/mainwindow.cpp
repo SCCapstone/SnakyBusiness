@@ -7,6 +7,23 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->hide();
+    setAcceptDrops(true);
+    QLabel logo;
+    QFile file(QDir::currentPath() + UI_Loc + Logo_FileName);
+    bool logoFound = file.exists();
+    QPoint center;
+    QRect screenRect = QGuiApplication::screens().front()->availableGeometry();
+    if (logoFound) {
+        QImage qi(file.fileName());
+        logo.setPixmap(QPixmap::fromImage(qi));
+        center = screenRect.center();
+        logo.setFixedSize(qi.size());
+        logo.setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+        logo.move(center - logo.rect().center());
+        logo.show();
+        QCoreApplication::processEvents();
+    }
     qme = new QErrorMessage(this);
     shiftFlag = false;
     ctrlFlag = false;
@@ -16,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     ioh = new DataIOHandler();
     sr = new screenRender(ioh, vs);
     setCentralWidget(vs);
-    setGeometry(0,0, defaultSize.width(), defaultSize.height());
+    setGeometry(screenRect.width() / 4, screenRect.height() / 4, screenRect.width() / 2, screenRect.height() / 2);
     setWindowTitle("Glass Opus");
     bool exists = createMenubar();
     if (exists) {
@@ -55,20 +72,44 @@ MainWindow::MainWindow(QWidget *parent)
             log(name, bAction);
         }
     }
-    else {
+    else
         downloadItem(UI_Loc, UI_FileName, DownloadThenRestart, "Menu Configuration Not Found", "Menu configuration not found locally/offline.\nFetch and download menu configuration online?");
-    }
     ui->menubar->setCornerWidget(dynamic_cast<QMenuBar *>(objFetch.at(UI_FileName.toStdString())), Qt::TopLeftCorner);
     resizeCheck = new resizeWindow(this, ioh);
     radialProfiler = new RadialProfiler(&bh, this);
     mode = Brush_Mode;
     onePress = false;
     vs->setWidget(sr);
-    move(5, 5);
+    file.setFileName(QDir::currentPath() + UI_Loc + Icon_Loc + WinIco_FileName);
+    if (file.exists())
+        setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
+    if (logoFound)
+        std::this_thread::sleep_for (std::chrono::seconds(2));
+    move(center - rect().center());
+    this->show();
+    QInputDialog resPrompt;
+    QStringList items;
+    items.push_back("360p");
+    items.push_back("480p");
+    items.push_back("720p");
+    items.push_back("900p");
+    items.push_back("1080p");
+    items.push_back("1444p");
+    items.push_back("2160p");
+    resPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+    resPrompt.setComboBoxItems(items);
+    resPrompt.setTextValue(items.first());
+    resPrompt.setWindowTitle("New Project Resolution");
+    resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");
+    resPrompt.exec();
+    int sizeY = stoi(resPrompt.textValue().toStdString());
+    ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     if (takeFlag)
         return;
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
@@ -80,7 +121,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
             else
-                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+                bh.erase(ioh->getWorkingLayer()->getCanvas(), qp);
         }
     }
     else if (mode == Spline_Mode || mode == Raster_Mode) {
@@ -96,6 +137,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     if (ctrlFlag || onePress || takeFlag)
         return;
     onePress = true;
@@ -112,8 +155,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
             else {
-                bh.setAlpha(0);
-                bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+                bh.erase(ioh->getWorkingLayer()->getCanvas(), qp);
                 bh.setInterpolationActive(true);
             }
         }
@@ -134,6 +176,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     if (takeFlag) {
         if (mode == Brush_Mode)
@@ -159,6 +203,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     MouseButton button = event->button();
     if (mode == Spline_Mode) {
@@ -172,12 +218,11 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
         sr->showPts();
         refresh();
     }
-    else if (mode == Raster_Mode) {
-        ioh->getWorkingLayer()->doubleClickLeft(qp, ctrlFlag);
-    }
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     int dy = event->angleDelta().y();
     dy = abs(dy)/ dy;
     if (mode == Brush_Mode) {
@@ -308,14 +353,22 @@ void MainWindow::addAction(QMenu *menu, string item) {
 void MainWindow::doSomething(string btnPress) {
     //cout << btnPress << endl;
     if (btnPress == "Import") {
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), "/", tr("Media Files (*.png *.jpg *.bmp *.mp4 *.avi *.mkv)"));
+        QRect reset = geometry();
+        string formats = "";
+        for (string s : acceptedImportImageFormats)
+            formats += " *." + s;
+        for (string s : acceptedImportVideoFormats)
+            formats += " *." + s;
+        formats = "Media Files (" + formats.substr(1) + ")";
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), "/", tr(formats.c_str()));
         if (fileName == "")
             return;
         string fn = fileName.toStdString();
         int index = fn.find_last_of('.');
         string fileType = fn.substr(index + 1);
-        if (fileType == "png" || fileType == "jpg" || fileType == "bmp") {
+        if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
             bool flag = ioh->importImage(fileName);
+            setGeometry(reset);
             if (flag)
                 resizeCheck->showRelative();
         }
@@ -340,7 +393,6 @@ void MainWindow::doSomething(string btnPress) {
                         RGB& rgb = frame.ptr<RGB>(r)[c];
                         qi.setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
                     }
-                //ioh->setMediaLayer(qi);
                 refresh();
             }
             cap.release();
@@ -348,13 +400,19 @@ void MainWindow::doSomething(string btnPress) {
         refresh();
     }
     else if (btnPress == "Export") {    //TODO
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Export"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
+        string formats = "";
+        for (string s : acceptedExportImageFormats)
+            formats += " *." + s;
+        for (string s : acceptedExportVideoFormats)
+            formats += " *." + s;
+        formats = "Media Files (" + formats.substr(1) + ")";
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Export"), "/", tr(formats.c_str()));
         if (fileName == "")
             return;
         string fn = fileName.toStdString();
         int index = fn.find_last_of('.');
         string fileType = fn.substr(index + 1);
-        if (fileType == "png" || fileType == "jpg" || fileType == "bmp") {
+        if (std::find(acceptedExportImageFormats.begin(), acceptedExportImageFormats.end(), fileType) != acceptedExportImageFormats.end()) {
             ioh->exportImage(fileName);
         }
         else {
@@ -378,6 +436,22 @@ void MainWindow::doSomething(string btnPress) {
             ioh->load(fileName);
         }
     }
+    else if (btnPress == "Help") {
+        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
+        if (!found)
+            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
+    }
+    else if (btnPress == "Exit") {
+        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
+        qmb.addButton("No", QMessageBox::NoRole);
+        int choice = qmb.exec();
+        if (choice == QMessageBox::Yes)
+            QApplication::exit();
+    }
+    else if (btnPress == "Insert Layer")
+        ioh->addLayer();
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     else if (btnPress == "On")
         sr->showFg(true);
     else if (btnPress == "Off")
@@ -395,12 +469,6 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             radialProfiler->updateSize(ret);
     }
-    else if (btnPress == "Screen Strength") {
-        bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a screen filter strength", ioh->getFilterStrength(), minStrength, maxStrength, 1, &ok );
-        if (ok)
-            ioh->setFilterStrength(ret);
-    }
     else if (btnPress == "Brush Strength") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush strength", bh.getStength(), minStrength, maxStrength, 1, &ok );
@@ -413,6 +481,10 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             bh.setDensity(ret);
     }
+    else if (btnPress == "Pattern On")
+        bh.setPatternInUse(true);
+    else if (btnPress == "Pattern Off")
+        bh.setPatternInUse(false);
     else if (btnPress == "Vector Width") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
@@ -421,7 +493,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
         if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
-        refresh();
     }
     else if (btnPress == "Vector Taper 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -431,7 +502,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
-        refresh();
     }
     else if (btnPress == "Vector Taper 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -441,7 +511,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
-        refresh();
     }
     else if (btnPress == "Vector Color 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -449,7 +518,6 @@ void MainWindow::doSomething(string btnPress) {
             return;
         QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().second, this);
         ioh->getWorkingLayer()->setVectorColor2(color.rgba());
-        refresh();
     }
     else if (btnPress == "Vector Color 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -457,31 +525,24 @@ void MainWindow::doSomething(string btnPress) {
             return;
         QColor color = QColorDialog::getColor(ioh->getWorkingLayer()->getVectorColors().first, this);
         ioh->getWorkingLayer()->setVectorColor1(color.rgba());
-        refresh();
     }
     else if (btnPress == "Single Taper") {
         ioh->getWorkingLayer()->setVectorTaperType(Single);
-        refresh();
     }
     else if (btnPress == "Double Taper") {
         ioh->getWorkingLayer()->setVectorTaperType(Double);
-        refresh();
     }
     else if (btnPress == "Swap Colors") {
         ioh->getWorkingLayer()->swapColors();
-        refresh();
     }
     else if (btnPress == "Swap Tapers") {
         ioh->getWorkingLayer()->swapTapers();
-        refresh();
     }
     else if (btnPress == "Color Vector") {
         ioh->getWorkingLayer()->setVectorMode(ColorFill);
-        refresh();
     }
     else if (btnPress == "Filter Vector") {
         ioh->getWorkingLayer()->setVectorMode(Filtered);
-        refresh();
     }
     else if (btnPress == "Fill Color") {
         QColor color = QColorDialog::getColor(bh.getFillColor(), this);
@@ -523,29 +584,28 @@ void MainWindow::doSomething(string btnPress) {
             ioh->cutVectors();
         else if (mode == Raster_Mode)
             ioh->cutRaster();
-        refresh();
     }
     else if (btnPress == "Delete") {
         if (mode == Spline_Mode)
             ioh->deleteVectors();
         else if (mode == Raster_Mode)
             ioh->deleteRaster();
-        refresh();
     }
     else if (btnPress == "Paste") {
         if (mode == Spline_Mode)
             ioh->pasteVectors();
         else if (mode == Raster_Mode)
             ioh->pasteRaster();
-        refresh();
     }
     else if (btnPress == "Select All")
         ioh->getWorkingLayer()->selectAll();
     else if (btnPress == "Set Active Layer") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
-        if (ok)
+        if (ok && ret != ioh->getActiveLayer()) {
+            ioh->getWorkingLayer()->deselect();
             ioh->setActiveLayer(ret, mode);
+        }
     }
     else if (btnPress == "Layer Filter Strength") {
         bool ok = false;
@@ -563,17 +623,15 @@ void MainWindow::doSomething(string btnPress) {
         ioh->moveToBack();
     else if (btnPress == "Move To Front")
         ioh->moveToFront();
-    else if (btnPress == "Insert Layer" && false)
-        ioh->addLayer();
-    else if (btnPress == "Copy Layer" && false)
+    else if (btnPress == "Copy Layer")
         ioh->copyLayer();
-    else if (btnPress == "Cut Layer" && false) {
+    else if (btnPress == "Cut Layer") {
         ioh->copyLayer();
         ioh->deleteLayer();
     }
-    else if (btnPress == "Paste Layer" && false)
+    else if (btnPress == "Paste Layer")
         ioh->pasteLayer();
-    else if (btnPress == "Delete Layer" && false)
+    else if (btnPress == "Delete Layer")
         ioh->deleteLayer();
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();
@@ -592,18 +650,8 @@ void MainWindow::doSomething(string btnPress) {
         sr->zoomIn();
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
-    else if (btnPress == "Help") {
-        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
-        if (!found)
-            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
-    }
-    else if (btnPress == "Exit") {
-        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
-        qmb.addButton("No", QMessageBox::NoRole);
-        int choice = qmb.exec();
-        if (choice == QMessageBox::Yes)
-            QApplication::exit();
-    }
+
+    refresh();
 }
 
 void MainWindow::downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText) {
@@ -667,7 +715,7 @@ void MainWindow::changeVectorFilter(string s) {
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
-    ioh->setScreenFilter(filterName);
+    ioh->getWorkingLayer()->setFilter(filterName);
     refresh();
 }
 
@@ -780,23 +828,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         if (ctrlFlag) {
             ioh->getWorkingLayer()->selectAll();
         }
-        /*
-    case Qt::Key_I:
-        ImgSupport::rotate180(qi);
-        break;
-    case Qt::Key_V:
-        ImgSupport::flipVertical(qi);
-        break;
-    case Qt::Key_H:
-        ImgSupport::flipHorizontal(qi);
-        break;
-    case Qt::Key_L:
-        ImgSupport::rotate90Left(qi);
-        break;
-    case Qt::Key_R:
-        ImgSupport::rotate90Right(qi);
-        break;
-        */
     }
     refresh();
 }
@@ -813,11 +844,47 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event) {
         break;
     }
 }
+
 void MainWindow::resizeEvent(QResizeEvent *event) {
     if (objFetch.find(UI_FileName.toStdString()) != objFetch.end()) {
         QMenuBar *menu = dynamic_cast<QMenuBar *>(objFetch.at(UI_FileName.toStdString()));
         menu->resize(width(), menu->height());
     }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    if (event->mimeData()->hasUrls())
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+    const QMimeData* mimeData = event->mimeData();
+    if (mimeData->hasUrls()) {
+        QList<QUrl> urlList = mimeData->urls();
+        for (int i = 0; i < urlList.size(); ++i) {
+            QString fileName = urlList.at(i).toLocalFile();
+            string fn = fileName.toStdString();
+            int index = fn.find_last_of('.');
+            string fileType = fn.substr(index + 1);
+            if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
+                bool flag = ioh->importImage(fileName);
+                if (flag) {
+                    resizeCheck->showRelative();
+                    while (resizeCheck->isVisible())
+                        QCoreApplication::processEvents();
+                }
+            }
+        }
+        refresh();
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
+    qmb.addButton("No", QMessageBox::NoRole);
+    int choice = qmb.exec();
+    if (choice != QMessageBox::Yes)
+        event->ignore();
 }
 
 void MainWindow::refresh() {

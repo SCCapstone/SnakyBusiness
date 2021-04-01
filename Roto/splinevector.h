@@ -48,8 +48,8 @@ public:
     void setTaper1(int a);
     void setTaper2(int b);
     void setFilter(string s);
-    void setTaperType(int i);
-    void setMode(int i);
+    void setTaperType(Taper t);
+    void setMode(VectorMode vm);
     void swapColors();
     void swapTapers();
     int getMode();
@@ -66,8 +66,10 @@ private:
     vector <QPoint> controlPts, backup;
     QPoint orig, offs;
     int minX, maxX, minY, maxY;
-    unsigned char width, mode;
-    char taper1, taper2, taperType;
+    unsigned char width;
+    VectorMode mode;
+    unsigned char taper1, taper2;
+    Taper taperType;
     QRgb color1, color2;
     Filter filter;
 };

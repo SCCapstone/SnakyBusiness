@@ -4,6 +4,7 @@
 #include <iostream>
 #include <time.h>
 #include <chrono>
+#include <QPoint>
 using std::cout;
 using std::endl;
 using std::chrono::duration_cast;
@@ -26,6 +27,10 @@ public:
 
     static void here(int i) {
         cout << "passed " << i << endl;
+    }
+
+    static int sqrDist(QPoint a, QPoint b) {
+        return pow(a.x() - b.x(), 2) + pow(a.y() - b.y(), 2);
     }
 
 };

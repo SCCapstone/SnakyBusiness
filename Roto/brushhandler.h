@@ -28,7 +28,7 @@ class brushHandler {
 
 public:
 
-    brushHandler(unsigned char str = 128, int size = 30, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
+    brushHandler(unsigned char str = 128, int size = 10, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
     void setAlpha(int val);
     void setAppMethod(string type);
@@ -62,6 +62,7 @@ public:
     void strengthUp();
     void strengthDown();
     void applyBrush(QImage *qi, QPoint qp);
+    void erase(QImage *qi, QPoint qp);
     void setInterpolationActive(bool flag);
 
 private:
@@ -84,15 +85,18 @@ private:
     void shiftDown();
 
     bool ipolActive, patternInUse;
-    int sprayDensity, checkEdgeSize, alpha;
-    unsigned char strength, patternXDim, patternYDim, **patternMap, **checkMap;
+    int sprayDensity, alpha;
+    unsigned char strength, patternXDim, patternYDim, **patternMap;;
+    //vector <vector <unsigned char> > checkMap;
+    unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
     Brush brush;
     QColor brushColor, fillColor;
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
-    float **radialMap;
+    //float **radialMap;
+    float radialMap[2 * maxRadius + 1][2 * maxRadius + 1];
     vector <int> radialValues;
 };
 
