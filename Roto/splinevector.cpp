@@ -1,11 +1,13 @@
 #include <splinevector.h>
 
+// This should only be called as a blank vector to populate in dataIOHandler::load()
 SplineVector::SplineVector() {
     width = 0;
     color1 = color2 = 0xFF000000;
     taper1 = taper2 = 0;
-    taperType = 2;
+    taperType = Double;
     filter.setFilter("Greyscale");
+    mode = ColorFill;
 }
 
 SplineVector::SplineVector(QPoint a, QPoint b, int Width) {

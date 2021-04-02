@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <layer.h>
 #include <graphics.h>
+#include <string>
 
 using std::thread;
 using std::vector;

@@ -788,31 +788,32 @@ void DataIOHandler::save(QString projectName) {
             // Write size of vects
             out << (uchar)frames[0][i]->getVectors().size();
             // write number of points in this vector
-            vectorCheck(frames[0][i]->getVectors()[j]);
-            uchar ptNum = (uchar)frames[0][i]->getVectors()[j].getNumPts();
+            SplineVector sv = frames[0][i]->getVectors()[j];
+            vectorCheck(sv);
+            uchar ptNum = (uchar)sv.getNumPts();
             out << ptNum;
             for (uchar h = 0; h < ptNum; h++) {
                 // Write the QPoints
-                out << frames[0][i]->getVectors()[j].getControls()[h];
+                out << sv.getControls()[h];
             }
             // Writing filter
-            out << (uchar)frames[0][i]->getVectors()[j].getFilter().getFilterIndex();
+            out << (uchar)sv.getFilter().getFilterIndex();
             // Write first color
-            out << frames[0][i]->getVectors()[j].getColors().first;
+            out << sv.getColors().first;
             // Write second color
-            out << frames[0][i]->getVectors()[j].getColors().second;
+            out << sv.getColors().second;
             // Write width
-            out << (uchar)frames[0][i]->getVectors()[j].getWidth();
+            out << (uchar)sv.getWidth();
             // Write first taper
-            out << (uchar)frames[0][i]->getVectors()[j].getTaper().first;
+            out << sv.getTaper().first;
             // Write second taper
-            out << (uchar)frames[0][i]->getVectors()[j].getTaper().second;
+            out << sv.getTaper().second;
             // Write taper type
-            qDebug() << "Taper type is " << (uchar)frames[0][i]->getVectors()[j].getTaperType();
-            out << (uchar)frames[0][i]->getVectors()[j].getTaperType();
+            qDebug() << "Taper type is " << sv.getTaperType();
+            out << sv.getTaperType();
             // Write mode (fill type)
-            qDebug() << "Mode is " << (uchar)frames[0][i]->getVectors()[j].getMode();
-            out << (uchar)frames[0][i]->getVectors()[j].getMode();
+            qDebug() << "Mode is " << sv.getMode();
+            out << sv.getMode();
         }
     }
     file.flush();
@@ -828,25 +829,31 @@ void DataIOHandler::load(QString projectName) {
     in >> length;
     quint32 a;
     QImage qi;
+    Layer base;
     for (unsigned int i = 0; i < length; ++i) {
         in >> a;
         in >> qi;
         uchar b;
         uchar c;
         uchar pts;
+        Taper e;
+        VectorMode v;
         QRgb color;
+        Layer base;
         // Read size of vects
         in >> c;
         // Read number of points
         for (unsigned int j = 0; j < c; j++) {
             qDebug() << "Reading vector " << j;
             SplineVector sv;
-            frames[0][i]->getVectors().push_back(sv);
+            qDebug() << "Pushing sv";
+            //frames[0][i]->getVectors().push_back(sv);
+            qDebug() << "reading num pts";
             in >> pts;
             for (uchar h = 0; h < pts; h++) {
+                qDebug() << "Reading QPoint number" << h;
                 QPoint point;
                 in >> point;
-                //frames[0][i]->getVectors()[i].addPt(point,h);
                 sv.addPt(point,h);
             }
         // Read filter
@@ -876,12 +883,12 @@ void DataIOHandler::load(QString projectName) {
         sv.setTaper2(b);
         // Read taper type
         qDebug() << "taper type";
-        in >> b;
-        sv.setTaperType(b);
+        in >> e;
+        sv.setTaperType(e);
         //Read mode (fill type)
         qDebug() << "mode";
-        in >> b;
-        sv.setMode(b);
+        in >> v;
+        sv.setMode(v);
         qDebug() << "push";
         vectorCheck(sv);
         vectorCopySlot.push_back(sv);
@@ -906,17 +913,17 @@ void DataIOHandler::exportVideo(QString fileName) {
 
 }
 
-// Used for testing if a vector is read in correctly after writing
+// Debuggine method, used for testing if a vector is read in correctly after writing
 void DataIOHandler::vectorCheck(SplineVector sv) {
     qDebug() << "Vector Check";
-    qDebug() << sv.getNumPts();
-    qDebug() << sv.getFilter().getFilterIndex();
-    qDebug() << sv.getColors().first;
-    qDebug() << sv.getColors().second;
-    qDebug() << sv.getWidth();
-    qDebug() << sv.getTaper().first;
-    qDebug() << sv.getTaper().second;
-    qDebug() << sv.getTaperType();
-    qDebug() << sv.getMode();
+    qDebug() << "Num Pts is" << sv.getNumPts();
+    qDebug() << "Filter Index is" << sv.getFilter().getFilterIndex();
+    qDebug() << "Color 1 is" << sv.getColors().first;
+    qDebug() << "Color 2 is" << sv.getColors().second;
+    qDebug() << "Width is" << sv.getWidth();
+    qDebug() << "Taper 1 is" << sv.getTaper().first;
+    qDebug() << "Taper 2 is" << sv.getTaper().second;
+    qDebug() << "Taper Type is" << sv.getTaperType();
+    qDebug() << "Mode is" << sv.getMode();
 
 }
