@@ -4,13 +4,13 @@
 #include <thread>
 #include <vector>
 #include <list>
+#include <atomic>
+#include <mutex>
 #include <QImageReader>
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QImage>
 #include <QPainter>
-#include <atomic>
-#include <mutex>
 #include <layer.h>
 #include <graphics.h>
 
@@ -28,9 +28,9 @@ enum scaleType {dontScale, bestFit, aspectRatio, toWidth, toHeight};
 enum importType {image, video};
 
 struct RGB {
-    uchar blue;
-    uchar green;
-    uchar red;
+    unsigned char blue;
+    unsigned char green;
+    unsigned char red;
 };
 
 static mutex locker;
@@ -42,7 +42,6 @@ public:
 
     DataIOHandler(QProgressDialog *progress);
     ~DataIOHandler();
-
     static void renderFrame(QProgressDialog *fqpd, QImage *ret, vector <Layer *> layers);
     static void renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QImage *toProcess, int alpha, Filter filter, vector <SplineVector> vects, vector<list <Triangle> > tris = vector <list <Triangle> > ());
     static void calcLine(SplineVector sv, list <Triangle> *tris);
@@ -58,7 +57,6 @@ public:
     static void fillTTri(QImage *toProcess, QPoint a, QPoint b, QPoint c, QRgb color);
     static void filterBTri(QImage *toProcess, QPoint a, QPoint b, QPoint c, Filter f);
     static void filterTTri(QImage *toProcess, QPoint a, QPoint b, QPoint c, Filter f);
-
     void setDims(QSize size);
     QSize getdims();
     void scale(scaleType option);
@@ -86,25 +84,14 @@ public:
     void moveForward();
     void moveToBack();
     void moveToFront();
+    Layer *getWorkingLayer();
+    QImage getBackground();
+    QImage getForeground();
 
-    /*
-    void addFrame(int num);
-    void duplicateFrame(int count);
-    void copyFrames(int first, int last = -1);
-    void pasteFrames(int after);
-    void removeFrames(int first, int last = -1);
-    // Update the menu file to match.
-    */
-
-
-    // almost everything below is outdated
     bool importVideo(QString fileName);
     void exportVideo(QString fileName);
     void save(QString projectName);
     void load(QString projectName);
-    Layer *getWorkingLayer();
-    QImage getBackground();
-    QImage getForeground();
 
 
 private:
@@ -124,4 +111,3 @@ private:
 };
 
 #endif // DATAIO_H
-

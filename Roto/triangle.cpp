@@ -29,4 +29,3 @@ QPoint Triangle::B() {
 QPoint Triangle::C() {
     return c;
 }
-

@@ -22,7 +22,7 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
     patternMap = new unsigned char*[patternXDim];
     patternMap[0] = new unsigned char[patternYDim];
     patternMap[0][0] = 0;
-    int xpsize = 30, ypsize = 15;
+    int xpsize = 20, ypsize = 20;
     unsigned char **arr = new unsigned char *[xpsize];
     for (int i = 0; i < xpsize; ++i) {
         arr[i] = new unsigned char[ypsize];
@@ -149,6 +149,14 @@ void brushHandler::strengthDown() {
 
 int brushHandler::getStength() {
     return strength;
+}
+
+int brushHandler::getFilterStrength() {
+    return brushFilter.getStrength();
+}
+
+void brushHandler::setFilterStrength(int val) {
+    brushFilter.setStrength(val);
 }
 
 void brushHandler::setSize(int size) {

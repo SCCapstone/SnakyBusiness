@@ -2,6 +2,7 @@
 
 
 screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(parent) {
+    hoverActive = false;
     brushLoc = QPoint(0,0);
     flashFlag = false;
     flasher = new QTimer(this);
@@ -10,13 +11,75 @@ screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(paren
     adder = 0.1;
     samplePoint = QPoint(-1000, -1000);
     ioh = dioh;
-    flasher->start(flashSpeed);
     filter.setFilter("Greyscale");
+    setMouseTracking(true);
+    setAttribute(Qt::WA_Hover);
+    radius = -1;
 }
 
 screenRender::~screenRender() {
     flasher->stop();
     delete flasher;
+}
+
+void screenRender::setMode(EditMode emode) {
+    mode = emode;
+}
+
+void screenRender::setHoverActive(bool active) {
+    hoverActive = active;
+}
+
+void screenRender::updateHoverMap(int r, const unsigned char const* const* arr) {
+    stopFlashing();
+    hoverLock.lock();
+    int size = 2 * radius + 1;
+    if (hoverMap != nullptr && radius != -1) {
+        for (int i = 0; i < size; ++i)
+            delete [] hoverMap[i];
+        delete [] hoverMap;
+    }
+    radius = r;
+    size = 2 * radius + 1;
+    hoverMap = new unsigned char*[size];
+    for (int i = 0; i < size; ++i) {
+        hoverMap[i] = new unsigned char[size];
+        for (int j = 0; j < size; ++j)
+            hoverMap[i][j] = arr[i][j];
+    }
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j) {
+            if (hoverMap[i][j] == 1) {
+                int n = j == 0 ? 0 : hoverMap[i][j - 1];
+                int w = i == 0 ? 0 : hoverMap[i - 1][j];
+                hoverMap[i][j] = min(n, w) + 1;
+            }
+        }
+    for (int i = size - 1; i >= 0; --i)
+        for (int j = size - 1; j >= 0; --j) {
+            if (arr[i][j] == 0)
+                hoverMap[i][j] = 0;
+            else {
+                int s = j == size - 1 ? 0 : hoverMap[i][j + 1];
+                int e = i == size - 1 ? 0 : hoverMap[i + 1][j];
+                int val = min(s, e) + 1;
+                hoverMap[i][j] = min(static_cast<int>(hoverMap[i][j]), val);
+            }
+        }
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j)
+            if (hoverMap[i][j] != 1)
+                hoverMap[i][j] = 0;
+    hoverLock.unlock();
+    resume();
+}
+
+void screenRender::mouseMoveEvent(QMouseEvent *event) {
+    event->ignore();
+    if (mode == Brush_Mode) {
+        brushLoc = getZoomCorrected(event->pos());
+        repaint();
+    }
 }
 
 double screenRender::getZoom() {
@@ -197,6 +260,19 @@ void screenRender::paintEvent(QPaintEvent *event) {
                 if ((flashFlag || dist >= ptSize - 1) && dist <= ptSize)
                     qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
             }
+    }
+    if (underMouse() && hoverActive && mode == Brush_Mode && hoverLock.try_lock()) {
+        int x = brushLoc.x() < radius ? radius - brushLoc.x() - 1 : 0, yStarter = brushLoc.y() < radius ? radius - brushLoc.y() : 0;
+        for (int i = max(0, brushLoc.x() - radius + 1); i <= min(qi.width() - 1, brushLoc.x() + radius + 1); ++i) {
+            int y = yStarter;
+            for (int j = max(0, brushLoc.y() - radius + 1); j <= min(qi.height() - 1, brushLoc.y() + radius + 1); ++j) {
+                if (hoverMap[x][y] == 1)
+                    qi.setPixel(i, j, graphics::Filtering::negative(graphics::Filtering::polarize(qi.pixel(i, j) | 0xFF000000, 128), 255));
+                ++y;
+            }
+            ++x;
+        }
+        hoverLock.unlock();
     }
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
@@ -496,4 +572,3 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
         curx2 += invslope2;
     }
 }
-

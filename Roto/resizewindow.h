@@ -16,24 +16,27 @@ class resizeWindow : public QMainWindow
     Q_OBJECT
 
 public:
+
     resizeWindow(QWidget *parent, DataIOHandler *ioh);
     ~resizeWindow();
     void showRelative();
     void doClose();
 
 private:
+
     Ui::resizeWindow *ui;
     DataIOHandler *parentIOH;
 
     bool ignoreClose;
 
 public slots:
+
     void finish();
 
 protected:
+
      void closeEvent(QCloseEvent *event);
 
 };
 
 #endif // RESIZEWINDOW_H
-

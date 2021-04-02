@@ -12,13 +12,13 @@ using std::pair;
 using graphics::Filter;
 using graphics::Filtering;
 
+enum VectorMode {ColorFill, Filtered};
+enum Taper {Single, Double};
+
 const int minTaper = 0;
 const int maxTaper = 10;
 const int minWidth = 0;
 const int maxWidth = UCHAR_MAX;
-
-enum VectorMode {ColorFill, Filtered};
-enum Taper {Single, Double};
 
 class SplineVector {
 
@@ -75,4 +75,3 @@ private:
 };
 
 #endif // VECTOR_H
-

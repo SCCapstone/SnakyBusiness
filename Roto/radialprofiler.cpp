@@ -214,4 +214,3 @@ void RadialProfiler::updateSize(int size) {
     else
         timer->start(flashMs);
 }
-

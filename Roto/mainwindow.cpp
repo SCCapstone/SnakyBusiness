@@ -80,7 +80,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menubar->setCornerWidget(dynamic_cast<QMenuBar *>(objFetch.at(UI_FileName.toStdString())), Qt::TopLeftCorner);
     resizeCheck = new resizeWindow(this, ioh);
     radialProfiler = new RadialProfiler(&bh, this);
-    mode = Brush_Mode;
     onePress = false;
     vs->setWidget(sr);
     file.setFileName(QDir::currentPath() + UI_Loc + Icon_Loc + WinIco_FileName);
@@ -109,6 +108,9 @@ MainWindow::MainWindow(QWidget *parent)
     resPrompt.exec();
     int sizeY = stoi(resPrompt.textValue().toStdString());
     ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+    setMode(Brush_Mode);
+    sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
+    sr->setHoverActive(true);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -136,8 +138,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
             layer->moveLeft(qp);
         else if (lastButton == RightButton && shiftFlag)
             layer->moveRight(qp);
+        refresh();
     }
-    refresh();
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
@@ -155,6 +157,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     if (mode == Raster_Mode && event->button() == RightButton && !shiftFlag && !ioh->getWorkingLayer()->isRotating())
         ioh->getWorkingLayer()->fillColor(qp, bh.getFillColor());
     else if (mode == Brush_Mode) {
+        sr->setHoverActive(false);
         if (lastButton == RightButton) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
@@ -192,8 +195,10 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
         return;
     }
     if (mode == Brush_Mode) {
+        sr->setHoverActive(true);
         bh.setInterpolationActive(false);
         bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
+        refresh();
     }
     else if (mode == Spline_Mode || (mode == Raster_Mode && event->button() != Qt::RightButton))
         ioh->getWorkingLayer()->release(qp, event->button());
@@ -240,6 +245,7 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
         }
         else {
             radialProfiler->updateSize(bh.getSize() + dy);
+            sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
             statusBar()->showMessage(("Brush Radius: " + to_string(bh.getSize())).c_str(), 1000);
         }
     }
@@ -454,9 +460,11 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Brush Radius") {
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush size/radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
-        if (ok)
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
+        if (ok) {
             radialProfiler->updateSize(ret);
+            sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
+        }
     }
     else if (btnPress == "Brush Strength") {
         bool ok = false;
@@ -470,25 +478,45 @@ void MainWindow::doSomething(string btnPress) {
         if (ok)
             bh.setDensity(ret);
     }
+    else if (btnPress == "Flip Selection Vertical")
+        ioh->getWorkingLayer()->flipVert();
+    else if (btnPress == "Flip Selection Horizontal")
+        ioh->getWorkingLayer()->flipHori();
     else if (btnPress == "Pattern On")
         bh.setPatternInUse(true);
     else if (btnPress == "Pattern Off")
         bh.setPatternInUse(false);
+    else if (btnPress == "Brush Filter Strength") {
+        int val = bh.getFilterStrength();
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush filter strength", val, graphics::minColor, graphics::maxColor, 1, &ok );
+        if (ok)
+            bh.setFilterStrength(ret);
+    }
     else if (btnPress == "Vector Width") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector width", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
         if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
+    }
+    else if (btnPress == "Vector Filter Strength") {
+        int val = ioh->getWorkingLayer()->getVectorFilterStrength();
+        if (val == -1)
+            return;
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector filter strength", val, graphics::minColor, graphics::maxColor, 1, &ok );
+        if (ok)
+            ioh->getWorkingLayer()->setVectorFilterStrength(ret);
     }
     else if (btnPress == "Vector Taper 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a first taper degree", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
     }
@@ -497,7 +525,7 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a second taper degree", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
     }
@@ -548,19 +576,23 @@ void MainWindow::doSomething(string btnPress) {
         }
     }
     else if (btnPress == "Brush Mode") {
-        mode = Brush_Mode;
-        ioh->getWorkingLayer()->setMode(mode);
+        sr->stopFlashing();
+        ioh->getWorkingLayer()->deselect();
+        setMode(Brush_Mode);
+    }
+    else if (btnPress == "Vector Mode") {
+        sr->resume();
+        ioh->getWorkingLayer()->deselect();
+        setMode(Spline_Mode);
+        setSamplePt(QPoint(-1000, -1000));
         ioh->getWorkingLayer()->deselect();
     }
-    else if (btnPress == "Spline Mode") {
-        mode = Spline_Mode;
-        ioh->getWorkingLayer()->setMode(mode);
-        setSamplePt(QPoint(-1000, -1000));
-    }
     else if (btnPress == "Raster Mode") {
-        mode = Raster_Mode;
-        ioh->getWorkingLayer()->setMode(mode);
+        sr->resume();
+        ioh->getWorkingLayer()->deselect();
+        setMode(Raster_Mode);
         setSamplePt(QPoint(-1000, -1000));
+        ioh->getWorkingLayer()->deselect();
     }
     else if (btnPress == "Copy") {
         if (mode == Spline_Mode)
@@ -714,6 +746,7 @@ void MainWindow::changeBrushFilter(string filterName) {
 
 void MainWindow::changeBrushShape(string shape) {
     bh.setShape(shape);
+    sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
 }
 
 void MainWindow::changeBrushMethod(string method) {
@@ -875,6 +908,13 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     int choice = qmb.exec();
     if (choice != QMessageBox::Yes)
         event->ignore();
+}
+
+void MainWindow::setMode(EditMode emode) {
+    mode = emode;
+    if (ioh->getWorkingLayer() != nullptr)
+    ioh->getWorkingLayer()->setMode(emode);
+    sr->setMode(emode);
 }
 
 void MainWindow::refresh() {

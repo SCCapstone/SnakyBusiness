@@ -804,4 +804,3 @@ bool DataIOHandler::importVideo(QString fileName) {
 void DataIOHandler::exportVideo(QString fileName) {
 
 }
-

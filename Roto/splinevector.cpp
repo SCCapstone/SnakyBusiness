@@ -184,7 +184,7 @@ void SplineVector::scale(QPoint qp) {
 
 void SplineVector::cleanup() {
     backup.clear();
-    maxY = maxX = 0;
+    maxY = maxX = -INT_MAX;
     minY = minX = INT_MAX;
     for (QPoint qp : controlPts) {
         if (qp.x() < minX)
@@ -297,4 +297,3 @@ pair <char, char> SplineVector::getTaper() {
 pair <QRgb, QRgb> SplineVector::getColors() {
     return pair <QRgb, QRgb> (color1, color2);
 }
-

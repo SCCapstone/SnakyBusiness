@@ -125,6 +125,7 @@ public:
     void dropEvent(QDropEvent *event);
     void resizeEvent(QResizeEvent *event);
     void closeEvent(QCloseEvent *event);
+    void hoverEvent(QHoverEvent *event);
 
 public slots:
     void changeVectorFilter(string s);
@@ -146,6 +147,7 @@ private:
     void setSamplePt(QPoint qp);
     void downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText);
     void createDocImgs();
+    void setMode(EditMode emode);
 
     Ui::MainWindow *ui;
     screenRender *sr;

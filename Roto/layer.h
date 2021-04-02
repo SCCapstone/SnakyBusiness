@@ -14,13 +14,13 @@ using Qt::MouseButton;
 using Qt::LeftButton;
 using Qt::RightButton;
 
+enum EditMode {Brush_Mode, Spline_Mode, Raster_Mode};
+enum Selection {TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, BodySelect, NoSelect};
+
 const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
 const float pi = 3.14159;
-
-enum EditMode {Brush_Mode, Spline_Mode, Raster_Mode};
-enum Selection {TopLeft, Top, TopRight, Right, BottomRight, Bottom, BottomLeft, Left, BodySelect, NoSelect};
 
 class Layer {
 
@@ -30,8 +30,8 @@ public:
     Layer(QSize qs);
     Layer(QImage in, int alphaValue);
     Layer(const Layer &layer);
-    Layer& operator = (const Layer &layer);
     ~Layer();
+    Layer& operator = (const Layer &layer);
     QImage *getCanvas();
     QImage getRenderCanvas();
     vector <QPoint> getRasterEdges();
@@ -53,6 +53,8 @@ public:
     void doubleClickLeft(QPoint qp, bool ctrlFlag);
     void doubleClickRight(QPoint qp);
     void setMode(EditMode m);
+    void flipVert();
+    void flipHori();
     void fillColor(QPoint qp, QColor qc);
     void patternFill(QPoint qp, QColor qc);
     void setShiftFlag(bool b);
@@ -75,6 +77,8 @@ public:
     void swapTapers();
     pair <char, char> getVectorTapers();
     pair <QRgb, QRgb> getVectorColors();
+    int getVectorFilterStrength();
+    void setVectorFilterStrength(int str);
     void cleanUp();
     void selectAll();
     void deselect();
@@ -104,8 +108,6 @@ private:
     bool shiftFlag, selectOgActive, selecting;
     QPoint deltaMove, boundPt1, boundPt2, rotateAnchor;
     Filter filter;
-
 };
 
 #endif // LAYER_H
-

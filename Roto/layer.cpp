@@ -10,22 +10,21 @@ Layer::Layer() {
     selection = NoSelect;
     postAngle = 0.0;
     selectOgActive = false;
+    deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
 }
 
 Layer::Layer(QSize qs) {
     activePt = -1;
     alpha = 255;
     qi = new QImage(qs, QImage::Format_ARGB32_Premultiplied);
-    qi->fill(0xFFFFFFFF);
-//    for (int i = 0; i < qs.width(); ++i)
-//        for (int j = 0; j < qs.height(); ++j)
-//            qi->setPixelColor(i, j, QColor(255.0 * static_cast<float>(i) / qi->width(), 255.0 * static_cast<float>(j) / qi->height(), 255.0 * (1.0 - static_cast<float>(i) / qi->width())));
+    qi->fill(0x00000000);
     shiftFlag = false;
     ipolPts = ipolMin;
     mode = Brush_Mode;
     selection = NoSelect;
     postAngle = 0.0;
     selectOgActive = false;
+    deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
 }
 
 Layer::Layer(QImage in, int alphaValue) {
@@ -39,6 +38,7 @@ Layer::Layer(QImage in, int alphaValue) {
     selection = NoSelect;
     postAngle = 0.0;
     selectOgActive = false;
+    deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
 }
 
 Layer::Layer(const Layer &layer) {
@@ -62,8 +62,7 @@ Layer& Layer::operator=(const Layer &layer) {
     shiftFlag = false;
     selectOgActive = false;
     selecting = false;
-    deltaMove = QPoint(-1000, -1000);
-    boundPt1 = boundPt2 = rotateAnchor = QPoint(0, 0);
+    deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
     filter = layer.filter;
     return *this;
 }
@@ -138,13 +137,20 @@ vector <QPoint> Layer::getRasterEdges() {
     return pts;
 }
 
+void Layer::flipVert() {
+    graphics::ImgSupport::flipVertical(&rasterselectOg);
+}
+
+void Layer::flipHori() {
+    graphics::ImgSupport::flipHorizontal(&rasterselectOg);
+}
+
 void Layer::fillColor(QPoint qp, QColor qc) {
     int w = qi->width(), h = qi->height();
     list <QPoint> toProcess;
     toProcess.push_back(qp);
     QRgb og = qi->pixel(qp.x(), qp.y());
     QRgb nu = qc.rgba();
-
     if (og == nu)
         return;
     while (!toProcess.empty()) {
@@ -318,9 +324,13 @@ void Layer::release(QPoint qp, MouseButton button) {
     }
     else if(mode == Raster_Mode) {
         if (!selectOgActive) {
-            if (rasterselectOg.isNull()) {
+            if (rasterselectOg.isNull() && boundPt1 != qp) {
                 selecting = false;
                 boundPt2 = qp;
+                boundPt2.setX(min(boundPt2.x(), qi->width() - 1));
+                boundPt2.setY(min(boundPt2.y(), qi->height() - 1));
+                boundPt2.setX(max(boundPt2.x(), 0));
+                boundPt2.setY(max(boundPt2.y(), 0));
                 QPoint minPt(min(boundPt1.x(), boundPt2.x()), min(boundPt1.y(), boundPt2.y()));
                 QPoint maxPt(max(boundPt1.x(), boundPt2.x()), max(boundPt1.y(), boundPt2.y()));
                 boundPt1 = minPt;
@@ -334,7 +344,7 @@ void Layer::release(QPoint qp, MouseButton button) {
                 selectOgActive = true;
             }
             else
-                rasterselectOg = QImage();
+                deselect();
         }
         else {
             if (shiftFlag) {
@@ -342,8 +352,9 @@ void Layer::release(QPoint qp, MouseButton button) {
                 postAngle += atan2(rotateAnchor.y() - oy, rotateAnchor.x() - ox) - atan2(deltaMove.y() - oy, deltaMove.x() - ox);
                 deltaMove = rotateAnchor = qp;
             }
-            else
+            else {
                 selection = NoSelect;
+            }
        }
    }
 }
@@ -460,6 +471,7 @@ void Layer::pressLeft(QPoint qp) {
     }
     else if (mode == Raster_Mode) {
         if (!selectOgActive) {
+            deselect();
             boundPt1 = qp;
             postAngle = 0.0;
             deltaMove = qp;
@@ -516,7 +528,6 @@ void Layer::pressLeft(QPoint qp) {
                 selection = BodySelect;
             else {
                 deselect();
-                rasterselectOg = QImage();
                 boundPt1 = qp;
                 postAngle = 0.0;
                 deltaMove = qp;
@@ -611,7 +622,7 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
     if (mode == Spline_Mode) {
         if (activeVects.size() != 0) {
             if (!ctrlFlag)
-                activeVects.clear();
+                deselect();
             else {
                 int dist = INT_MAX;
                 char index = -1, size = static_cast<char>(vects.size());
@@ -796,6 +807,18 @@ unsigned char Layer::getVectorTaperType() {
     return vects[activeVects[0]].getTaperType();
 }
 
+int Layer::getVectorFilterStrength() {
+    if (activeVects.size() != 1)
+        return -1;
+    return vects[activeVects[0]].getFilter().getStrength();
+}
+
+void Layer::setVectorFilterStrength(int str) {
+    if (activeVects.size() != 1)
+        return;
+    return vects[activeVects[0]].setFilterStrength(str);
+}
+
 void Layer::cleanUp() {
     for (unsigned char i : activeVects)
             vects[i].cleanup();
@@ -860,28 +883,20 @@ void Layer::selectAll() {
 
 void Layer::deselect() {
     if (mode == Spline_Mode) {
-        int w = qi->width(), h = qi->height();
-        for (unsigned char i : activeVects) {
-            int width = vects[i].getWidth();
-            pair <QPoint, QPoint> bounds = vects[i].getBounds();
-            bool flag = bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
-            if (flag) {
-                list <Triangle> newList;
-                for (Triangle t : tris[i])
-                    if ((t.A().x() >= 0 && t.A().y() >= 0 && t.A().x() < w && t.A().y() < h) || (t.B().x() >= 0 && t.B().y() >= 0 && t.B().x() < w && t.B().y() < h) || (t.C().x() >= 0 && t.C().y() >= 0 && t.C().x() < w && t.C().y() < h))
-                        newList.push_back(t);
-                tris[i] = newList;
-            }
-        }
+        for (unsigned char i : activeVects)
+            vects[i].cleanup();
         activeVects.clear();
         activePt = -1;
     }
     else if (mode == Raster_Mode) {
         drawRasterSelection(qi);
+        rasterselectOg = QImage();
         selection = NoSelect;
         selectOgActive = false;
         postAngle = 0.0;
+        selecting = selectOgActive = false;
     }
+    deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
 }
 
 void Layer::clearVectors() {
@@ -909,4 +924,3 @@ void Layer::setFilter(string filterName) {
 bool Layer::isRotating() {
     return selectOgActive;
 }
-

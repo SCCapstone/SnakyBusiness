@@ -16,10 +16,10 @@ using std::function;
 namespace graphics {
 
 //  TODO, polarize rgbycm (via mono), neg rgbycm, noise rgbycm, rainbow filter (h, v, ld, rd), vignette filter
-const string filterNames[] =   {"Normal (rgb)", "Greyscale", "Polarize", "Negative", "Burn", "Dodge", "Enshadow", "Red Channel", "Green Channel", "Blue Channel", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter", "Burn Red", "Burn Green", "Burn Blue", "Burn Yellow", "Burn Cyan", "Burn Magenta", "Dodge Red", "Dodge Green", "Dodge Blue", "Dodge Yellow", "Dodge Cyan", "Dodge Magenta", "RBG", "GRB", "GBR", "BRG", "BGR"};
-const string vectorFilters[] = {"Greyscale", "Polarize", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter"};
-const int filterPresets[] =    {0             , 255        , 128        , 0         , 20    , 20     , 64,        255          , 255            , 255           , 255       , 255         , 255        , 255           , 255          , 255        , 255         , 255           , 255          , 20        , 20          , 20         , 20           , 20         , 20            , 20         , 20           , 20          , 20            , 20          , 20             , 0    , 0    , 0    , 0    , 0    };
-const int numFilters = 36;
+const string filterNames[] =   {"Normal (rgb)", "Greyscale", "Polarize", "Negative", "Burn", "Dodge", "Enshadow", "Red Channel", "Green Channel", "Blue Channel", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter", "Burn Red", "Burn Green", "Burn Blue", "Burn Yellow", "Burn Cyan", "Burn Magenta", "Dodge Red", "Dodge Green", "Dodge Blue", "Dodge Yellow", "Dodge Cyan", "Dodge Magenta", "RBG", "GRB", "GBR", "BRG", "BGR", "Color Noise", "Grey Noise"};
+const string vectorFilters[] = {"Greyscale", "Polarize", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter", "Color Noise", "Grey Noise"};
+const int filterPresets[] =    {0             , 255        , 128        , 0         , 20    , 20     , 64,        255          , 255            , 255           , 255       , 255         , 255        , 255           , 255          , 255        , 255         , 255           , 255          , 20        , 20          , 20         , 20           , 20         , 20            , 20         , 20           , 20          , 20            , 20          , 20             , 0    , 0    , 0    , 0    , 0    , 64               , 64              };
+const int numFilters = 38;
 const double minZoom = 1.0 / 4.0;
 const double maxZoom = 8.0;
 const int minColor = 0;
@@ -110,9 +110,6 @@ public:
     void zoomOut();
     QPoint getZoomCorrected(QPoint qp);
     QSize getZoomCorrected(QSize qs);
-    static void rotate90Right(QImage *&qi);
-    static void rotate90Left(QImage *&qi);
-    static void rotate180(QImage *qi);
     static void flipVertical(QImage *qi);
     static void flipHorizontal(QImage *qi);
     static list <QImage *> resize(QSize reqSize);
@@ -124,10 +121,7 @@ private:
     double zoom;
 };
 
-// TODO update names
-
-const function <QRgb (QColor, int)> filters[] = {Filtering::rgb, Filtering::greyscale, Filtering::polarize, Filtering::negative, Filtering::burn, Filtering::dodge, Filtering::enshadow, Filtering::redChannel, Filtering::greenChannel, Filtering::blueChannel, Filtering::redPass, Filtering::greenPass, Filtering::bluePass, Filtering::magentaPass, Filtering::yellowPass, Filtering::cyanPass, Filtering::redFilter, Filtering::greenFilter, Filtering::blueFilter, Filtering::burnRed, Filtering::burnGreen, Filtering::burnBlue, Filtering::burnYellow, Filtering::burnCyan, Filtering::burnMagenta, Filtering::dodgeRed, Filtering::dodgeGreen, Filtering::dodgeBlue, Filtering::dodgeYellow, Filtering::dodgeCyan, Filtering::dodgeMagenta, Filtering::rbg, Filtering::grb, Filtering::gbr, Filtering::brg, Filtering::bgr};
+const function <QRgb (QColor, int)> filters[] = {Filtering::rgb, Filtering::greyscale, Filtering::polarize, Filtering::negative, Filtering::burn, Filtering::dodge, Filtering::enshadow, Filtering::redChannel, Filtering::greenChannel, Filtering::blueChannel, Filtering::redPass, Filtering::greenPass, Filtering::bluePass, Filtering::magentaPass, Filtering::yellowPass, Filtering::cyanPass, Filtering::redFilter, Filtering::greenFilter, Filtering::blueFilter, Filtering::burnRed, Filtering::burnGreen, Filtering::burnBlue, Filtering::burnYellow, Filtering::burnCyan, Filtering::burnMagenta, Filtering::dodgeRed, Filtering::dodgeGreen, Filtering::dodgeBlue, Filtering::dodgeYellow, Filtering::dodgeCyan, Filtering::dodgeMagenta, Filtering::rbg, Filtering::grb, Filtering::gbr, Filtering::brg, Filtering::bgr, Filtering::colorFilmGrain, Filtering::greyFilmGrain};
 }
 
 #endif // GRAPHICS_H
-
