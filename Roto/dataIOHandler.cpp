@@ -805,9 +805,11 @@ void DataIOHandler::save(QString projectName) {
             // Write width
             out << (uchar)sv.getWidth();
             // Write first taper
-            out << sv.getTaper().first;
+            qDebug() << static_cast<int>(sv.getTaper().first);
+            out << static_cast<int>(sv.getTaper().first);
             // Write second taper
-            out << sv.getTaper().second;
+            qDebug() << static_cast<int>(sv.getTaper().second);
+            out << static_cast<int>(sv.getTaper().second);
             // Write taper type
             qDebug() << "Taper type is " << sv.getTaperType();
             out << sv.getTaperType();
@@ -921,8 +923,8 @@ void DataIOHandler::vectorCheck(SplineVector sv) {
     qDebug() << "Color 1 is" << sv.getColors().first;
     qDebug() << "Color 2 is" << sv.getColors().second;
     qDebug() << "Width is" << sv.getWidth();
-    qDebug() << "Taper 1 is" << sv.getTaper().first;
-    qDebug() << "Taper 2 is" << sv.getTaper().second;
+    qDebug() << "Taper 1 is" << static_cast<int>(sv.getTaper().first);
+    qDebug() << "Taper 2 is" << static_cast<int>(sv.getTaper().second);
     qDebug() << "Taper Type is" << sv.getTaperType();
     qDebug() << "Mode is" << sv.getMode();
 
