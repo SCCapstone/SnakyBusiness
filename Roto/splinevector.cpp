@@ -278,15 +278,15 @@ void SplineVector::swapTapers() {
     swapColors();
 }
 
-int SplineVector::getMode() {
-    return static_cast<int>(mode);
+VectorMode SplineVector::getMode() {
+    return mode;
 }
 
 Filter SplineVector::getFilter() {
     return filter;
 }
 
-char SplineVector::getTaperType() {
+Taper SplineVector::getTaperType() {
     return taperType;
 }
 

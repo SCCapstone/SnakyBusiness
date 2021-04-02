@@ -52,9 +52,9 @@ public:
     void setMode(VectorMode vm);
     void swapColors();
     void swapTapers();
-    int getMode();
+    VectorMode getMode();
     Filter getFilter();
-    char getTaperType();
+    Taper getTaperType();
     pair <char, char> getTaper();
     pair <QRgb, QRgb> getColors();
     pair <QPoint, QPoint> getBounds();

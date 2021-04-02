@@ -36,7 +36,7 @@ int graphics::Filter::getStrength() {
 }
 
 void graphics::Filter::setStrength(int value) {
-    strength = stdFuncs::clamp(value, 1, 255);
+    strength = stdFuncs::clamp(value, minColor, maxColor);
 }
 
 void graphics::Filter::strengthUp() {

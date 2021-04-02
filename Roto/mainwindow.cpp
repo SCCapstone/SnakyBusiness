@@ -731,11 +731,15 @@ void MainWindow::downloadTimeout() {
 }
 
 void MainWindow::changeVectorFilter(string s) {
+    if (ioh->getWorkingLayer() == nullptr || ioh->getWorkingLayer()->getActiveVectors().size() == 0)
+        return;
     ioh->getWorkingLayer()->setVectorFilter(s);
     refresh();
 }
 
 void MainWindow::changeScreenFilter(string filterName) {
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     ioh->getWorkingLayer()->setFilter(filterName);
     refresh();
 }
@@ -756,10 +760,6 @@ void MainWindow::changeBrushMethod(string method) {
 void MainWindow::log(string title, QObject *obj) {
     objFetch[title] = obj;
     toDel.push_front(obj);
-}
-
-void appTo(QImage *qi, Filter f) {
-    f.applyTo(qi);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
