@@ -137,4 +137,3 @@ void Brush::createOctagon() {
             brushMap[i][j] = (x + y < (3 * radius) / 2);
         }
 }
-

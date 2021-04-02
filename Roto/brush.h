@@ -2,9 +2,11 @@
 #define BRUSH_H
 
 #include <string>
+#include <vector>
 #include <stdfuncs.h>
 
 using std::string;
+using std::vector;
 
 enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon};                //  TODO custom
 
@@ -44,4 +46,3 @@ private:
 };
 
 #endif // BRUSH_H
-

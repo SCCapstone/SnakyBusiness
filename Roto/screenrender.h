@@ -7,6 +7,9 @@
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
+#include <QProgressDialog>
+#include <QHoverEvent>
+#include <QMouseEvent>
 #include <stdfuncs.h>
 #include <graphics.h>
 #include <layer.h>
@@ -20,6 +23,7 @@ using graphics::Filtering;
 using graphics::ImgSupport;
 
 const int flashSpeed = 1000;
+static mutex hoverLock;
 
 class screenRender : public QWidget {
 
@@ -29,6 +33,8 @@ public:
 
     explicit screenRender(DataIOHandler *dioh, QWidget *parent = nullptr);
     ~screenRender();
+    void mouseMoveEvent(QMouseEvent *event);
+    void leaveEvent(QMouseEvent *event);
     double getZoom();
     void setZoom(double Zoom);
     void zoomIn();
@@ -38,7 +44,11 @@ public:
     void paintEvent(QPaintEvent *event);
     void setSamplePt(QPoint qp);
     void stopFlashing();
+    void resume();
     void showFg(bool shown);
+    void setMode(EditMode emode);
+    void updateHoverMap(int r, const unsigned char const* const* arr);
+    void setHoverActive(bool active);
 
 private:
 
@@ -70,6 +80,10 @@ private:
     ImgSupport screenZoom;
     Filter filter;
     DataIOHandler *ioh;
+    EditMode mode;
+    unsigned char **hoverMap;
+    int radius;
+    bool hoverActive;
 
 public slots:
 
@@ -77,4 +91,3 @@ public slots:
 };
 
 #endif // SCREENRENDER_H
-

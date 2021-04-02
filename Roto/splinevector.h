@@ -12,13 +12,13 @@ using std::pair;
 using graphics::Filter;
 using graphics::Filtering;
 
+enum VectorMode {ColorFill, Filtered};
+enum Taper {Single, Double};
+
 const int minTaper = 0;
 const int maxTaper = 10;
 const int minWidth = 0;
 const int maxWidth = UCHAR_MAX;
-
-enum VectorMode {ColorFill, Filtered};
-enum Taper {Single, Double};
 
 class SplineVector {
 
@@ -47,14 +47,15 @@ public:
     void setColor2(QRgb b);
     void setTaper1(int a);
     void setTaper2(int b);
+    void setFilterStrength(int val);
     void setFilter(string s);
     void setTaperType(Taper t);
     void setMode(VectorMode vm);
     void swapColors();
     void swapTapers();
-    int getMode();
+    VectorMode getMode();
     Filter getFilter();
-    char getTaperType();
+    Taper getTaperType();
     pair <char, char> getTaper();
     pair <QRgb, QRgb> getColors();
     pair <QPoint, QPoint> getBounds();
@@ -75,4 +76,3 @@ private:
 };
 
 #endif // VECTOR_H
-

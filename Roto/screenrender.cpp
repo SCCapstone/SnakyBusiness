@@ -2,6 +2,7 @@
 
 
 screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(parent) {
+    hoverActive = false;
     brushLoc = QPoint(0,0);
     flashFlag = false;
     flasher = new QTimer(this);
@@ -10,13 +11,75 @@ screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(paren
     adder = 0.1;
     samplePoint = QPoint(-1000, -1000);
     ioh = dioh;
-    flasher->start(flashSpeed);
     filter.setFilter("Greyscale");
+    setMouseTracking(true);
+    setAttribute(Qt::WA_Hover);
+    radius = -1;
 }
 
 screenRender::~screenRender() {
     flasher->stop();
     delete flasher;
+}
+
+void screenRender::setMode(EditMode emode) {
+    mode = emode;
+}
+
+void screenRender::setHoverActive(bool active) {
+    hoverActive = active;
+}
+
+void screenRender::updateHoverMap(int r, const unsigned char const* const* arr) {
+    stopFlashing();
+    hoverLock.lock();
+    int size = 2 * radius + 1;
+    if (hoverMap != nullptr && radius != -1) {
+        for (int i = 0; i < size; ++i)
+            delete [] hoverMap[i];
+        delete [] hoverMap;
+    }
+    radius = r;
+    size = 2 * radius + 1;
+    hoverMap = new unsigned char*[size];
+    for (int i = 0; i < size; ++i) {
+        hoverMap[i] = new unsigned char[size];
+        for (int j = 0; j < size; ++j)
+            hoverMap[i][j] = arr[i][j];
+    }
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j) {
+            if (hoverMap[i][j] == 1) {
+                int n = j == 0 ? 0 : hoverMap[i][j - 1];
+                int w = i == 0 ? 0 : hoverMap[i - 1][j];
+                hoverMap[i][j] = min(n, w) + 1;
+            }
+        }
+    for (int i = size - 1; i >= 0; --i)
+        for (int j = size - 1; j >= 0; --j) {
+            if (arr[i][j] == 0)
+                hoverMap[i][j] = 0;
+            else {
+                int s = j == size - 1 ? 0 : hoverMap[i][j + 1];
+                int e = i == size - 1 ? 0 : hoverMap[i + 1][j];
+                int val = min(s, e) + 1;
+                hoverMap[i][j] = min(static_cast<int>(hoverMap[i][j]), val);
+            }
+        }
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j)
+            if (hoverMap[i][j] != 1)
+                hoverMap[i][j] = 0;
+    hoverLock.unlock();
+    resume();
+}
+
+void screenRender::mouseMoveEvent(QMouseEvent *event) {
+    event->ignore();
+    if (mode == Brush_Mode) {
+        brushLoc = getZoomCorrected(event->pos());
+        repaint();
+    }
 }
 
 double screenRender::getZoom() {
@@ -95,17 +158,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
         ca.setAlpha(alpha);
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
-        if (bounds.first.x() > bounds.second.x()) {
-            int temp = bounds.first.x();
-            bounds.first.setX(bounds.second.x());
-            bounds.second.setX(temp);
-        }
-        if (bounds.first.y() > bounds.second.y()) {
-            int temp = bounds.first.y();
-            bounds.first.setY(bounds.second.y());
-            bounds.second.setY(temp);
-        }
-        bool flag = bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
+        bool flag = !ioh->getWorkingLayer()->isShiftActive() && bounds.first.x() - 1 > width && bounds.first.y() - 1 > width && bounds.second.x() + 1 < w - width && bounds.second.y() + 1 < h - width;
         if (vects[i].getMode() == ColorFill) {
             if (flag) { //normal draw
                 if (colors.first == colors.second) {
@@ -131,49 +184,35 @@ void screenRender::paintEvent(QPaintEvent *event) {
             else {  // safe draw
                 if (colors.first == colors.second) {
                     color = ca;
-                    for (Triangle t : tris[i]) {
-                        unsigned char flag = 0;
+                    for (Triangle &t : tris[i]) {
                         if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                            ++flag;
-                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                            ++flag;
-                        if (flag > 0)
                             fillTriSafe(t);
-                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                            ++flag;
-                        if (flag == 0)
+                        else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            fillTriSafe(t);
+                        else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            fillTriSafe(t);
+                        else
                             fillTri(t);
-                        else if (flag != 3)
-                            fillTriSafe(t);
                     }
                 }
                 else {
                     cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>(tris[i].size());
                     float cnt = 0.0;
-                    for (Triangle t : tris[i]) {
-                        unsigned char flag = 0;
-                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                            ++flag;
-                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                            ++flag;
-                        if (flag > 0)
-                            fillTriSafe(t);
-                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                            ++flag;
-                        if (flag == 3) {
-                            cnt += 1.0;
-                            continue;
-                        }
+                    for (Triangle &t : tris[i]) {
                         float ccc = ccomp * cnt;
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
                         color = QColor(r, g, b, alpha);
-                        if (flag == 0)
-                            fillTri(t);
-                        else
+                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                             fillTriSafe(t);
+                        else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            fillTriSafe(t);
+                        else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            fillTriSafe(t);
+                        else
+                            fillTri(t);
                         cnt += 1.0;
                     }
                 }
@@ -182,25 +221,18 @@ void screenRender::paintEvent(QPaintEvent *event) {
         else {
             filter = vects[i].getFilter();
             if (flag) //normal draw
-                for (Triangle t : tris[i])
+                for (Triangle &t : tris[i])
                     filterTri(t);
             else  // safe draw
                 for (Triangle t : tris[i]) {
-                    unsigned char flag = 0;
                     if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                        ++flag;
-                    if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                        ++flag;
-                    if (flag > 0)
                         filterTriSafe(t);
-                    if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                        ++flag;
-                    if (flag == 3)
-                        continue;
-                    if (flag == 0)
-                        filterTri(t);
+                    else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                        filterTriSafe(t);
+                    else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                        filterTriSafe(t);
                     else
-                        filterTriSafe(t);
+                        filterTri(t);
                 }
         }
     }
@@ -229,6 +261,19 @@ void screenRender::paintEvent(QPaintEvent *event) {
                     qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
             }
     }
+    if (underMouse() && hoverActive && mode == Brush_Mode && hoverLock.try_lock()) {
+        int x = brushLoc.x() < radius ? radius - brushLoc.x() - 1 : 0, yStarter = brushLoc.y() < radius ? radius - brushLoc.y() : 0;
+        for (int i = max(0, brushLoc.x() - radius + 1); i <= min(qi.width() - 1, brushLoc.x() + radius + 1); ++i) {
+            int y = yStarter;
+            for (int j = max(0, brushLoc.y() - radius + 1); j <= min(qi.height() - 1, brushLoc.y() + radius + 1); ++j) {
+                if (hoverMap[x][y] == 1)
+                    qi.setPixel(i, j, graphics::Filtering::negative(graphics::Filtering::polarize(qi.pixel(i, j) | 0xFF000000, 128), 255));
+                ++y;
+            }
+            ++x;
+        }
+        hoverLock.unlock();
+    }
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
@@ -242,6 +287,10 @@ void screenRender::stopFlashing() {
     flasher->stop();
     flashFlag = false;
     repaint();
+}
+
+void screenRender::resume() {
+    flasher->start(flashSpeed);
 }
 
 void screenRender::showFg(bool shown) {
@@ -523,4 +572,3 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
         curx2 += invslope2;
     }
 }
-

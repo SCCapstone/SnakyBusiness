@@ -22,7 +22,7 @@ const int numMethods = 6;
 const int maxDensity = RAND_MAX / 256;
 const int minDensity = 0;
 const unsigned char maxStrength = 255;
-const unsigned char minStrength = 1;    // should this be set by user?
+const unsigned char minStrength = 1;
 
 class brushHandler {
 
@@ -34,6 +34,7 @@ public:
     void setAppMethod(string type);
     void setPoint(QPoint qp);
     void setDensity(int density);
+    void setFilterStrength(int val);
     void setStrength(int str);
     void setShape(string shape);
     void setBrushColor(QColor qc);
@@ -53,6 +54,7 @@ public:
     int getFilterIndex();
     QColor getBrushColor();
     QColor getFillColor();
+    int getFilterStrength();
     int getDensity();
     int getStength();
     int getSize();
@@ -101,4 +103,3 @@ private:
 };
 
 #endif // brushHANDLER_H
-

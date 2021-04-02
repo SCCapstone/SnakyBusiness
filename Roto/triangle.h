@@ -18,4 +18,3 @@ private:
 };
 
 #endif // TRIANGLE_H
-

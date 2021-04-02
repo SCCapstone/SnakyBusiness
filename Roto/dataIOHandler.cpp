@@ -1,7 +1,8 @@
 #include "dataIOHandler.h"
 
 
-DataIOHandler::DataIOHandler() {
+DataIOHandler::DataIOHandler(QProgressDialog *qpd) {
+    progress = qpd;
     activeFrame = activeLayer = 0;
     vector <Layer *> frame;
     frames.push_back(frame);
@@ -28,7 +29,7 @@ void DataIOHandler::compileFrame() {
     QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32_Premultiplied);
     unsigned char temp = activeLayer;
     activeLayer = 0;
-    renderFrame(qi, frames[temp]);
+    renderFrame(progress, qi, frames[temp]);
     frames[temp].insert(frames[temp].begin(), new Layer(qi->copy(), 255));
     for (size_t i = frames[temp].size(); i > 1; --i) {
         delete frames[temp][i];
@@ -41,20 +42,28 @@ void DataIOHandler::compileFrame() {
 void DataIOHandler::compileLayer() {
     Layer *layer = getWorkingLayer();
     layer->deselect();
-    renderLayer(layer->getCanvas(), layer->getAlpha(), layer->getFilter(), layer->getVectors(), layer->getTriangles());
+    renderLayer(nullptr, progress, layer->getCanvas(), layer->getAlpha(), layer->getFilter(), layer->getVectors(), layer->getTriangles());
     layer->clearVectors();
 }
 
-void DataIOHandler::renderFrame(QImage *ret, vector <Layer *> layers) {
+void DataIOHandler::renderFrame(QProgressDialog *fqpd, QImage *ret, vector <Layer *> layers) {
+    progressMarker = 0;
+    fqpd->setValue(0);
+    fqpd->setMaximum(layers.size() + 2);
+    fqpd->show();
+    QCoreApplication::processEvents();
     ret->fill(0xFFFFFFFF);
     vector <QImage *> imgs;
     for (size_t i = 0; i < layers.size(); ++i)
         imgs.push_back(new QImage(layers[i]->getCanvas()->copy()));
     vector <thread> imgThreads;
     for(size_t i = 0; i < layers.size(); ++i) {
-        thread th = thread(renderLayer, imgs[i], layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        thread th = thread(renderLayer, fqpd, nullptr, imgs[i], layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
         imgThreads.push_back(move(th));
     }
+    ++progressMarker;
+    fqpd->setValue(progressMarker);
+    QCoreApplication::processEvents();
     for(auto &th : imgThreads)
         th.join();
     QPainter qp;
@@ -64,10 +73,19 @@ void DataIOHandler::renderFrame(QImage *ret, vector <Layer *> layers) {
         delete imgs[i];
     }
     qp.end();
-    // this assume everything will complete before leaving scope. probably don't need global var or mutex;
+    ++progressMarker;
+    fqpd->setValue(progressMarker);
+    fqpd->close();
+    fqpd->hide();
 }
 
-void DataIOHandler::renderLayer(QImage *toProcess, int alpha, Filter filter, vector<SplineVector> vects, vector<list<Triangle>> tris) {
+void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QImage *toProcess, int alpha, Filter filter, vector<SplineVector> vects, vector<list<Triangle>> tris) {
+    if (qpd != nullptr) {
+        qpd->setValue(0);
+        qpd->setMaximum(1 + vects.size() + (tris.size() != vects.size() ? 1 : 0));
+        qpd->show();
+        QCoreApplication::processEvents();
+    }
     int w = toProcess->width(), h = toProcess->height();
     vector <list <Triangle> *> dTris;
     if (!tris.empty()) {
@@ -84,6 +102,10 @@ void DataIOHandler::renderLayer(QImage *toProcess, int alpha, Filter filter, vec
         }
         for(auto &th : splineThreads)
             th.join();
+        if (qpd != nullptr) {
+            qpd->setValue(qpd->value() + 1);
+            QCoreApplication::processEvents();
+        }
     }
     QRgb color;
     for (size_t i = 0; i < dTris.size(); ++i) {
@@ -120,19 +142,14 @@ void DataIOHandler::renderLayer(QImage *toProcess, int alpha, Filter filter, vec
                 if (colors.first == colors.second) {
                     color = ca.rgba();
                     for (Triangle &t : *dTris[i]) {
-                        unsigned char flag = 0;
                         if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                            ++flag;
-                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                            ++flag;
-                        if (flag > 0)
                             fillTriSafe(toProcess, t, color);
-                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                            ++flag;
-                        if (flag == 0)
+                        else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            fillTriSafe(toProcess, t, color);
+                        else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            fillTriSafe(toProcess, t, color);
+                        else
                             fillTri(toProcess, t, color);
-                        else if (flag != 3)
-                            fillTriSafe(toProcess, t, color);
                     }
                 }
                 else {
@@ -140,28 +157,19 @@ void DataIOHandler::renderLayer(QImage *toProcess, int alpha, Filter filter, vec
                     float ccomp = 1.0 / static_cast<float>((*dTris[i]).size());
                     float cnt = 0.0;
                     for (Triangle &t : *dTris[i]) {
-                        unsigned char flag = 0;
-                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                            ++flag;
-                        if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                            ++flag;
-                        if (flag > 0)
-                            fillTriSafe(toProcess, t, color);
-                        if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                            ++flag;
-                        if (flag == 3) {
-                            cnt += 1.0;
-                            continue;
-                        }
                         float ccc = ccomp * cnt;
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
                         color = QColor(r, g, b, alpha).rgba();
-                        if (flag == 0)
-                            fillTri(toProcess, t, color);
-                        else
+                        if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                             fillTriSafe(toProcess, t, color);
+                        else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                            fillTriSafe(toProcess, t, color);
+                        else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                            fillTriSafe(toProcess, t, color);
+                        else
+                            fillTri(toProcess, t, color);
                         cnt += 1.0;
                     }
                 }
@@ -175,25 +183,38 @@ void DataIOHandler::renderLayer(QImage *toProcess, int alpha, Filter filter, vec
                 for (Triangle &t : *dTris[i]) {
                     unsigned char flag = 0;
                     if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
-                        ++flag;
-                    if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
-                        ++flag;
-                    if (flag > 0)
                         filterTriSafe(toProcess, t, vf);
-                    if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
-                        ++flag;
-                    if (flag == 3)
-                        continue;
-                    if (flag == 0)
-                        filterTri(toProcess, t, vf);
+                    else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
+                        filterTriSafe(toProcess, t, vf);
+                    else if (t.C().x() < 0 || t.C().x() >= w || t.C().y() < 0 || t.C().y() >= h)
+                        filterTriSafe(toProcess, t, vf);
                     else
-                        filterTriSafe(toProcess, t, vf);
+                        filterTri(toProcess, t, vf);
                 }
+        }
+        if (qpd != nullptr) {
+            qpd->setValue(qpd->value() + 1);
+            QCoreApplication::processEvents();
         }
     }
     for (size_t i = 0; i < vects.size(); ++i)
         delete dTris[i];
+    if (qpd != nullptr) {
+        qpd->setValue(qpd->value() + 1);
+        QCoreApplication::processEvents();
+    }
     filter.applyTo(toProcess);
+    if (qpd != nullptr) {
+        qpd->close();
+        qpd->hide();
+    }
+    if (fqpd != nullptr) {
+        ++progressMarker;
+        locker.lock();
+        fqpd->setValue(progressMarker);
+        QCoreApplication::processEvents();
+        locker.unlock();
+    }
 }
 
 void DataIOHandler::calcLine(SplineVector sv, list<Triangle> *tris) {
@@ -643,27 +664,49 @@ void DataIOHandler::moveToBack() {
 QImage DataIOHandler::getBackground() {
     if (activeLayer == 0)
         return QImage();
+    progress->setMaximum(frames[activeFrame].size());
+    progress->show();
+    QCoreApplication::processEvents();
     vector <Layer *> layers = frames[activeFrame];
-    QImage qi = *layers[0]->getCanvas();
+    QImage qi = layers[0]->getCanvas()->copy();
+    renderLayer(nullptr, nullptr, &qi, layers[0]->getAlpha(), layers[0]->getFilter(), layers[0]->getVectors(), layers[0]->getTriangles());
+    progress->setValue(0);
+    QCoreApplication::processEvents();
     QPainter p;
     p.begin(&qi);
-    for (size_t i = 0; i < activeLayer; ++i)
+    for (size_t i = 0; i < activeLayer; ++i) {
         p.drawImage(0, 0, *layers[i]->getCanvas());
+        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        progress->setValue(i + 1);
+        QCoreApplication::processEvents();
+    }
     p.end();
+    if (progress->value() == static_cast<int>(frames[activeFrame].size() - 1)) {
+        progress->close();
+        progress->hide();
+    }
     return qi;
 }
 
 QImage DataIOHandler::getForeground() {
     vector <Layer *> layers = frames[activeFrame];
-    if (activeLayer == layers.size() - 1)
+    if (frames[activeFrame].size() == 0 || activeLayer == layers.size() - 1)
         return QImage();
-    QImage qi = *layers[activeLayer + 1]->getCanvas();
-    QPixmap qpix;
+    QImage qi = layers[activeLayer + 1]->getCanvas()->copy();
+    renderLayer(nullptr, nullptr, &qi, layers[activeLayer + 1]->getAlpha(), layers[activeLayer + 1]->getFilter(), layers[activeLayer + 1]->getVectors(), layers[activeLayer + 1]->getTriangles());
+    progress->setValue(progress->value() + 2);
+    QCoreApplication::processEvents();
     QPainter p;
     p.begin(&qi);
-    for (size_t i = activeLayer + 2; i < layers.size(); ++i)
+    for (size_t i = activeLayer + 2; i < layers.size(); ++i) {
         p.drawImage(0, 0, *layers[i]->getCanvas());
+        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        progress->setValue(i + 1);
+        QCoreApplication::processEvents();
+    }
     p.end();
+    progress->close();
+    progress->hide();
     return qi;
 }
 
@@ -711,11 +754,6 @@ void DataIOHandler::deleteRaster() {
     getWorkingLayer()->deleteSelected();
 }
 
-
-void DataIOHandler::applyFilter() {
-
-}
-
 bool DataIOHandler::importImage(QString fileName) {
     importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32_Premultiplied);
     importType = image;
@@ -728,35 +766,37 @@ bool DataIOHandler::importImage(QString fileName) {
 
 void DataIOHandler::exportImage(QString fileName) {
     QImage *out = new QImage(dims, QImage::Format_ARGB32_Premultiplied);
-    renderFrame(out, frames[activeFrame]);
+    renderFrame(progress, out, frames[activeFrame]);
     out->save(fileName);
 }
 
 void DataIOHandler::scale(scaleType type) {
     QImage toLayer(dims, QImage::Format_ARGB32_Premultiplied);
+    QImage toDraw;
     toLayer.fill(0x00000000);
-    QPainter qp;
-    qp.begin(&toLayer);
     switch (type) {
     case dontScale:
-        qp.drawImage(0, 0, importImg);
+        toDraw = importImg;
         break;
     case bestFit:
         if (importImg.scaledToHeight(toLayer.height()).width() > toLayer.width())
-            qp.drawImage(0, 0, importImg.scaledToWidth(toLayer.width()));
+            toDraw = importImg.scaledToWidth(toLayer.width());
         else
-            qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
+            toDraw = importImg.scaledToHeight(toLayer.height());
         break;
     case aspectRatio:
-        qp.drawImage(0, 0, importImg.scaled(toLayer.width(), toLayer.height()));
+        toDraw = importImg.scaled(toLayer.width(), toLayer.height());
         break;
     case toWidth:
-        qp.drawImage(0,0, importImg.scaledToWidth(toLayer.width()));
+        toDraw = importImg.scaledToWidth(toLayer.width());
         break;
     case toHeight:
-        qp.drawImage(0, 0, importImg.scaledToHeight(toLayer.height()));
+        toDraw = importImg.scaledToHeight(toLayer.height());
         break;
     }
+    QPainter qp;
+    qp.begin(&toLayer);
+    qp.drawImage(0, 0, toDraw);
     qp.end();
     importImg = toLayer;
     if (importType == image) {
