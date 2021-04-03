@@ -306,3 +306,33 @@ pair <char, char> SplineVector::getTaper() {
 pair <QRgb, QRgb> SplineVector::getColors() {
     return pair <QRgb, QRgb> (color1, color2);
 }
+
+QString SplineVector::taperTypeString(Taper T) {
+    switch(T) {
+        case Single: return QString("Single");
+        case Double: return QString("Double");
+        default: return QString("");
+    }
+}
+
+QString SplineVector::modeString(VectorMode v) {
+    switch (v) {
+        case ColorFill: return QString("ColorFill");
+        case Filtered: return QString("Filtered");
+        default: return QString("");
+    }
+}
+
+Taper SplineVector::taperFromString(QString q) {
+    if (q == "Double")
+        return Double;
+    else
+        return Single;
+}
+
+VectorMode SplineVector::modeFromString(QString q) {
+    if (q == "ColorFill")
+        return ColorFill;
+    else
+        return Filtered;
+}

@@ -59,6 +59,10 @@ public:
     pair <char, char> getTaper();
     pair <QRgb, QRgb> getColors();
     pair <QPoint, QPoint> getBounds();
+    QString taperTypeString(Taper T);
+    QString modeString(VectorMode v);
+    Taper taperFromString(QString q);
+    VectorMode modeFromString(QString q);
 
 private:
 

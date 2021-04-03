@@ -819,43 +819,53 @@ void DataIOHandler::save(QString projectName) {
     QFile file(projectName);
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);
+    qDebug() << "Writing frames.at(0).size()" << (quint32)frames.at(0).size();
     out << (quint32)frames.at(0).size();
     for (unsigned int i = 0; i < frames.at(0).size(); ++i) {
         int a = frames.at(0).at(i)->getAlpha();
+        qDebug() << "Writing alpha" << a;
         out << (quint32)a;
+        qDebug() << "Writing canvas";
         out << *(frames.at(0).at(i)->getCanvas());
         for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
             // Write size of vects
+            qDebug() << "Writing vects size" << (uchar)frames[0][i]->getVectors().size();
             out << (uchar)frames[0][i]->getVectors().size();
             // write number of points in this vector
             SplineVector sv = frames[0][i]->getVectors()[j];
-            vectorCheck(sv);
+            //vectorCheck(sv);
             uchar ptNum = (uchar)sv.getNumPts();
+            qDebug() << "Writing ptNum" << ptNum;
             out << ptNum;
             for (uchar h = 0; h < ptNum; h++) {
                 // Write the QPoints
+                qDebug() << "Writing QPoint number" << h;
                 out << sv.getControls()[h];
             }
             // Writing filter
+            qDebug() << "Writing filter" << (uchar)sv.getFilter().getFilterIndex();
             out << (uchar)sv.getFilter().getFilterIndex();
             // Write first color
+            qDebug() << "Writing color 1" << sv.getColors().first;
             out << sv.getColors().first;
             // Write second color
+            qDebug() << "Writing color 2" << sv.getColors().first;
             out << sv.getColors().second;
             // Write width
+            qDebug() << "Writing width" << (uchar)sv.getWidth();
             out << (uchar)sv.getWidth();
             // Write first taper
-            qDebug() << static_cast<int>(sv.getTaper().first);
+            qDebug() << "Writing Taper 1" << static_cast<int>(sv.getTaper().first);
             out << static_cast<int>(sv.getTaper().first);
             // Write second taper
-            qDebug() << static_cast<int>(sv.getTaper().second);
+            qDebug() << "Writing Taper 2" << static_cast<int>(sv.getTaper().second);
             out << static_cast<int>(sv.getTaper().second);
             // Write taper type
-            qDebug() << "Taper type is " << sv.getTaperType();
-            out << sv.getTaperType();
+            qDebug() << "Writing Taper Type" << sv.taperTypeString(sv.getTaperType());
+            out << sv.taperTypeString(sv.getTaperType());
             // Write mode (fill type)
-            qDebug() << "Mode is " << sv.getMode();
-            out << sv.getMode();
+            qDebug() << "Writing mode" << sv.modeString(sv.getMode());
+            out << sv.modeString(sv.getMode());
         }
     }
     file.flush();
@@ -869,79 +879,91 @@ void DataIOHandler::load(QString projectName) {
     file.open(QIODevice::ReadOnly);
     quint32 length;
     in >> length;
-    quint32 a;
+    qDebug() << "Reading frames length" << length;
+    int a;
     QImage qi;
     Layer base;
     for (unsigned int i = 0; i < length; ++i) {
+        //qDebug() << "i loop number" << i;
         in >> a;
+        qDebug() << "Reading alpha" << a;
         in >> qi;
+        qDebug() << "Read QImage";
         uchar b;
         uchar c;
+        int t;
         uchar pts;
-        Taper e;
-        VectorMode v;
+        QString qs;
         QRgb color;
         Layer base;
         // Read size of vects
         in >> c;
+        qDebug() << "Read vects size" << c;
         // Read number of points
         for (unsigned int j = 0; j < c; j++) {
             qDebug() << "Reading vector " << j;
             SplineVector sv;
-            qDebug() << "Pushing sv";
-            //frames[0][i]->getVectors().push_back(sv);
-            qDebug() << "reading num pts";
             in >> pts;
+            qDebug() << "reading num pts" << pts;
             for (uchar h = 0; h < pts; h++) {
                 qDebug() << "Reading QPoint number" << h;
                 QPoint point;
                 in >> point;
                 sv.addPt(point,h);
             }
-        // Read filter
-        qDebug() << "filter";
-        in >> b;
-        qDebug() << "set filter " << b;
-        sv.setFilter(graphics::filterNames[b]);
-        // Read first color
-        qDebug() << "color 1";
-        in >> color;
-        sv.setColor1(color);
-        // Read second color
-        qDebug() << "color 2";
-        in >> color;
-        sv.setColor2(color);
-        // Read width
-        qDebug() << "width";
-        in >> b;
-        sv.setWidth(b);
-        // Read first taper
-        qDebug() << "first taper";
-        in >> b;
-        sv.setTaper1(b);
-        // Read second taper
-        qDebug() << "second taper";
-        in >> b;
-        sv.setTaper2(b);
-        // Read taper type
-        qDebug() << "taper type";
-        in >> e;
-        sv.setTaperType(e);
-        //Read mode (fill type)
-        qDebug() << "mode";
-        in >> v;
-        sv.setMode(v);
-        qDebug() << "push";
-        vectorCheck(sv);
-        vectorCopySlot.push_back(sv);
+            // Read filter
+            in >> b;
+            qDebug() << "read filter" << b;
+            sv.setFilter(graphics::filterNames[b]);
+            // Read first color
+            //qDebug() << "read color 1";
+            in >> color;
+            qDebug() << "read color 1" << color;
+            sv.setColor1(color);
+            // Read second color
+            //qDebug() << "read color 2";
+            in >> color;
+            qDebug() << "read color 2" << color;
+            sv.setColor2(color);
+            // Read width
+            //qDebug() << "read width";
+            in >> b;
+            qDebug() << "read width" << b;
+            sv.setWidth(b);
+            // Read first taper
+            //qDebug() << "read first taper";
+            in >> t;
+            qDebug() << "read taper 1" << b;
+            sv.setTaper1(t);
+            // Read second taper
+            //qDebug() << "read second taper";
+            in >> t;
+            qDebug() << "read taper 2" << b;
+            sv.setTaper2(t);
+            // Read taper type
+            //qDebug() << "read taper type";
+            in >> qs;
+            qDebug() << "read taper type" << qs;
+            sv.setTaperType(sv.taperFromString(qs));
+            //Read mode (fill type)
+            //qDebug() << "read mode";
+            in >> qs;
+            qDebug() << "read mode" << qs;
+            sv.setMode(sv.modeFromString(qs));
+            //qDebug() << "push vector" << j;
+            //vectorCheck(sv);
+            vectorCopySlot.push_back(sv);
         }
         qi.save("C:/Users/Matthew Pollard/Desktop/test.png");
         qi.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        qDebug() << "make layer";
         Layer l(qi, a);
         layerCopySlot = l;
+        qDebug() << "paste layer";
         pasteLayer(a);
+        qDebug() << "paste vector";
         pasteVectors();
-
+        qDebug() << "finish paste vector";
     }
     file.close();
 }

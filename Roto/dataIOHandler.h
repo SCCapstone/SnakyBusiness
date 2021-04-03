@@ -94,9 +94,6 @@ public:
     void exportVideo(QString fileName);
     void save(QString projectName);
     void load(QString projectName);
-    Layer *getWorkingLayer();
-    QImage getBackground();
-    QImage getForeground();
     vector<int> findPoints(QImage *qi);
     void vectorCheck(SplineVector sv);
 
