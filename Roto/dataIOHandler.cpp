@@ -820,21 +820,23 @@ void DataIOHandler::save(QString projectName) {
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);
     qDebug() << "Writing frames.at(0).size()" << (quint32)frames.at(0).size();
-    out << (quint32)frames.at(0).size();
+    out << static_cast<int>(frames.at(0).size());
     for (unsigned int i = 0; i < frames.at(0).size(); ++i) {
         int a = frames.at(0).at(i)->getAlpha();
         qDebug() << "Writing alpha" << a;
-        out << (quint32)a;
+        out << a;
         qDebug() << "Writing canvas";
         out << *(frames.at(0).at(i)->getCanvas());
+        qDebug() << "Number of vects in this layer" << frames[0][i]->getVectors().size();
+        out << static_cast<int>(frames[0][i]->getVectors().size());
         for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
             // Write size of vects
-            qDebug() << "Writing vects size" << (uchar)frames[0][i]->getVectors().size();
-            out << (uchar)frames[0][i]->getVectors().size();
+            //qDebug() << "Writing vects size" << (uchar)frames[0][i]->getVectors().size();
+            //out << (uchar)frames[0][i]->getVectors().size();
             // write number of points in this vector
             SplineVector sv = frames[0][i]->getVectors()[j];
             //vectorCheck(sv);
-            uchar ptNum = (uchar)sv.getNumPts();
+            int ptNum = sv.getNumPts();
             qDebug() << "Writing ptNum" << ptNum;
             out << ptNum;
             for (uchar h = 0; h < ptNum; h++) {
@@ -845,6 +847,8 @@ void DataIOHandler::save(QString projectName) {
             // Writing filter
             qDebug() << "Writing filter" << (uchar)sv.getFilter().getFilterIndex();
             out << (uchar)sv.getFilter().getFilterIndex();
+            qDebug() << "writing filter strength" << sv.getFilter().getStrength();
+            out << sv.getFilter().getStrength();
             // Write first color
             qDebug() << "Writing color 1" << sv.getColors().first;
             out << sv.getColors().first;
@@ -874,38 +878,40 @@ void DataIOHandler::save(QString projectName) {
 
 void DataIOHandler::load(QString projectName) {
     vectorCopySlot.clear();
+    frames[0].clear();
     QFile file(projectName);
     QDataStream in(&file);
     file.open(QIODevice::ReadOnly);
-    quint32 length;
+    int length;
     in >> length;
     qDebug() << "Reading frames length" << length;
     int a;
     QImage qi;
     Layer base;
-    for (unsigned int i = 0; i < length; ++i) {
+    for (int i = 0; i < length; ++i) {
         //qDebug() << "i loop number" << i;
         in >> a;
         qDebug() << "Reading alpha" << a;
         in >> qi;
         qDebug() << "Read QImage";
         uchar b;
-        uchar c;
+        //uchar c;
         int t;
-        uchar pts;
+        int d;
+        //uchar pts;
         QString qs;
         QRgb color;
         Layer base;
         // Read size of vects
-        in >> c;
-        qDebug() << "Read vects size" << c;
+        in >> d;
+        qDebug() << "Read vects size" << d;
         // Read number of points
-        for (unsigned int j = 0; j < c; j++) {
+        for (int j = 0; j < d; j++) {
             qDebug() << "Reading vector " << j;
             SplineVector sv;
-            in >> pts;
-            qDebug() << "reading num pts" << pts;
-            for (uchar h = 0; h < pts; h++) {
+            in >> t;
+            qDebug() << "reading num pts" << t;
+            for (int h = 0; h < t; h++) {
                 qDebug() << "Reading QPoint number" << h;
                 QPoint point;
                 in >> point;
@@ -915,6 +921,9 @@ void DataIOHandler::load(QString projectName) {
             in >> b;
             qDebug() << "read filter" << b;
             sv.setFilter(graphics::filterNames[b]);
+            in >> t;
+            qDebug() << "read filter strength" << t;
+            sv.setFilterStrength(t);
             // Read first color
             //qDebug() << "read color 1";
             in >> color;

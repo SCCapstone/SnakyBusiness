@@ -435,6 +435,7 @@ void MainWindow::doSomething(string btnPress) {
         if (saveFileName.isEmpty())
             saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.opus)"));
         ioh->save(saveFileName);
+
     }
     else if (btnPress == "Save As") {
         saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.opus)"));
@@ -446,7 +447,11 @@ void MainWindow::doSomething(string btnPress) {
         if (prompt == QMessageBox::Yes) {
             QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.opus)"));
             ioh->load(fileName);
+            bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
+            setMode(Spline_Mode);
+            ioh->getWorkingLayer()->deselect();
         }
+
     }
     else if (btnPress == "Help") {
         bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
