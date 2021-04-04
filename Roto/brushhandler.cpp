@@ -1,6 +1,5 @@
 #include <brushhandler.h>
 
-
 brushHandler::brushHandler(unsigned char str, int size, int density, string type, QColor qc) {
     alpha = 255;
     setStrength(str);
@@ -23,23 +22,22 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
     patternMap[0] = new unsigned char[patternYDim];
     patternMap[0][0] = 0;
     int xpsize = 20, ypsize = 20;
-    unsigned char **arr = new unsigned char *[xpsize];
+    vector<vector<unsigned char>> arr(xpsize, vector<unsigned char>(ypsize));
     for (int i = 0; i < xpsize; ++i) {
-        arr[i] = new unsigned char[ypsize];
         for (int j = 0; j < ypsize; ++j)
             arr[i][j] = (j > i) ? 1 : 0;
     }
     setPattern(xpsize, ypsize, arr);
-    for (int i = 0; i < xpsize; ++i)
+    /*for (int i = 0; i < xpsize; ++i)
         delete [] arr[i];
-    delete [] arr;
+    delete [] arr;*/
     ipolActive = false;
     relativityPoint = QPoint(-1000,-1000);
     resetPoint();
 }
 
 brushHandler::~brushHandler() {
-    for (int i = 0; i < patternYDim; ++i)
+  for (int i = 0; i < patternYDim; ++i)
         delete [] patternMap[i];
     delete [] patternMap;
 }
@@ -171,18 +169,18 @@ const unsigned char *const *const brushHandler::getBrushMap() {
     return brush.getBrushMap();
 }
 
-void brushHandler::setPattern(int xDim, int yDim, unsigned char **pattern) {
+void brushHandler::setPattern(int xDim, int yDim, vector<vector<unsigned char>>pattern) {
     for (int j = 0; j < patternYDim; ++j)
-        delete [] patternMap[j];
-    delete [] patternMap;
-    patternXDim = static_cast<unsigned char>(xDim);
-    patternYDim = static_cast<unsigned char>(yDim);
-    patternMap = new unsigned char *[patternXDim];
-    for (int i = 0; i < patternXDim; ++i) {
-        patternMap[i] = new unsigned char [patternYDim];
-        for (int j = 0; j < patternYDim; ++j)
-            patternMap[i][j] = pattern[i][j];
-    }
+            delete [] patternMap[j];
+        delete [] patternMap;
+        patternXDim = static_cast<unsigned char>(xDim);
+        patternYDim = static_cast<unsigned char>(yDim);
+        patternMap = new unsigned char *[patternXDim];
+        for (int i = 0; i < patternXDim; ++i) {
+            patternMap[i] = new unsigned char [patternYDim];
+            for (int j = 0; j < patternYDim; ++j)
+                patternMap[i][j] = pattern[i][j];
+        }
 }
 
 void brushHandler::setPatternInUse(int used) {

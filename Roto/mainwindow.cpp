@@ -111,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent)
     setMode(Brush_Mode);
     sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
     sr->setHoverActive(true);
+    brushProlfiler = new brushShape(&bh,this);
+    pp = new patternProfiler(&bh,this);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -671,7 +673,12 @@ void MainWindow::doSomething(string btnPress) {
         sr->zoomIn();
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
-
+    else if (btnPress == "Shape Profiler"){
+        brushProlfiler->open();
+    }
+    else if (btnPress == "Pattern Profiler"){
+        pp-> open();
+    }
     refresh();
 }
 

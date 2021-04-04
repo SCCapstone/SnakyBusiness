@@ -50,6 +50,8 @@
 #include <radialprofiler.h>
 #include <viewscroller.h>
 #include <algorithm>
+#include<brushshape.h>
+#include<patternprofiler.h>
 
 using std::string;
 using std::to_string;
@@ -170,6 +172,8 @@ private:
     bool takeFlag;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
+    brushShape *brushProlfiler;
+    patternProfiler *pp;
 
 };
 
