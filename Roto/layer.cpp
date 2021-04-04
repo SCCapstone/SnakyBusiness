@@ -898,6 +898,10 @@ void Layer::deselect() {
     }
     deltaMove =  boundPt1 = boundPt2 = rotateAnchor = QPoint(-1000, -1000);
 }
+// TO-DO
+void Layer::deleteVector() {
+
+}
 
 void Layer::clearVectors() {
     vects.clear();

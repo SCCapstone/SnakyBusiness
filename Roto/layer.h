@@ -84,6 +84,7 @@ public:
     void deselect();
     void deleteSelected();
     void clearVectors();
+    void deleteVector();
     Filter getFilter();
     int getFilterStrength();
     void setFilterStrength(int str);

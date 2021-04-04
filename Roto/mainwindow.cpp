@@ -122,8 +122,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     statusBar()->showMessage((to_string(qp.x()) + "," + to_string(qp.y())).c_str(), 1000);
     if (mode == Brush_Mode) {
-        if (lastButton == LeftButton)
+        if (lastButton == LeftButton) {
             bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
+            undoStack->push(new BrushUndo(bh,ioh->getWorkingLayer(),qp));
+        }
         else if (lastButton == RightButton) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
@@ -135,10 +137,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         if (ctrlFlag)
             return;
         Layer *layer = ioh->getWorkingLayer();
-        if (lastButton == Qt::LeftButton)
+        if (lastButton == Qt::LeftButton) {
             layer->moveLeft(qp);
-        else if (lastButton == RightButton && shiftFlag)
+            undoStack->push(new TranslateVector(layer, qp));
+        }
+        else if (lastButton == RightButton && shiftFlag) {
             layer->moveRight(qp);
+            undoStack->push(new RotateVec(layer, qp));
+        }
         refresh();
     }
 }
@@ -200,7 +206,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
         bh.setInterpolationActive(false);
         bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
         refresh();
-        //undoStack->push(new BrushUndo(bh, ioh, qp));
     }
     else if (mode == Spline_Mode || (mode == Raster_Mode && event->button() != Qt::RightButton))
         ioh->getWorkingLayer()->release(qp, event->button());

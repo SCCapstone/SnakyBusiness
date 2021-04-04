@@ -1,18 +1,16 @@
 #include "undoRedo.h"
 
 // Brush Undo
-BrushUndo::BrushUndo(brushHandler brush, DataIOHandler *qi, const QPoint &qp, QUndoCommand *parent) : QUndoCommand(parent) {
+BrushUndo::BrushUndo(const brushHandler &brush, Layer *layer, const QPoint &qp, QUndoCommand *parent) : QUndoCommand(parent) {
     myBrush = brush;
-    myQ = qi;
+    myLayer = layer;
     myPoint = qp;
 }
 void BrushUndo::undo() {
-    //myBrush.setInterpolationActive(false);
-    myBrush.erase(myQ->getWorkingLayer()->getCanvas(), myPoint);
+    myBrush.erase(myLayer->getCanvas(), myPoint);
 }
 void BrushUndo::redo() {
-    myBrush.applyBrush(myQ->getWorkingLayer()->getCanvas(), myPoint);
-    //myBrush.setInterpolationActive(true);
+    myBrush.applyBrush(myLayer->getCanvas(), myPoint);
 }
 // Create Vector
 CreateVector::CreateVector(DataIOHandler *vec, const QPoint &a, const MouseButton &button, QUndoCommand *parent) : QUndoCommand(parent) {
@@ -43,8 +41,27 @@ void DeleteVector::redo() {
 
 }
 // Translate Vector
-
-
+TranslateVector::TranslateVector(Layer *vec, const QPoint &pos, QUndoCommand *parent) : QUndoCommand(parent) {
+    tVec = vec;
+    newPos = pos;
+}
+void TranslateVector::undo() {
+    tVec->moveLeft(newPos);
+}
+void TranslateVector::redo() {
+    tVec->moveLeft(newPos);
+}
+// Rotate Vector
+RotateVec::RotateVec(Layer *vec, const QPoint &pos, QUndoCommand *parent) : QUndoCommand(parent) {
+    myVec = vec;
+    aP = pos;
+}
+void RotateVec::undo() {
+    myVec->moveRight(aP);
+}
+void RotateVec::redo() {
+    myVec->moveRight(aP);
+}
 // Change Vector Width
 ChangeWidth::ChangeWidth(DataIOHandler *vec, const int &oldWidth, const int &width, QUndoCommand *parent) : QUndoCommand(parent) {
    // default

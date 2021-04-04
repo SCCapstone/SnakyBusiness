@@ -11,64 +11,16 @@
 // Brush Undo
 class BrushUndo : public QUndoCommand {
 public:
-    BrushUndo(brushHandler brush, DataIOHandler *qi, const QPoint &qp, QUndoCommand *parent = nullptr);
+    BrushUndo(const brushHandler &brush, Layer *layer, const QPoint &qp, QUndoCommand *parent = nullptr);
     void undo() override;
     void redo() override;
 
 private:
     brushHandler myBrush;
-    DataIOHandler *myQ;
+    Layer *myLayer;
     QPoint myPoint;
 };
-/*
-// Copy/Paste
-class CopyPaste : public QUndoCommand {
-public:
-    CopyPaste(DataIOHandler *io, QUndoCommand *parent = nullptr);
-    void undo() override;
-    void redo() override;
-
-private:
-    DataIOHandler *myIOH;
-    string fileName;
-
-
-};
-
-// Delete Raster
-class DeleteRaster : public QUndoCommand {
-public:
-    DeleteRaster();
-    void undo() override;
-    void redo() override;
-
-private:
-
-
-};
-// Translation Raster
-class TranslationRaster : public QUndoCommand {
-public:
-
-    void undo() override;
-    void redo() override;
-
-private:
-
-
-};
-// Rotation
-class Rotation : public QUndoCommand {
-public:
-
-    void undo() override;
-    void redo() override;
-
-private:
-
-
-};
-*/
+//TO-DO : Implement
 // Create Vector -> Add Point
 class CreateVector : public QUndoCommand {
 public:
@@ -97,45 +49,27 @@ private:
 // Translate Vector -> MovePt
 class TranslateVector : public QUndoCommand {
 public:
-    TranslateVector(DataIOHandler *vec, const QPoint &a, size_t index, QUndoCommand *parent = nullptr);
+    TranslateVector(Layer *vec, const QPoint &pos, QUndoCommand *parent = nullptr);
     void undo() override;
     void redo() override;
 
 private:
-    DataIOHandler *tVec;
-    QPoint tP;
-    size_t tIndex;
-
+    Layer *tVec;
+    QPoint newPos;
 };
-// Translate Vector Point
-class MovePoint : public QUndoCommand {
-public:
-
-    MovePoint(SplineVector *vec, QPoint a, size_t index, QUndoCommand *parent = nullptr);
-    void undo() override;
-    void redo() override;
-
-private:
-    SplineVector *myVec;
-    QPoint aP;
-    size_t myIndex;
-
-};
-/*
 // Rotate Vector
 class RotateVec : public QUndoCommand {
 public:
 
-    RotateVec(SplineVector *vec, QPoint a, QUndoCommand *parent = nullptr);
+    RotateVec(Layer *vec, const QPoint &pos, QUndoCommand *parent = nullptr);
     void undo() override;
     void redo() override;
 
 private:
-    SplineVector *myVec;
+    Layer *myVec;
     QPoint aP;
 
 };
-*/
 // Change Vector Width
 class ChangeWidth : public QUndoCommand {
 public:
