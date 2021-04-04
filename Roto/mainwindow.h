@@ -9,7 +9,6 @@
 #include <fstream>
 #include <thread>
 #include <algorithm>
-
 #include <QMainWindow>
 #include <QImage>
 #include <QPainter>
@@ -20,8 +19,22 @@
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
-#include <QTextBrowser>
-#include <QScrollArea>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QMessageBox>
+#include <QErrorMessage>
+#include <QFileSystemWatcher>
+#include <QDir>
+#include <QScrollBar>
+#include <QProcess>
+#include <QVBoxLayout>
+#include <QDesktopWidget>
+#include <QScreen>
+#include <QLabel>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QDragEnterEvent>
+#include <QProgressDialog>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
@@ -35,15 +48,12 @@
 #include <resizewindow.h>
 #include <screenrender.h>
 #include <radialprofiler.h>
-
-using cv::VideoCapture;
-using cv::Mat;
-using cv::destroyAllWindows;
-
-using graphics::filterNames;
-using graphics::Filter;
+#include <undoRedo.h>
+#include <viewscroller.h>
+#include <algorithm>
 
 using std::string;
+using std::to_string;
 using std::list;
 using std::to_string;
 using std::function;
@@ -51,8 +61,8 @@ using std::unordered_map;
 using std::map;
 using std::fstream;
 using std::ios;
+using std::find;
 using std::pair;
-
 using Qt::MouseButton;
 using Qt::NoButton;
 using Qt::LeftButton;
@@ -66,12 +76,35 @@ using Qt::Key_Right;
 using Qt::Key_Escape;
 using Qt::Key_Delete;
 using Qt::Key_Backspace;
+using Qt::Key_X;
+using Qt::Key_C;
+using Qt::Key_V;
+using Qt::Key_A;
+using Qt::Key_Z;
+using Qt::Key_Y;
 
-const string UI_FileType = ".txt";
-const string UI_FileName = "mainMenubar";
-const int trackDrawSpeed = 0;
+using cv::VideoCapture;
+using cv::Mat;
+using cv::destroyAllWindows;
 
-enum Modes {Brush_Mode, Spline_Mode};
+using graphics::vectorFilters;
+using graphics::filterNames;
+using graphics::Filter;
+
+const QString UI_FileName = "mainMenubar.txt";
+const QString Doc_FileName = "Glass_Opus_Documentation.pdf";
+const QString WinIco_FileName = "execIco.png";
+const QString Logo_FileName = "Logo.png";
+const QString UI_Loc = "/Menus/";
+const QString Icon_Loc = UI_Loc + "Icons/";
+const QString Doc_Loc = "/Documentation/";
+const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
+const vector <string> acceptedImportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm", "gif", "pbm", "pgm"};
+const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm"};
+const vector <string> acceptedImportVideoFormats = {"mp4", "avi", "mkv"};
+const vector <string> acceptedExportVideoFormats = acceptedImportVideoFormats;
+
+enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -91,27 +124,38 @@ public:
     void wheelEvent(QWheelEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void log(string title, QObject *obj);
-    void createMenubar(string filename);
-    void addItems(QMenu *menu, string items);
-    void addAction(QMenu *menu, string s);
-    void refresh();
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void closeEvent(QCloseEvent *event);
+    void hoverEvent(QHoverEvent *event);
 
 public slots:
+    void changeVectorFilter(string s);
     void changeScreenFilter(string s);
     void changeBrushFilter(string s);
     void changeBrushMethod(string s);
     void changeBrushShape(string s);
     void doSomething(string btnPress);
+    void downloadFinished();
+    void downloadTimeout();
 
 private:
+    void log(string title, QObject *obj);
+    bool createMenubar();
+    void addItems(QMenu *menu, string items);
+    void addAction(QMenu *menu, string s);
+    void refresh();
     void setShiftFlag(bool b);
     void setSamplePt(QPoint qp);
+    void downloadItem(QString subfolder, QString fileName, downloadAction action, QString promptTitle, QString promptText);
+    void createDocImgs();
+    void setMode(EditMode emode);
 
     Ui::MainWindow *ui;
     screenRender *sr;
-    Modes mode;
+    viewScroller *vs;
+    EditMode mode;
     bool shiftFlag, ctrlFlag, onePress;
     MouseButton lastButton;
     DataIOHandler *ioh;
@@ -119,13 +163,19 @@ private:
     resizeWindow *resizeCheck;
     RadialProfiler *radialProfiler;
     QColorDialog cd;
-    QTextBrowser qtb;
+    QFileSystemWatcher downloadWatcher;
+    QTimer downloadTimer;
+    QErrorMessage *qme;
     unordered_map <string, QObject *> objFetch;
     list <QObject *> toDel;
-
+    QString dSubfolder, dFileName;
+    downloadAction dAction;
+    bool takeFlag;
+    appMethod tempMethod = overwrite;
+    QProgressDialog *progress;
+    QUndoStack *undoStack;
 };
 
 void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H
-

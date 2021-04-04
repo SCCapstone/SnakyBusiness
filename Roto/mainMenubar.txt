@@ -1,8 +1,0 @@
-File;Save,Save As,Open Recent>,Open,Import,Export,Exit,
-Edit;Brush Mode,Spline Mode,Change Resolution,
-Brush;Brush Design,Brush Radius,Brush Color,Brush Filter>,Brush Strength,Spray Density,Brush Shape>,Brush Method>,Brush Profilers>(Radial Profiler,Pattern Profiler,Shape Profiler,),
-Vector;Vector Design,Vector Width,Vector Mode>(Color Vector,Filter Vector,),Vector Color 1,Vector Color 2,Vector Filter>,Vector Filter Strength,Line Style>(Single Taper,Double Taper,),Vector Taper 1,Vector Taper 2,
-Layer;Manage Layers>(Insert Layers,Copy Layers,Paste Layers,Duplicate Layers,Move Layers Forward,Move Layers Backward,Cut Layers,Delete Layers,),Layer Opacity (Alpha),Layer Filter>,Layer Filter Strength,
-Frame;Manage Frames>(Insert Frames,Copy Frames,Paste Frames,Duplicate Frames,Cut Frames,Delete Frames,),
-Settings;Coming Later,
-About;Help,About,

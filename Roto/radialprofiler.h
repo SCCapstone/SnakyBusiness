@@ -66,4 +66,3 @@ private:
 };
 
 #endif // RADIALPROFILER_H
-

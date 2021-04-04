@@ -7,6 +7,17 @@ Triangle::Triangle(QPoint A, QPoint B, QPoint C) {
     c = C;
 }
 
+Triangle::Triangle(const Triangle &t) {
+    *this = t;
+}
+
+Triangle& Triangle::operator=(const Triangle &t) {
+    a = t.a;
+    b = t.b;
+    c = t.c;
+    return *this;
+}
+
 QPoint Triangle::A() {
     return a;
 }
@@ -18,4 +29,3 @@ QPoint Triangle::B() {
 QPoint Triangle::C() {
     return c;
 }
-

@@ -22,21 +22,23 @@ const int numMethods = 6;
 const int maxDensity = RAND_MAX / 256;
 const int minDensity = 0;
 const unsigned char maxStrength = 255;
-const unsigned char minStrength = 1;    // should this be set by user?
+const unsigned char minStrength = 1;
 
 class brushHandler {
 
 public:
 
-    brushHandler(unsigned char str = 128, int size = 30, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
+    brushHandler(unsigned char str = 128, int size = 10, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
     void setAlpha(int val);
     void setAppMethod(string type);
     void setPoint(QPoint qp);
     void setDensity(int density);
+    void setFilterStrength(int val);
     void setStrength(int str);
     void setShape(string shape);
-    void setColor(QColor qc);
+    void setBrushColor(QColor qc);
+    void setFillColor(QColor qc);
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
@@ -50,7 +52,9 @@ public:
     bool getPatternInUse();
     int getMethodIndex();
     int getFilterIndex();
-    QColor getColor();
+    QColor getBrushColor();
+    QColor getFillColor();
+    int getFilterStrength();
     int getDensity();
     int getStength();
     int getSize();
@@ -60,6 +64,7 @@ public:
     void strengthUp();
     void strengthDown();
     void applyBrush(QImage *qi, QPoint qp);
+    void erase(QImage *qi, QPoint qp);
     void setInterpolationActive(bool flag);
 
 private:
@@ -82,17 +87,19 @@ private:
     void shiftDown();
 
     bool ipolActive, patternInUse;
-    int sprayDensity, checkEdgeSize, alpha;
-    unsigned char strength, patternXDim, patternYDim, **patternMap, **checkMap;
+    int sprayDensity, alpha;
+    unsigned char strength, patternXDim, patternYDim, **patternMap;;
+    //vector <vector <unsigned char> > checkMap;
+    unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
     Brush brush;
-    QColor color;
+    QColor brushColor, fillColor;
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
-    float **radialMap;
+    //float **radialMap;
+    float radialMap[2 * maxRadius + 1][2 * maxRadius + 1];
     vector <int> radialValues;
 };
 
 #endif // brushHANDLER_H
-

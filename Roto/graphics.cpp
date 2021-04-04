@@ -6,6 +6,18 @@ graphics::Filter::Filter(int str, string filterName) {
     setFilter(filterName);
 }
 
+graphics::Filter::Filter(const Filter &filter) {
+    strength = filter.strength;
+    filterApplicator = filter.filterApplicator;
+    filterIndex = filter.filterIndex;
+}
+
+graphics::Filter& graphics::Filter::operator=(const Filter &rhs) {
+    strength = rhs.strength;
+    filterIndex = rhs.filterIndex;
+    filterApplicator = rhs.filterApplicator;
+    return *this;
+}
 void graphics::Filter::applyTo(QImage *qi) {
     int h = qi->height(), w = qi->width();
     for (int y = 0; y < h; ++y)
@@ -24,7 +36,7 @@ int graphics::Filter::getStrength() {
 }
 
 void graphics::Filter::setStrength(int value) {
-    strength = value > 255 ? 255 : (value < 1 ? 1 : value);
+    strength = stdFuncs::clamp(value, minColor, maxColor);
 }
 
 void graphics::Filter::strengthUp() {
@@ -94,63 +106,60 @@ QRgb graphics::Filtering::blueChannel(QColor qc, int strength) {
 }
 
 QRgb graphics::Filtering::redPass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.red() > qc.blue() && qc.red() > qc.green() && qc.red() - max(qc.green(), qc.blue()) > abs(qc.green() - qc.blue()))
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, red;
-    if (qc.red() > grey) {
-        combined = filter;
-        red = qc.red();
-    }
-    else {
-        combined = grey;
-        red = grey;
-    }
-    return toRGB(qc.alpha(), red, combined, combined);
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::greenPass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.green() > qc.blue() && qc.green() > qc.red() && qc.green() - max(qc.red(), qc.blue()) > abs(qc.red() - qc.blue()))
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, green;
-    if (qc.green() > grey) {
-        combined = filter;
-        green = qc.green();
-    }
-    else {
-        combined = grey;
-        green = grey;
-    }
-    return toRGB(qc.alpha(), combined, green, combined);
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::bluePass(QColor qc, int strength) {
-    int filter = (qc.green() + qc.blue()) / 2;
+    if (qc.blue() > qc.red() && qc.blue() > qc.green() && qc.blue() - max(qc.red(), qc.green()) > abs(qc.green() - qc.red()))
+        return qc.rgba();
     int grey = (qc.red() + qc.green() + qc.blue()) / 3;
-    int combined, blue;
-    if (qc.blue() > grey) {
-        combined = filter;
-        blue = qc.blue();
-    }
-    else {
-        combined = grey;
-        blue = grey;
-    }
-    return toRGB(qc.alpha(), combined, combined, blue);
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::magentaPass(QColor qc, int strength) {
+    if (max(qc.red(), qc.blue()) - min(qc.red(), qc.blue()) < min(qc.red(), qc.blue()) - qc.green())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::yellowPass(QColor qc, int strength) {
+    if (max(qc.red(), qc.green()) - min(qc.red(), qc.green()) < min(qc.red(), qc.green()) - qc.blue())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
+}
+
+QRgb graphics::Filtering::cyanPass(QColor qc, int strength) {
+    if (max(qc.green(), qc.blue()) - min(qc.green(), qc.blue()) < min(qc.green(), qc.blue()) - qc.red())
+        return qc.rgba();
+    int grey = (qc.red() + qc.green() + qc.blue()) / 3;
+    return toRGB(qc.alpha(), grey, grey, grey);
 }
 
 QRgb graphics::Filtering::redFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.red() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.red() > qc.green() && qc.red() > qc.blue()) ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::greenFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.green() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.green() > qc.blue() && qc.green() > qc.blue()) ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::blueFilter(QColor qc, int strength) {
     int combined = (qc.red() + qc.green() + qc.blue()) / 3;
-    return qc.blue() > combined ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
+    return (qc.blue() > qc.red() && qc.blue() > qc.green())  ? toRGB(qc.alpha(), combined, combined, combined) : toRGB(qc.alpha(), qc.red(), qc.green(), qc.blue());
 }
 
 QRgb graphics::Filtering::rgb(QColor qc, int strength) {
@@ -278,11 +287,11 @@ void graphics::ImgSupport::setZoom(double Zoom) {
 }
 
 void graphics::ImgSupport::zoomIn() {
-    setZoom(zoom + 0.01);
+    setZoom(stdFuncs::clamp(3.0 * zoom / 2.0, graphics::minZoom, graphics::maxZoom));
 }
 
 void graphics::ImgSupport::zoomOut() {
-    setZoom(zoom - 0.01);
+    setZoom(stdFuncs::clamp(2.0 * zoom / 3.0, graphics::minZoom, graphics::maxZoom));
 }
 
 int graphics::ImgSupport::getSize(double dim, double zoom) {
@@ -300,36 +309,8 @@ QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
     return qp;
 }
 
-void graphics::ImgSupport::rotate90Right(QImage *&qi) {
-    QImage copy = qi->copy();
-    int w = copy.width(), h = copy.height() - 1;
-    delete qi;
-    qi = new QImage(copy.height(), copy.width(), QImage::Format_ARGB32_Premultiplied);
-    for (int x = 0; x < w; ++x)
-        for (int y = 0; y <= h; ++y)
-            qi->setPixel(y, x, copy.pixel(x, h - y));
-}
-
-void graphics::ImgSupport::rotate90Left(QImage *&qi) {
-    QImage copy = qi->copy();
-    int w = copy.width() - 1, h = copy.height();
-    delete qi;
-    qi = new QImage(copy.height(), copy.width(), QImage::Format_ARGB32_Premultiplied);
-    for (int x = 0; x <= w; ++x)
-        for (int y = 0; y < h; ++y)
-            qi->setPixel(y, x, copy.pixel(w - x, y));
-}
-
-void graphics::ImgSupport::rotate180(QImage *qi) {
-    int w = qi->width(), h = qi->height() - 1;
-    int halfW = (w + 1) / 2;
-    --w;
-    for (int i = 0; i < halfW; ++i)
-        for (int j = 0; j <= h; ++j) {
-            QRgb qc = qi->pixel(i, j);
-            qi->setPixel(i, j, qi->pixel(w - i, h - j));
-            qi->setPixel(w - i, h - j, qc);
-        }
+QSize graphics::ImgSupport::getZoomCorrected(QSize qs) {
+    return QSize(static_cast<int>(static_cast<float>(qs.width()) * zoom), static_cast<int>(static_cast<float>(qs.height()) * zoom));
 }
 
 void graphics::ImgSupport::flipVertical(QImage *qi) {
@@ -355,4 +336,3 @@ void graphics::ImgSupport::flipHorizontal(QImage *qi) {
             qi->setPixel(i, h - j, qc);
         }
 }
-

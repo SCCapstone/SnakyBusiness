@@ -2,9 +2,11 @@
 #define BRUSH_H
 
 #include <string>
+#include <vector>
 #include <stdfuncs.h>
 
 using std::string;
+using std::vector;
 
 enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon};                //  TODO custom
 
@@ -18,7 +20,7 @@ class Brush {
 
 public:
 
-    Brush(string brushName = brushShapes[0], int Radius = 30);
+    Brush(string brushName = brushShapes[0], int Radius = 10);
     ~Brush();
     void setShape(string brushName);
     void setRadius(int r);
@@ -44,4 +46,3 @@ private:
 };
 
 #endif // BRUSH_H
-
