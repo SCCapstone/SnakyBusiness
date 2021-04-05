@@ -43,7 +43,7 @@ public:
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
     const unsigned char *const *const getBrushMap();
-    void setPattern(int xDim, int yDim, unsigned char **pattern);
+    void setPattern(int xDim, int yDim, vector<vector<unsigned char>>pattern);
     void setPatternInUse(int used);
     void radialUpdate(int size, vector <int> pts);
     const unsigned char *const *const getPatternMap();
@@ -66,10 +66,10 @@ public:
     void applyBrush(QImage *qi, QPoint qp);
     void erase(QImage *qi, QPoint qp);
     void setInterpolationActive(bool flag);
+    void setSize(int size);
 
 private:
 
-    void setSize(int size);
     void resetPoint();
     int onScreen(int x, int y, int xMax, int yMax);
     void overwrite(QImage *qi);
@@ -88,7 +88,7 @@ private:
 
     bool ipolActive, patternInUse;
     int sprayDensity, alpha;
-    unsigned char strength, patternXDim, patternYDim, **patternMap;;
+    unsigned char strength, patternXDim, patternYDim, **patternMap;
     //vector <vector <unsigned char> > checkMap;
     unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
