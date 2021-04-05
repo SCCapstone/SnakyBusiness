@@ -38,9 +38,9 @@ SOURCES = \
     $$PWD/splinevector.cpp \
     $$PWD/triangle.cpp \
     $$PWD/undoredo.cpp \
-    $$PWD/viewscroller.cpp \
+    $$PWD/viewscroller.cpp
 
-LIBS += -LC:\opencv_build\install\x86\vc16\lib -lopencv_core451 -lopencv_imgproc451 -lopencv_highgui451 -lopencv_imgcodecs451 -lopencv_videoio451 -lopencv_video451 -lopencv_calib3d451 -lopencv_photo451 -lopencv_features2d451
+LIBS += -LC:\opencv_build\install\x64\vc16\lib -lopencv_core450 -lopencv_imgproc450 -lopencv_highgui450 -lopencv_imgcodecs450 -lopencv_videoio450 -lopencv_video450 -lopencv_calib3d450 -lopencv_photo450 -lopencv_features2d450
 INCLUDEPATH += C:\opencv_build\install\include
 DEPENDPATH += C:\opencv_build\install\include
 
