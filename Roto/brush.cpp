@@ -1,6 +1,6 @@
 #include "brush.h"
 
-
+vector<vector<unsigned char>> tempMap(219,vector<unsigned char>(219));
 Brush::Brush(string brushName, int Radius)
 {
     size = 0;
@@ -69,6 +69,9 @@ void Brush::update() {
     case octagon:
         createOctagon();
         break;
+    case custom:
+       createCustom();
+        break;
     }
 }
 
@@ -135,5 +138,19 @@ void Brush::createOctagon() {
         for (int j = 0; j < size; ++j) {
             int x = abs(i - radius), y = abs(j - radius);
             brushMap[i][j] = (x + y < (3 * radius) / 2);
+        }
+}
+void Brush::createCustom(){
+    for(int i = 0; i< size; i++){
+        for(int j = 0; j< size; j++)
+            brushMap[i][j] = tempMap[i][j];
+    }
+}
+void Brush::sendTo(std::vector<std::vector<unsigned char>> pattern){
+
+    for (int i = 0; i < pattern.size(); ++i){
+            for (int j = 0; j < pattern[i].size(); ++j) {
+               tempMap[i][j] = pattern[i][j];
+            }
         }
 }

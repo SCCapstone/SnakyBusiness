@@ -52,6 +52,8 @@
 #include <undoRedo.h>
 #include <viewscroller.h>
 #include <algorithm>
+#include<brushshape.h>
+#include<patternprofiler.h>
 
 using std::string;
 using std::to_string;
@@ -176,6 +178,8 @@ private:
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
     QUndoStack *undoStack;
+    brushShape *brushProlfiler;
+    patternProfiler *pp;
 };
 
 void appTo(QImage *qi, Filter f);
