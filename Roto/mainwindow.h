@@ -49,11 +49,10 @@
 #include <resizewindow.h>
 #include <screenrender.h>
 #include <radialprofiler.h>
-#include <undoRedo.h>
 #include <viewscroller.h>
 #include <algorithm>
-#include<brushshape.h>
-#include<patternprofiler.h>
+#include <brushshape.h>
+#include <patternprofiler.h>
 
 using std::string;
 using std::to_string;
@@ -177,7 +176,6 @@ private:
     QString saveFileName;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
-    QUndoStack *undoStack;
     brushShape *brushProlfiler;
     patternProfiler *pp;
 };

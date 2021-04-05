@@ -806,179 +806,17 @@ void DataIOHandler::scale(scaleType type) {
     }
 }
 
-//vector<int> DataIOHandler::findPoints(QImage *qi) {
-//    vector<int> points;
-//    for (unsigned int i = 0; i < qi->width(); i++) {
-//        for (unsigned int j = 0; j < qi->height(); j++) {
-//
-//        }
-//    }
-//}
 
 void DataIOHandler::save(QString projectName) {
-    QFile file(projectName);
-    file.open(QIODevice::WriteOnly);
-    QDataStream out(&file);
-    qDebug() << "Writing frames.at(0).size()" << (quint32)frames.at(0).size();
-    out << static_cast<int>(frames.at(0).size());
-    for (unsigned int i = 0; i < frames.at(0).size(); ++i) {
-        int a = frames.at(0).at(i)->getAlpha();
-        qDebug() << "Writing alpha" << a;
-        out << a;
-        qDebug() << "Writing canvas";
-        out << *(frames.at(0).at(i)->getCanvas());
-        qDebug() << "Number of vects in this layer" << frames[0][i]->getVectors().size();
-        out << static_cast<int>(frames[0][i]->getVectors().size());
-        for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
-            // Write size of vects
-            //qDebug() << "Writing vects size" << (uchar)frames[0][i]->getVectors().size();
-            //out << (uchar)frames[0][i]->getVectors().size();
-            // write number of points in this vector
-            SplineVector sv = frames[0][i]->getVectors()[j];
-            //vectorCheck(sv);
-            int ptNum = sv.getNumPts();
-            qDebug() << "Writing ptNum" << ptNum;
-            out << ptNum;
-            for (uchar h = 0; h < ptNum; h++) {
-                // Write the QPoints
-                qDebug() << "Writing QPoint number" << h;
-                out << sv.getControls()[h];
-            }
-            // Writing filter
-            qDebug() << "Writing filter" << (uchar)sv.getFilter().getFilterIndex();
-            out << (uchar)sv.getFilter().getFilterIndex();
-            qDebug() << "writing filter strength" << sv.getFilter().getStrength();
-            out << sv.getFilter().getStrength();
-            // Write first color
-            qDebug() << "Writing color 1" << sv.getColors().first;
-            out << sv.getColors().first;
-            // Write second color
-            qDebug() << "Writing color 2" << sv.getColors().first;
-            out << sv.getColors().second;
-            // Write width
-            qDebug() << "Writing width" << (uchar)sv.getWidth();
-            out << (uchar)sv.getWidth();
-            // Write first taper
-            qDebug() << "Writing Taper 1" << static_cast<int>(sv.getTaper().first);
-            out << static_cast<int>(sv.getTaper().first);
-            // Write second taper
-            qDebug() << "Writing Taper 2" << static_cast<int>(sv.getTaper().second);
-            out << static_cast<int>(sv.getTaper().second);
-            // Write taper type
-            qDebug() << "Writing Taper Type" << sv.taperTypeString(sv.getTaperType());
-            out << sv.taperTypeString(sv.getTaperType());
-            // Write mode (fill type)
-            qDebug() << "Writing mode" << sv.modeString(sv.getMode());
-            out << sv.modeString(sv.getMode());
-        }
-    }
-    file.flush();
-    file.close();
+
 }
 
 void DataIOHandler::load(QString projectName) {
-    vectorCopySlot.clear();
-    frames[0].clear();
-    QFile file(projectName);
-    QDataStream in(&file);
-    file.open(QIODevice::ReadOnly);
-    int length;
-    in >> length;
-    qDebug() << "Reading frames length" << length;
-    int a;
-    QImage qi;
-    Layer base;
-    for (int i = 0; i < length; ++i) {
-        //qDebug() << "i loop number" << i;
-        in >> a;
-        qDebug() << "Reading alpha" << a;
-        in >> qi;
-        qDebug() << "Read QImage";
-        uchar b;
-        //uchar c;
-        int t;
-        int d;
-        //uchar pts;
-        QString qs;
-        QRgb color;
-        Layer base;
-        // Read size of vects
-        in >> d;
-        qDebug() << "Read vects size" << d;
-        // Read number of points
-        for (int j = 0; j < d; j++) {
-            qDebug() << "Reading vector " << j;
-            SplineVector sv;
-            in >> t;
-            qDebug() << "reading num pts" << t;
-            for (int h = 0; h < t; h++) {
-                qDebug() << "Reading QPoint number" << h;
-                QPoint point;
-                in >> point;
-                sv.addPt(point,h);
-            }
-            // Read filter
-            in >> b;
-            qDebug() << "read filter" << b;
-            sv.setFilter(graphics::filterNames[b]);
-            in >> t;
-            qDebug() << "read filter strength" << t;
-            sv.setFilterStrength(t);
-            // Read first color
-            //qDebug() << "read color 1";
-            in >> color;
-            qDebug() << "read color 1" << color;
-            sv.setColor1(color);
-            // Read second color
-            //qDebug() << "read color 2";
-            in >> color;
-            qDebug() << "read color 2" << color;
-            sv.setColor2(color);
-            // Read width
-            //qDebug() << "read width";
-            in >> b;
-            qDebug() << "read width" << b;
-            sv.setWidth(b);
-            // Read first taper
-            //qDebug() << "read first taper";
-            in >> t;
-            qDebug() << "read taper 1" << b;
-            sv.setTaper1(t);
-            // Read second taper
-            //qDebug() << "read second taper";
-            in >> t;
-            qDebug() << "read taper 2" << b;
-            sv.setTaper2(t);
-            // Read taper type
-            //qDebug() << "read taper type";
-            in >> qs;
-            qDebug() << "read taper type" << qs;
-            sv.setTaperType(sv.taperFromString(qs));
-            //Read mode (fill type)
-            //qDebug() << "read mode";
-            in >> qs;
-            qDebug() << "read mode" << qs;
-            sv.setMode(sv.modeFromString(qs));
-            //qDebug() << "push vector" << j;
-            //vectorCheck(sv);
-            vectorCopySlot.push_back(sv);
-        }
-        qi.save("C:/Users/Matthew Pollard/Desktop/test.png");
-        qi.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        qDebug() << "make layer";
-        Layer l(qi, a);
-        layerCopySlot = l;
-        qDebug() << "paste layer";
-        pasteLayer(a);
-        qDebug() << "paste vector";
-        pasteVectors();
-        qDebug() << "finish paste vector";
-    }
-    file.close();
+
 }
 
 bool DataIOHandler::importVideo(QString fileName) {
-    file = fileName;
+    //file = fileName;
     return false;
 }
 
@@ -986,17 +824,3 @@ void DataIOHandler::exportVideo(QString fileName) {
 
 }
 
-// Debuggine method, used for testing if a vector is read in correctly after writing
-void DataIOHandler::vectorCheck(SplineVector sv) {
-    qDebug() << "Vector Check";
-    qDebug() << "Num Pts is" << sv.getNumPts();
-    qDebug() << "Filter Index is" << sv.getFilter().getFilterIndex();
-    qDebug() << "Color 1 is" << sv.getColors().first;
-    qDebug() << "Color 2 is" << sv.getColors().second;
-    qDebug() << "Width is" << sv.getWidth();
-    qDebug() << "Taper 1 is" << static_cast<int>(sv.getTaper().first);
-    qDebug() << "Taper 2 is" << static_cast<int>(sv.getTaper().second);
-    qDebug() << "Taper Type is" << sv.getTaperType();
-    qDebug() << "Mode is" << sv.getMode();
-
-}

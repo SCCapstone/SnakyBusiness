@@ -28,9 +28,6 @@ brushHandler::brushHandler(unsigned char str, int size, int density, string type
             arr[i][j] = (j > i) ? 1 : 0;
     }
     setPattern(xpsize, ypsize, arr);
-    /*for (int i = 0; i < xpsize; ++i)
-        delete [] arr[i];
-    delete [] arr;*/
     ipolActive = false;
     relativityPoint = QPoint(-1000,-1000);
     resetPoint();

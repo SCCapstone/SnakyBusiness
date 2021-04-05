@@ -1,12 +1,12 @@
 #include "brush.h"
 
-vector<vector<unsigned char>> tempMap(219,vector<unsigned char>(219));
 Brush::Brush(string brushName, int Radius)
 {
     size = 0;
     radius = static_cast<unsigned char>(Radius);
     size = 2 * radius + 1;
     setShape(brushName);
+    tempMap = vector <vector <unsigned char> >(219, vector<unsigned char>(219));
 }
 
 Brush::~Brush() {
@@ -147,7 +147,6 @@ void Brush::createCustom(){
     }
 }
 void Brush::sendTo(std::vector<std::vector<unsigned char>> pattern){
-
     for (int i = 0; i < pattern.size(); ++i){
             for (int j = 0; j < pattern[i].size(); ++j) {
                tempMap[i][j] = pattern[i][j];
