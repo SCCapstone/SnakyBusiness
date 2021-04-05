@@ -71,7 +71,6 @@ public:
     void copyVectors();
     void cutVectors();
     void deleteVectors();
-    void deleteSelectedVector();
     void pasteVectors();
     void copyRaster();
     void cutRaster();

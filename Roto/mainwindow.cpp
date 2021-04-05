@@ -35,7 +35,6 @@ MainWindow::MainWindow(QWidget *parent)
     progress->close();
     ioh = new DataIOHandler(progress);
     sr = new screenRender(ioh, vs);
-    undoStack = new QUndoStack(this);
     setCentralWidget(vs);
     setGeometry(screenRect.width() / 4, screenRect.height() / 4, screenRect.width() / 2, screenRect.height() / 2);
     setWindowTitle("Glass Opus");
@@ -122,10 +121,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     statusBar()->showMessage((to_string(qp.x()) + "," + to_string(qp.y())).c_str(), 1000);
     if (mode == Brush_Mode) {
-        if (lastButton == LeftButton) {
+        if (lastButton == LeftButton)
             bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
-            undoStack->push(new BrushUndo(bh,ioh->getWorkingLayer(),qp));
-        }
         else if (lastButton == RightButton) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
@@ -143,8 +140,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         }
         else if (lastButton == RightButton && shiftFlag) {
             layer->moveRight(qp);
-            undoStack->push(new RotateVec(layer, qp));
-        }
         refresh();
     }
 }
@@ -450,10 +445,8 @@ void MainWindow::doSomething(string btnPress) {
         if (choice == QMessageBox::Yes)
             QApplication::exit();
     }
-    else if (btnPress == "Insert Layer") {
+    else if (btnPress == "Insert Layer")
         ioh->addLayer();
-        undoStack->push(new InsertLayer(ioh));
-    }
     if (ioh->getWorkingLayer() == nullptr)
         return;
     else if (btnPress == "On")
@@ -507,12 +500,9 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getWidth();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector width", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
-             undoStack->push(new ChangeWidth(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Filter Strength") {
         int val = ioh->getWorkingLayer()->getVectorFilterStrength();
@@ -528,24 +518,18 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().first;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
-        if (ok) {
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a first taper degree", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
+        if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
-            undoStack->push(new ChangeVectorTaper1(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Taper 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().second;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a spray density", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
-        if (ok) {
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a second taper degree", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
+        if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
-            undoStack->push(new ChangeVectorTaper2(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Color 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -604,6 +588,7 @@ void MainWindow::doSomething(string btnPress) {
         setMode(Spline_Mode);
         setSamplePt(QPoint(-1000, -1000));
         ioh->getWorkingLayer()->deselect();
+        setMode(Brush_Mode);
     }
     else if (btnPress == "Raster Mode") {
         sr->resume();
@@ -613,10 +598,8 @@ void MainWindow::doSomething(string btnPress) {
         ioh->getWorkingLayer()->deselect();
     }
     else if (btnPress == "Copy") {
-        if (mode == Spline_Mode) {
+        if (mode == Spline_Mode)
             ioh->copyVectors();
-            undoStack->push(new CopyVector(ioh));
-        }
         else if (mode == Raster_Mode)
             ioh->copyRaster();
     }
@@ -633,60 +616,37 @@ void MainWindow::doSomething(string btnPress) {
             ioh->deleteRaster();
     }
     else if (btnPress == "Paste") {
-        if (mode == Spline_Mode) {
+        if (mode == Spline_Mode)
             ioh->pasteVectors();
-            undoStack->push(new PasteVector(ioh));
-        }
         else if (mode == Raster_Mode)
             ioh->pasteRaster();
     }
     else if (btnPress == "Select All")
         ioh->getWorkingLayer()->selectAll();
     else if (btnPress == "Set Active Layer") {
-         bool ok = false;
-         int prevRet = ioh->getActiveLayer();
-         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
-         if (ok && ret != ioh->getActiveLayer()) {
+        bool ok = false;
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
+        if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
             ioh->setActiveLayer(ret, mode);
-            undoStack->push(new changeActiveLayer(ioh, prevRet, ret, mode));
-         }
-    }
-    else if (btnPress == "Undo") {
-        if (undoStack->canUndo())
-            undoStack->undo();
-    }
-    else if (btnPress == "Redo") {
-        if (undoStack->canRedo())
-            undoStack->redo();
+        }
     }
     else if (btnPress == "Layer Filter Strength") {
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getFilterStrength();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Set current layer's filter strength", ioh->getWorkingLayer()->getFilterStrength(), 1, graphics::maxColor, 1, &ok) - 1;
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setFilterStrength(ret);
-            undoStack->push(new ChangeFilterRange(ioh, prevRet, ret));
-        }
     }
-    else if (btnPress == "Move Backward") {
-        ioh->moveBackward();
-        undoStack->push(new MoveLayerBackward(ioh));
-    }
-    else if (btnPress == "Move Forward") {
-        ioh->moveForward();
-        undoStack->push(new MoveLayerForward(ioh));
-    }
-    else if (btnPress == "Move To Back") {
-        int ret = ioh->getActiveLayer();
-        ioh->moveToBack();
-        undoStack->push(new MoveLayerToBack(ioh,ret));
-    }
-    else if (btnPress == "Move To Front") {
-        int ret = ioh->getActiveLayer();
+    else if (btnPress == "Move To Front")
         ioh->moveToFront();
-        undoStack->push(new MoveLayerToFront(ioh,ret));
-    }
+    else if (btnPress == "Move Backward")
+        ioh->moveBackward();
+    else if (btnPress == "Move Forward")
+        ioh->moveForward();
+    else if (btnPress == "Move To Back")
+        ioh->moveToBack();
+    else if (btnPress == "Move To Front")
+        ioh->moveToFront();
     else if (btnPress == "Copy Layer")
         ioh->copyLayer();
     else if (btnPress == "Cut Layer") {
@@ -695,10 +655,8 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Paste Layer")
         ioh->pasteLayer();
-    else if (btnPress == "Delete Layer") {
+    else if (btnPress == "Delete Layer")
         ioh->deleteLayer();
-        undoStack->push(new DeleteLayer(ioh));
-    }
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();
     else if (btnPress == "Compile Frame")
@@ -896,14 +854,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         if (ctrlFlag) {
             ioh->getWorkingLayer()->selectAll();
         }
-    case Key_Z:
-        if(ctrlFlag)
-            undoStack->undo();
-        break;
-    case Key_Y:
-        if (ctrlFlag)
-            undoStack->redo();
-        break;
     }
     refresh();
 }
@@ -982,7 +932,6 @@ MainWindow::~MainWindow() {
     delete ioh;
     delete sr;
     delete vs;
-    delete undoStack;
     delete ui;
     objFetch.clear();
     while (!toDel.empty()) {
