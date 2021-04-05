@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QProcess>
 #include <QVBoxLayout>
+#include <QMessageBox>
 #include <QDesktopWidget>
 #include <QScreen>
 #include <QLabel>
@@ -168,6 +169,7 @@ private:
     QString dSubfolder, dFileName;
     downloadAction dAction;
     bool takeFlag;
+    QString saveFileName;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
 };

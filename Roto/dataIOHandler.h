@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <layer.h>
 #include <graphics.h>
+#include <string>
 
 using std::thread;
 using std::vector;
@@ -79,6 +80,7 @@ public:
     void addLayer();
     void copyLayer();
     void pasteLayer();
+    void pasteLayer(quint32 alpha);
     void deleteLayer();
     void moveBackward();
     void moveForward();
@@ -92,6 +94,8 @@ public:
     void exportVideo(QString fileName);
     void save(QString projectName);
     void load(QString projectName);
+    vector<int> findPoints(QImage *qi);
+    void vectorCheck(SplineVector sv);
 
 
 private:

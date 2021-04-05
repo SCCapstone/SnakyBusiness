@@ -1,4 +1,4 @@
-#include "undoRedo.h"
+/*#include "undoRedo.h"
 
 // Brush Undo
 BrushUndo::BrushUndo(const brushHandler &brush, Layer *layer, const QPoint &qp, QUndoCommand *parent) : QUndoCommand(parent) {
@@ -210,17 +210,5 @@ void MoveLayerToBack::redo() {
     }
 }
 
-// Change Layer
-changeActiveLayer::changeActiveLayer(DataIOHandler *vec, const int &oldLayer, const int &layer, EditMode mode, QUndoCommand *parent) : QUndoCommand(parent) {
-    lVec = vec;
-    prevLayer = oldLayer;
-    newLayer = layer;
-    lMode = mode;
-}
-void changeActiveLayer::undo() {
-    lVec->getWorkingLayer()->deselect();
-    lVec->setActiveLayer(prevLayer, lMode);
-}
-void changeActiveLayer::redo() {
-    lVec->getWorkingLayer()->deselect();
-}
+    undoRedoAction();
+}*/
