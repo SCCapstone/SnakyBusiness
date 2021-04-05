@@ -141,11 +141,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         Layer *layer = ioh->getWorkingLayer();
         if (lastButton == Qt::LeftButton) {
             layer->moveLeft(qp);
-<<<<<<< Updated upstream
             undoStack->push(new TranslateVector(layer, qp));
-=======
-            undoStack->push(new TranslateVector(layer,qp));
->>>>>>> Stashed changes
         }
         else if (lastButton == RightButton && shiftFlag) {
             layer->moveRight(qp);
@@ -631,8 +627,6 @@ void MainWindow::doSomething(string btnPress) {
         ioh->getWorkingLayer()->deselect();
         setMode(Spline_Mode);
         setSamplePt(QPoint(-1000, -1000));
-        ioh->getWorkingLayer()->deselect();
-        //setMode(Brush_Mode);
     }
     else if (btnPress == "Raster Mode") {
         sr->resume();
