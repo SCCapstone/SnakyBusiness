@@ -175,11 +175,7 @@ private:
     QString saveFileName;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
-<<<<<<< Updated upstream
-=======
     QUndoStack *undoStack;
-
->>>>>>> Stashed changes
 };
 
 void appTo(QImage *qi, Filter f);
