@@ -632,7 +632,7 @@ void MainWindow::doSomething(string btnPress) {
         setMode(Spline_Mode);
         setSamplePt(QPoint(-1000, -1000));
         ioh->getWorkingLayer()->deselect();
-        setMode(Brush_Mode);
+        //setMode(Brush_Mode);
     }
     else if (btnPress == "Raster Mode") {
         sr->resume();
