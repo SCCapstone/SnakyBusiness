@@ -49,6 +49,7 @@
 #include <resizewindow.h>
 #include <screenrender.h>
 #include <radialprofiler.h>
+#include <undoRedo.h>
 #include <viewscroller.h>
 #include <algorithm>
 
@@ -80,6 +81,8 @@ using Qt::Key_X;
 using Qt::Key_C;
 using Qt::Key_V;
 using Qt::Key_A;
+using Qt::Key_Y;
+using Qt::Key_Z;
 
 using cv::VideoCapture;
 using cv::Mat;
@@ -172,6 +175,11 @@ private:
     QString saveFileName;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
+<<<<<<< Updated upstream
+=======
+    QUndoStack *undoStack;
+
+>>>>>>> Stashed changes
 };
 
 void appTo(QImage *qi, Filter f);
