@@ -2,12 +2,13 @@
 #include "ui_mainwindow.h"
 
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     hide();
+    QDir::setCurrent(startPath.c_str());
     setAcceptDrops(true);
     QLabel logo;
     QFile file(QDir::currentPath() + UI_Loc + Logo_FileName);
@@ -89,30 +90,34 @@ MainWindow::MainWindow(QWidget *parent)
     if (logoFound)
         std::this_thread::sleep_for (std::chrono::seconds(2));
     move(center - rect().center());
-    QInputDialog resPrompt;
-    QStringList items;
-    items.push_back("360p");
-    items.push_back("480p");
-    items.push_back("720p");
-    items.push_back("900p");
-    items.push_back("1080p");
-    items.push_back("1444p");
-    items.push_back("2160p");
-    resPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
-    resPrompt.setComboBoxItems(items);
-    resPrompt.setTextValue(items.first());
-    resPrompt.setWindowTitle("New Project Resolution");
-    resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");    
-    show();
-    logo.hide();
-    resPrompt.exec();
-    int sizeY = stoi(resPrompt.textValue().toStdString());
-    ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+    if (projectFile == "") {
+        QInputDialog resPrompt;
+        QStringList items;
+        items.push_back("360p");
+        items.push_back("480p");
+        items.push_back("720p");
+        items.push_back("900p");
+        items.push_back("1080p");
+        items.push_back("1444p");
+        items.push_back("2160p");
+        resPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+        resPrompt.setComboBoxItems(items);
+        resPrompt.setTextValue(items.first());
+        resPrompt.setWindowTitle("New Project Resolution");
+        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");
+        show();
+        logo.hide();
+        resPrompt.exec();
+        int sizeY = stoi(resPrompt.textValue().toStdString());
+        ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+    }
     setMode(Brush_Mode);
     sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
     sr->setHoverActive(true);
     brushProlfiler = new brushShape(&bh,this);
     pp = new patternProfiler(&bh,this);
+    if (projectFile != "")
+        ioh->loadBackup(QString(projectFile.c_str()));
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
