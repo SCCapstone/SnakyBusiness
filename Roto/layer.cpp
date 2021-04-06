@@ -649,7 +649,7 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
                     activeVects.push_back(index);
             }
         }
-        else {
+        else if (vects.size() != 0) {
             int dist = INT_MAX;
             char index = -1, size = static_cast<char>(vects.size());
             for (char i = 0; i < size; ++i) {

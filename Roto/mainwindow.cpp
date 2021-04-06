@@ -435,25 +435,27 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
-            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.opus)"));
+            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
         ioh->save(saveFileName);
 
     }
     else if (btnPress == "Save As") {
-        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.opus)"));
+        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.glass)"));
         ioh->save(saveFileName);
     }
     else if (btnPress == "Open") {
         QMessageBox::StandardButton prompt;
         prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
         if (prompt == QMessageBox::Yes) {
-            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.opus)"));
-            ioh->load(fileName);
-            bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
-            setMode(Spline_Mode);
-            ioh->getWorkingLayer()->deselect();
+            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
+            if (fileName == "")
+                return;
+            ioh->loadBackup(fileName);
+            //bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
+            //setMode(Spline_Mode);
+            //ioh->getWorkingLayer()->deselect();
         }
-
+        refresh();
     }
     else if (btnPress == "Help") {
         bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
@@ -522,7 +524,6 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getWidth();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector width", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
         if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
@@ -541,7 +542,6 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().first;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a first taper degree", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
@@ -551,7 +551,6 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().second;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a second taper degree", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
         if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
@@ -648,7 +647,6 @@ void MainWindow::doSomething(string btnPress) {
         ioh->getWorkingLayer()->selectAll();
     else if (btnPress == "Set Active Layer") {
         bool ok = false;
-        int prevRet = ioh->getActiveLayer();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
@@ -657,7 +655,6 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Layer Filter Strength") {
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getFilterStrength();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Set current layer's filter strength", ioh->getWorkingLayer()->getFilterStrength(), 1, graphics::maxColor, 1, &ok) - 1;
         if (ok)
             ioh->getWorkingLayer()->setFilterStrength(ret);

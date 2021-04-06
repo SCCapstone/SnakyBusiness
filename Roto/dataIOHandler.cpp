@@ -808,11 +808,113 @@ void DataIOHandler::scale(scaleType type) {
 
 
 void DataIOHandler::save(QString projectName) {
-
+    saveBackup(projectName);
 }
 
 void DataIOHandler::load(QString projectName) {
 
+}
+
+void DataIOHandler::saveBackup(QString projectName) {
+    base85 encoder;
+    string backupName;
+    if (QFile::exists(projectName)) {
+        backupName = projectName.toStdString();
+        backupName = backupName.substr(0, backupName.find_last_of(".glass")) + "__backup.glass";
+        QFile::rename(projectName, QString(backupName.c_str()));
+    }
+    ofstream out(projectName.toStdString());
+    if (out.is_open()) {
+        out << encoder.toBase85(dims.width(), 2) << encoder.toBase85(dims.height(), 2);
+        // push the total number of frames
+        //out << encoder.toBase85(1, 1);
+        out << endl;
+        for (unsigned int layer = 0; layer < frames[activeFrame].size(); ++layer) {
+            out << "{" << encoder.toBase85(layer) << endl;
+            Layer *l = frames[activeFrame][layer];
+            out << encoder.toBase85(l->getAlpha(), 2) << encoder.toBase85(l->getFilter().getFilterIndex(), 1) << encoder.toBase85(l->getFilter().getStrength(), 2) << endl;
+            QImage *qi = l->getCanvas();
+            for (short i = 0; i < qi->height(); ++i) {
+                for (short j = 0; j < qi->width(); ++j)
+                    out << encoder.toBase85(qi->pixel(j, i));
+                out << endl;
+            }
+            vector <SplineVector> svs = l->getVectors();
+            for (SplineVector sv : svs) {
+                out << encoder.toBase85(sv.getWidth(), 1) << encoder.toBase85(VectorMode(sv.getMode()), 1) << encoder.toBase85(sv.getTaper().first, 1) << encoder.toBase85(sv.getTaper().second, 1) << encoder.toBase85(Taper(sv.getTaperType()), 1) << encoder.toBase85(sv.getColors().first) << encoder.toBase85(sv.getColors().second) << encoder.toBase85(sv.getFilter().getFilterIndex(), 1) << encoder.toBase85(sv.getFilter().getStrength(), 2);
+                for (QPoint qp : sv.getControls())
+                    out << encoder.toBase85(qp.x(), 2) << encoder.toBase85(qp.y(), 2);
+                out << endl;
+            }
+        }
+        out.close();
+        cout << out.is_open() << endl;
+        if (QFile::exists(backupName.c_str()))
+            QFile::remove(backupName.c_str());
+    }
+}
+
+void DataIOHandler::loadBackup(QString projectName) {
+    base85 decoder;
+    string inStr;
+    ifstream in(projectName.toStdString());
+    if (in.is_open()) {
+        if (frames[activeFrame].size() != 0) {
+            activeLayer = frames[activeFrame].size() - 1;
+            while (frames[activeFrame].size() > 0) {
+                delete frames[activeFrame][activeLayer];
+                frames[activeFrame].pop_back();
+                --activeLayer;
+            }
+        }
+        getline(in, inStr);
+        dims.setWidth(decoder.fromBase85(inStr.substr(0, 2)));
+        dims.setHeight(decoder.fromBase85(inStr.substr(2, 4)));
+        getline(in, inStr);
+        while (getline(in, inStr)) {
+            Layer *layer = new Layer(dims);
+            frames[activeFrame].push_back(layer);
+            layer->setAlpha(decoder.fromBase85(inStr.substr(0, 2)));
+            layer->setFilter(graphics::filterNames[decoder.fromBase85(inStr.substr(2, 1))]);
+            layer->setFilterStrength(decoder.fromBase85(inStr.substr(3, 2)));
+            QImage *qi = layer->getCanvas();
+            for (int i = 0; i < qi->height(); ++i) {
+                getline(in, inStr);
+                for (int j = 0; j < qi->width(); ++j)
+                    qi->setPixel(j, i, decoder.fromBase85(inStr.substr(j * 5, 5)));
+            }
+            if (!getline(in, inStr))
+                break;
+            list <SplineVector> svs;
+            while (inStr[0] != '{') {
+                SplineVector sv(QPoint(0, 0), QPoint(1, 1), decoder.fromBase85(inStr.substr(0, 1)));
+                sv.setMode(VectorMode(decoder.fromBase85(inStr.substr(1, 1))));
+                sv.setTaper1(decoder.fromBase85(inStr.substr(2, 1)));
+                sv.setTaper2(decoder.fromBase85(inStr.substr(3, 1)));
+                sv.setTaperType(Taper(decoder.fromBase85(inStr.substr(4, 1))));
+                sv.setColor1(decoder.fromBase85(inStr.substr(5, 5)));
+                sv.setColor2(decoder.fromBase85(inStr.substr(10, 5)));
+                sv.setFilter(graphics::filterNames[decoder.fromBase85(inStr.substr(15, 1))]);
+                sv.setFilterStrength(decoder.fromBase85(inStr.substr(16, 2)));
+                sv.movePt(QPoint(decoder.fromBase85(inStr.substr(18, 2)), decoder.fromBase85(inStr.substr(20, 2))), 0);
+                int offset = 1;
+                for (int i = 18; i + 8 < static_cast<int>(inStr.length() - 1); i += 4) {
+                    sv.addPt(QPoint(decoder.fromBase85(inStr.substr(18 + 4 * offset, 2)), decoder.fromBase85(inStr.substr(20 + 4 * offset, 2))), offset);
+                    ++offset;
+                }
+                sv.movePt(QPoint(decoder.fromBase85(inStr.substr(18 + 4 * offset, 2)), decoder.fromBase85(inStr.substr(20 + 4 * offset, 2))), offset);
+                svs.push_back(sv);
+                if (!getline(in, inStr))
+                    break;
+            }
+            layer->setMode(Spline_Mode);
+            layer->pasteVectors(svs);
+            layer->deselect();
+            layer->setMode(Brush_Mode);
+        }
+        in.close();
+        updated = true;
+    }
 }
 
 bool DataIOHandler::importVideo(QString fileName) {
