@@ -814,7 +814,7 @@ void DataIOHandler::save(QString projectName) {
 }
 
 void DataIOHandler::load(QString projectName) {
-
+    loadBackup(projectName);
 }
 
 void DataIOHandler::saveBackup(QString projectName) {

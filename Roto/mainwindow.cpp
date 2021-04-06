@@ -122,6 +122,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     if (projectFile != "") {
         show();
         ioh->loadBackup(QString(projectFile.c_str()));
+        saveFileName = projectFile.c_str();
         refresh();
         t = stdFuncs::getTime(t);
         if (logoFound)
@@ -426,6 +427,46 @@ void MainWindow::doSomething(string btnPress) {
         }
         refresh();
     }
+    else if (btnPress == "Open") {
+        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
+        if (prompt == QMessageBox::Yes) {
+            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
+            if (fileName == "")
+                return;
+            ioh->loadBackup(fileName);
+            saveFileName = fileName;
+        }
+        refresh();
+    }
+    else if (btnPress == "Help") {
+        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
+        if (!found)
+            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
+    }
+    else if (btnPress == "About") {
+        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Glass Opus is an open source rotoscoping software for students and artists. The software will provide a variety of features to allow the users to see their work from start to finish. Drawing with a variety brushes and vectors, image manipulation, and filtering are among the many features than one can employ to create their vision.\n\nThe focus of Glass Opus, and the team behind it, is to provide a free software that students and artists can use to further their work and portfolio. This is often a difficult endeavor for artists due to the restrictive cost of major softwares. Since Glass Opus is open source, users can tweak features or add their own to suit specific needs. It will also serve as a foundation for those who seek to improve their knowledge in image processing and manipulation, as well as basic graphics programming.", QMessageBox::Yes, this);
+        qmb.exec();
+    }
+    else if (btnPress == "Exit") {
+        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
+        if (ioh->getNumLayers() != 0)
+            qmb.addButton("Save and Close", QMessageBox::AcceptRole);
+        qmb.addButton("No", QMessageBox::NoRole);
+        int choice = qmb.exec();
+        cout << choice << endl;
+        if (choice == QMessageBox::Yes)
+            QApplication::exit();
+        else if (choice == QMessageBox::AcceptRole) {
+            if (saveFileName.isEmpty())
+                saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
+            ioh->saveBackup(saveFileName);
+            QApplication::exit();
+        }
+    }
+    else if (btnPress == "Insert Layer")
+        ioh->addLayer();
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     else if (btnPress == "Export") {    //TODO
         sr->stopFlashing();
         string formats = "";
@@ -451,40 +492,13 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
             saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
-        ioh->save(saveFileName);
+        ioh->saveBackup(saveFileName);
 
     }
     else if (btnPress == "Save As") {
         saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.glass)"));
-        ioh->save(saveFileName);
+        ioh->saveBackup(saveFileName);
     }
-    else if (btnPress == "Open") {
-        QMessageBox::StandardButton prompt;
-        prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
-        if (prompt == QMessageBox::Yes) {
-            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
-            if (fileName == "")
-                return;
-            ioh->loadBackup(fileName);
-        }
-        refresh();
-    }
-    else if (btnPress == "Help") {
-        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
-        if (!found)
-            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
-    }
-    else if (btnPress == "Exit") {
-        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
-        qmb.addButton("No", QMessageBox::NoRole);
-        int choice = qmb.exec();
-        if (choice == QMessageBox::Yes)
-            QApplication::exit();
-    }
-    else if (btnPress == "Insert Layer")
-        ioh->addLayer();
-    if (ioh->getWorkingLayer() == nullptr)
-        return;
     else if (btnPress == "On")
         sr->showFg(true);
     else if (btnPress == "Off")
@@ -712,6 +726,7 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Pattern Profiler")
         pp->open();
+
     refresh();
 }
 
@@ -942,11 +957,20 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
+    QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
+    if (ioh->getNumLayers() != 0)
+        qmb.addButton("Save and Close", QMessageBox::AcceptRole);
     qmb.addButton("No", QMessageBox::NoRole);
     int choice = qmb.exec();
-    if (choice != QMessageBox::Yes)
-        event->ignore();
+    cout << choice << endl;
+    if (choice == QMessageBox::Yes)
+        QApplication::exit();
+    else if (choice == QMessageBox::AcceptRole) {
+        if (saveFileName.isEmpty())
+            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
+        ioh->saveBackup(saveFileName);
+        QApplication::exit();
+    }
 }
 
 void MainWindow::setMode(EditMode emode) {
