@@ -884,7 +884,7 @@ void DataIOHandler::loadBackup(QString projectName) {
                     qi->setPixel(j, i, decoder.fromBase85(inStr.substr(j * 5, 5)));
             }
             if (!getline(in, inStr))
-                break;
+                 break;
             list <SplineVector> svs;
             while (inStr[0] != '{') {
                 SplineVector sv(QPoint(0, 0), QPoint(1, 1), decoder.fromBase85(inStr.substr(0, 1)));
