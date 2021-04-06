@@ -848,7 +848,6 @@ void DataIOHandler::saveBackup(QString projectName) {
             }
         }
         out.close();
-        cout << out.is_open() << endl;
         if (QFile::exists(backupName.c_str()))
             QFile::remove(backupName.c_str());
     }

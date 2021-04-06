@@ -451,9 +451,6 @@ void MainWindow::doSomething(string btnPress) {
             if (fileName == "")
                 return;
             ioh->loadBackup(fileName);
-            //bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
-            //setMode(Spline_Mode);
-            //ioh->getWorkingLayer()->deselect();
         }
         refresh();
     }
