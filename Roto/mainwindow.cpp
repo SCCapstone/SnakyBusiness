@@ -8,6 +8,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
 {
     ui->setupUi(this);
     hide();
+    long long t = stdFuncs::getTime();
     QDir::setCurrent(startPath.c_str());
     setAcceptDrops(true);
     QLabel logo;
@@ -21,6 +22,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         center = screenRect.center();
         logo.setFixedSize(qi.size());
         logo.setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+        logo.setWindowFlag(Qt::WindowType::WindowStaysOnTopHint, true);
         logo.move(center - logo.rect().center());
         logo.show();
         QCoreApplication::processEvents();
@@ -87,8 +89,6 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     if (file.exists())
         setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
-    if (logoFound)
-        std::this_thread::sleep_for (std::chrono::seconds(2));
     move(center - rect().center());
     if (projectFile == "") {
         QInputDialog resPrompt;
@@ -104,7 +104,10 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         resPrompt.setComboBoxItems(items);
         resPrompt.setTextValue(items.first());
         resPrompt.setWindowTitle("New Project Resolution");
-        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");
+        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");      
+        t = stdFuncs::getTime(t);
+        if (logoFound)
+            std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
         show();
         logo.hide();
         resPrompt.exec();
@@ -116,8 +119,15 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     sr->setHoverActive(true);
     brushProlfiler = new brushShape(&bh,this);
     pp = new patternProfiler(&bh,this);
-    if (projectFile != "")
+    if (projectFile != "") {
+        show();
         ioh->loadBackup(QString(projectFile.c_str()));
+        refresh();
+        t = stdFuncs::getTime(t);
+        if (logoFound)
+            std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
+        logo.hide();
+    }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {

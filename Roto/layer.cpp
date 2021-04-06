@@ -73,6 +73,8 @@ void Layer::pasteVectors(list<SplineVector> svs) {
     vects.insert(vects.end(), svs.begin(), svs.end());
     while (tris.size() < vects.size())
         tris.push_back(list <Triangle> ());
+    for (size_t j = i; j < vects.size(); ++j)
+        vects[j].cleanup();
     while (i < vects.size())
         activeVects.push_back(i++);
     calcLine();

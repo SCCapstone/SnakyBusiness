@@ -561,6 +561,8 @@ void DataIOHandler::filterTTriSafe(QImage *toProcess, QPoint a, QPoint b, QPoint
 
 
 void DataIOHandler::setActiveLayer(int i, EditMode mode) {
+    if (i > getNumLayers())
+        return;
     activeLayer = static_cast<unsigned char>(i);
     getWorkingLayer()->setMode(mode);
     updated = true;
@@ -912,6 +914,7 @@ void DataIOHandler::loadBackup(QString projectName) {
             layer->setMode(Brush_Mode);
         }
         in.close();
+        activeLayer = frames[activeFrame].size() - 1;
         updated = true;
     }
 }
