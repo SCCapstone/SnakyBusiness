@@ -451,17 +451,17 @@ void MainWindow::doSomething(string btnPress) {
         QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
         if (ioh->getNumLayers() != 0)
             qmb.addButton("Save and Close", QMessageBox::AcceptRole);
-        qmb.addButton("No", QMessageBox::NoRole);
+        qmb.addButton("No", QMessageBox::RejectRole);
         int choice = qmb.exec();
-        cout << choice << endl;
-        if (choice == QMessageBox::Yes)
-            QApplication::exit();
-        else if (choice == QMessageBox::AcceptRole) {
+        if (choice == QMessageBox::AcceptRole && ioh->getNumLayers() == 0)
+            choice = QMessageBox::RejectRole;
+        if (choice == QMessageBox::AcceptRole) {
             if (saveFileName.isEmpty())
                 saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
             ioh->saveBackup(saveFileName);
-            QApplication::exit();
         }
+        if (choice != QMessageBox::RejectRole)
+            QApplication::exit();
     }
     else if (btnPress == "Insert Layer")
         ioh->addLayer();
@@ -960,17 +960,19 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
     if (ioh->getNumLayers() != 0)
         qmb.addButton("Save and Close", QMessageBox::AcceptRole);
-    qmb.addButton("No", QMessageBox::NoRole);
+    qmb.addButton("No", QMessageBox::RejectRole);
     int choice = qmb.exec();
-    cout << choice << endl;
-    if (choice == QMessageBox::Yes)
-        QApplication::exit();
-    else if (choice == QMessageBox::AcceptRole) {
+    if (choice == QMessageBox::AcceptRole && ioh->getNumLayers() == 0)
+        choice = QMessageBox::RejectRole;
+    if (choice == QMessageBox::AcceptRole) {
         if (saveFileName.isEmpty())
             saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
         ioh->saveBackup(saveFileName);
-        QApplication::exit();
     }
+    if (choice == QMessageBox::RejectRole)
+        event->ignore();
+    else
+        QApplication::exit();
 }
 
 void MainWindow::setMode(EditMode emode) {
