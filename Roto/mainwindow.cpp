@@ -123,6 +123,9 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         show();
         ioh->loadBackup(QString(projectFile.c_str()));
         saveFileName = projectFile.c_str();
+        projectFile = projectFile.substr(projectFile.find_last_of("/") + 1);
+        projectFile = projectFile.substr(0, projectFile.length() - 6);
+        setWindowTitle(QString("Glass Opus - ") + projectFile.c_str());
         refresh();
         t = stdFuncs::getTime(t);
         if (logoFound)
@@ -435,6 +438,10 @@ void MainWindow::doSomething(string btnPress) {
                 return;
             ioh->loadBackup(fileName);
             saveFileName = fileName;
+            string s = saveFileName.toStdString();
+            s = s.substr(s.find_last_of("/") + 1);
+            s = s.substr(0, s.length() - 6);
+            setWindowTitle(QString("Glass Opus - ") + s.c_str());
         }
         refresh();
     }
@@ -487,7 +494,8 @@ void MainWindow::doSomething(string btnPress) {
         else {
 
         }
-        sr->resume();
+        if (mode != Brush_Mode)
+            sr->resume();
     }
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
@@ -628,18 +636,15 @@ void MainWindow::doSomething(string btnPress) {
         }
     }
     else if (btnPress == "Brush Mode") {
-        sr->stopFlashing();
         ioh->getWorkingLayer()->deselect();
         setMode(Brush_Mode);
     }
     else if (btnPress == "Vector Mode") {
-        sr->resume();
         ioh->getWorkingLayer()->deselect();
         setMode(Spline_Mode);
         setSamplePt(QPoint(-1000, -1000));
     }
     else if (btnPress == "Raster Mode") {
-        sr->resume();
         ioh->getWorkingLayer()->deselect();
         setMode(Raster_Mode);
         setSamplePt(QPoint(-1000, -1000));
@@ -978,7 +983,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::setMode(EditMode emode) {
     mode = emode;
     if (ioh->getWorkingLayer() != nullptr)
-    ioh->getWorkingLayer()->setMode(emode);
+        ioh->getWorkingLayer()->setMode(emode);
     sr->setMode(emode);
 }
 

@@ -677,8 +677,9 @@ QImage DataIOHandler::getBackground() {
     QPainter p;
     p.begin(&qi);
     for (size_t i = 0; i < activeLayer; ++i) {
-        p.drawImage(0, 0, *layers[i]->getCanvas());
-        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        QImage temp = layers[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
     }
@@ -701,8 +702,9 @@ QImage DataIOHandler::getForeground() {
     QPainter p;
     p.begin(&qi);
     for (size_t i = activeLayer + 2; i < layers.size(); ++i) {
-        p.drawImage(0, 0, *layers[i]->getCanvas());
-        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        QImage temp = layers[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
     }

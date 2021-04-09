@@ -24,6 +24,10 @@ screenRender::~screenRender() {
 
 void screenRender::setMode(EditMode emode) {
     mode = emode;
+    if (mode != Brush_Mode)
+        resume();
+    else
+        stopFlashing();
 }
 
 void screenRender::setHoverActive(bool active) {
@@ -71,7 +75,8 @@ void screenRender::updateHoverMap(int r, const unsigned char const* const* arr) 
             if (hoverMap[i][j] != 1)
                 hoverMap[i][j] = 0;
     hoverLock.unlock();
-    resume();
+    if (mode != Brush_Mode)
+        resume();
 }
 
 void screenRender::mouseMoveEvent(QMouseEvent *event) {
@@ -134,7 +139,8 @@ void screenRender::updateViews() {
         fgPrescaled = ioh->getForeground();
         doZoom();
     }
-    flasher->start(flashSpeed);
+    if (mode != Brush_Mode)
+        flasher->start(flashSpeed);
 }
 
 void screenRender::paintEvent(QPaintEvent *event) {
@@ -239,12 +245,14 @@ void screenRender::paintEvent(QPaintEvent *event) {
     for (unsigned char activeVect : activeVects) {
         vector <QPoint> controlPts = vects[activeVect].getControls();
         for (QPoint qp : controlPts) {
-            for (int i = stdFuncs::clamp(qp.x() - ptSize, 0, w); i < stdFuncs::clamp(qp.x() + ptSize + 1, 0, w); ++i)
-                for (int j = stdFuncs::clamp(qp.y() - ptSize, 0, h); j < stdFuncs::clamp(qp.y() + ptSize + 1, 0, h); ++j) {
+            for (int j = stdFuncs::clamp(qp.y() - ptSize, 0, h); j < stdFuncs::clamp(qp.y() + ptSize + 1, 0, h); ++j) {
+                QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(j));
+                for (int i = stdFuncs::clamp(qp.x() - ptSize, 0, w); i < stdFuncs::clamp(qp.x() + ptSize + 1, 0, w); ++i) {
                     int dist = abs(i - qp.x()) + abs(j - qp.y());
                     if ((flashFlag || dist >= ptSize - 1) && dist <= ptSize)
-                        qi.setPixel(i, j, Filtering::negative(qi.pixelColor(i, j), 255));
+                        line[i] = Filtering::negative(line[i], 255);
                 }
+            }
         }
     }
     for (int i = stdFuncs::clamp(samplePoint.x() - ptSize, 0, w); i < stdFuncs::clamp(samplePoint.x() + ptSize + 1, 0, w); ++i)
@@ -263,9 +271,9 @@ void screenRender::paintEvent(QPaintEvent *event) {
     }
     if (underMouse() && hoverActive && mode == Brush_Mode && hoverLock.try_lock()) {
         int x = brushLoc.x() < radius ? radius - brushLoc.x() - 1 : 0, yStarter = brushLoc.y() < radius ? radius - brushLoc.y() : 0;
-        for (int i = max(0, brushLoc.x() - radius + 1); i <= min(qi.width() - 1, brushLoc.x() + radius + 1); ++i) {
+        for (int i = max(0, brushLoc.x() - radius); i <= min(qi.width() - 1, brushLoc.x() + radius + (brushLoc.x() < radius ? 1 : 0)); ++i) {
             int y = yStarter;
-            for (int j = max(0, brushLoc.y() - radius + 1); j <= min(qi.height() - 1, brushLoc.y() + radius + 1); ++j) {
+            for (int j = max(0, brushLoc.y() - radius); j <= min(qi.height() - 1, brushLoc.y() + radius); ++j) {
                 if (hoverMap[x][y] == 1)
                     qi.setPixel(i, j, graphics::Filtering::negative(graphics::Filtering::polarize(qi.pixel(i, j) | 0xFF000000, 128), 255));
                 ++y;
@@ -277,6 +285,9 @@ void screenRender::paintEvent(QPaintEvent *event) {
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
+    long long t = stdFuncs::getTime(time);
+    time = stdFuncs::getTime();
+    cout << t << endl;
 }
 
 void screenRender::setSamplePt(QPoint qp) {
@@ -290,6 +301,7 @@ void screenRender::stopFlashing() {
 }
 
 void screenRender::resume() {
+    flashFlag = true;
     flasher->start(flashSpeed);
 }
 
@@ -335,10 +347,10 @@ void screenRender::fillBTri(QPoint a, QPoint b, QPoint c) {
     float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
     float curx1 = static_cast<float>(a.x());
     float curx2 = static_cast<float>(a.x());
-    for (float y = a.y(); y >= b.y(); y -= adder)
-    {
+    for (float y = a.y(); y >= b.y(); y -= adder) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba());//Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
+            line[x] = color.rgba();
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -354,10 +366,10 @@ void screenRender::fillTTri(QPoint a, QPoint b, QPoint c) {
     float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
     float curx1 = static_cast<float>(a.x());
     float curx2 = static_cast<float>(a.x());
-    for (float y = a.y(); y <= b.y(); y += adder)
-    {
+    for (float y = a.y(); y <= b.y(); y += adder) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
         for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba());//Filtering::greyscale((qi.pixel(x, static_cast<int>(y))), 255));
+            line[x] = color.rgba();
         curx1 += invslope1;
         curx2 += invslope2;
     }
@@ -404,8 +416,9 @@ void screenRender::fillBTriSafe(QPoint a, QPoint b, QPoint c) {
     float endY = b.y() < 0 ? 0 : b.y();
     for (float y = a.y() >= qi.height() ? qi.height() - 1 : a.y(); y >= endY; y -= adder)  {
         int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
         for (int x = startX; x <= endX; ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba());
+            line[x] = color.rgba();
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -424,8 +437,9 @@ void screenRender::fillTTriSafe(QPoint a, QPoint b, QPoint c) {
     float endY = b.y() >= qi.height() ? qi.height() - 1 : b.y();
     for (float y = a.y() < 0 ? 0 : a.y(); y <= endY; y += adder) {
         int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
         for (int x = startX; x <= endX; ++x)
-            qi.setPixel(x, static_cast<int>(y), color.rgba()); //qi->setPixel(x, y, 0xFF00FF00);
+            line[x] = color.rgba();
         curx1 += invslope1;
         curx2 += invslope2;
     }
@@ -469,12 +483,10 @@ void screenRender::filterBTri(QPoint a, QPoint b, QPoint c) {
     float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
     float curx1 = static_cast<float>(a.x());
     float curx2 = static_cast<float>(a.x());
-    for (float y = a.y(); y >= b.y(); y -= adder)
-    {
-        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x) {
-            int Y = static_cast<int>(y);
-            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
-        }
+    for (float y = a.y(); y >= b.y(); y -= adder) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
+        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
+            line[x] = filter.applyTo(line[x]);
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -490,12 +502,10 @@ void screenRender::filterTTri(QPoint a, QPoint b, QPoint c) {
     float invslope2 = adder * static_cast<float>(c.x() - a.x()) / static_cast<float>(c.y() - a.y());
     float curx1 = static_cast<float>(a.x());
     float curx2 = static_cast<float>(a.x());
-    for (float y = a.y(); y <= b.y(); y += adder)
-    {
-        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x) {
-            int Y = static_cast<int>(y);
-            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
-        }
+    for (float y = a.y(); y <= b.y(); y += adder) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
+        for (int x = static_cast<int>(curx1); x <= static_cast<int>(curx2); ++x)
+            line[x] = filter.applyTo(line[x]);
         curx1 += invslope1;
         curx2 += invslope2;
     }
@@ -542,10 +552,9 @@ void screenRender::filterBTriSafe(QPoint a, QPoint b, QPoint c) {
     float endY = b.y() < 0 ? 0 : b.y();
     for (float y = a.y() >= qi.height() ? qi.height() - 1 : a.y(); y >= endY; y -= adder)  {
         int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
-        for (int x = startX; x <= endX; ++x) {
-            int Y = static_cast<int>(y);
-            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
-        }
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
+        for (int x = startX; x <= endX; ++x)
+            line[x] = filter.applyTo(line[x]);
         curx1 -= invslope1;
         curx2 -= invslope2;
     }
@@ -564,10 +573,9 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
     float endY = b.y() >= qi.height() ? qi.height() - 1 : b.y();
     for (float y = a.y() < 0 ? 0 : a.y(); y <= endY; y += adder) {
         int startX = curx1 < 0.0 ? 0 : static_cast<int>(curx1), endX = static_cast<int>(curx2) >= qi.width() ? qi.width() - 1 : static_cast<int>(curx2);
-        for (int x = startX; x <= endX; ++x) {
-            int Y = static_cast<int>(y);
-            qi.setPixel(x, Y, filter.applyTo(qi.pixelColor(x, Y)));
-        }
+        QRgb *line = reinterpret_cast<QRgb *>(qi.scanLine(static_cast<int>(y)));
+        for (int x = startX; x <= endX; ++x)
+            line[x] = filter.applyTo(line[x]);
         curx1 += invslope1;
         curx2 += invslope2;
     }

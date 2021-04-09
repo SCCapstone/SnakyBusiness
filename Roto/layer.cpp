@@ -731,6 +731,7 @@ void Layer::setWidth(int w) {
         unsigned char i = activeVects[0];
         vects[i].setWidth(w);
     }
+    calcLine();
 }
 
 void Layer::widthUp() {
