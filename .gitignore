@@ -27,3 +27,5 @@ build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_radialprofiler.cpp
 build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_mainwindow.cpp
 build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_predefs.h
 build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_brushshape.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_patternprofiler.cpp

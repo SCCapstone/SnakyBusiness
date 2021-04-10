@@ -5,11 +5,13 @@ QT = core gui widgets
 HEADERS = \
     $$PWD/brush.h \
     $$PWD/brushhandler.h \
+    $$PWD/brushshape.h \
     $$PWD/dataIOHandler.h \
     $$PWD/graphics.h \
     $$PWD/layer.h \
     $$PWD/mainwindow.h \
     $$PWD/opencv_handler.h \
+    $$PWD/patternprofiler.h \
     $$PWD/radialprofiler.h \
     $$PWD/screenrender.h \
     $$PWD/splinevector.h \
@@ -25,6 +27,7 @@ HEADERS = \
 SOURCES = \
     $$PWD/brush.cpp \
     $$PWD/brushhandler.cpp \
+    $$PWD/brushshape.cpp \
     $$PWD/dataIOHandler.cpp \
     $$PWD/graphics.cpp \
     $$PWD/layer.cpp \
@@ -32,6 +35,7 @@ SOURCES = \
     $$PWD/mainwindow.cpp \
     $$PWD/mainwindow.ui \
     $$PWD/opencv_handler.cpp \
+    $$PWD/patternprofiler.cpp \
     $$PWD/radialprofiler.cpp \
     $$PWD/resizewindow.cpp \
     $$PWD/screenrender.cpp \

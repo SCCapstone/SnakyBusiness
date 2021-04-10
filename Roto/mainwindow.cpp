@@ -443,19 +443,18 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
-            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.opus)"));
+            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus Project (*.glass)"));
         ioh->save(saveFileName);
-
     }
     else if (btnPress == "Save As") {
-        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.opus)"));
+        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus Project (*.glass)"));
         ioh->save(saveFileName);
     }
     else if (btnPress == "Open") {
         QMessageBox::StandardButton prompt;
         prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
         if (prompt == QMessageBox::Yes) {
-            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.opus)"));
+            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus Project (*.glass)"));
             ioh->load(fileName);
             bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
             setMode(Spline_Mode);
