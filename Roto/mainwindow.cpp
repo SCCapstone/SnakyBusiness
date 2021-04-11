@@ -123,7 +123,8 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         show();
         ioh->loadBackup(QString(projectFile.c_str()));
         saveFileName = projectFile.c_str();
-        projectFile = projectFile.substr(projectFile.find_last_of("/") + 1);
+        string toFind = projectFile.find_last_of("/") >= projectFile.length() ? "\\" : "/";
+        projectFile = projectFile.substr(projectFile.find_last_of(toFind) + 1);
         projectFile = projectFile.substr(0, projectFile.length() - 6);
         setWindowTitle(QString("Glass Opus - ") + projectFile.c_str());
         refresh();
