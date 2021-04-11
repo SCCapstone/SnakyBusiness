@@ -29,6 +29,7 @@ void DataIOHandler::compileFrame() {
     QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32_Premultiplied);
     unsigned char temp = activeLayer;
     activeLayer = 0;
+    progress->setLabelText("Compiling Frame");
     renderFrame(progress, qi, frames[temp]);
     frames[temp].insert(frames[temp].begin(), new Layer(qi->copy(), 255));
     for (size_t i = frames[temp].size(); i > 1; --i) {
@@ -42,6 +43,7 @@ void DataIOHandler::compileFrame() {
 void DataIOHandler::compileLayer() {
     Layer *layer = getWorkingLayer();
     layer->deselect();
+    progress->setLabelText("Compiling Layer");
     renderLayer(nullptr, progress, layer->getCanvas(), layer->getAlpha(), layer->getFilter(), layer->getVectors(), layer->getTriangles());
     layer->clearVectors();
 }
@@ -666,6 +668,7 @@ void DataIOHandler::moveToBack() {
 QImage DataIOHandler::getBackground() {
     if (activeLayer == 0)
         return QImage();
+    progress->setLabelText("Updating Background View");
     progress->setMaximum(frames[activeFrame].size());
     progress->show();
     QCoreApplication::processEvents();
@@ -693,6 +696,7 @@ QImage DataIOHandler::getBackground() {
 
 QImage DataIOHandler::getForeground() {
     vector <Layer *> layers = frames[activeFrame];
+    progress->setLabelText("Updating Foreground View");
     if (frames[activeFrame].size() == 0 || activeLayer == layers.size() - 1)
         return QImage();
     QImage qi = layers[activeLayer + 1]->getCanvas()->copy();
@@ -770,6 +774,7 @@ bool DataIOHandler::importImage(QString fileName) {
 
 void DataIOHandler::exportImage(QString fileName) {
     QImage *out = new QImage(dims, QImage::Format_ARGB32_Premultiplied);
+    progress->setLabelText("Exporting Image");
     renderFrame(progress, out, frames[activeFrame]);
     out->save(fileName);
 }
@@ -810,7 +815,6 @@ void DataIOHandler::scale(scaleType type) {
     }
 }
 
-
 void DataIOHandler::save(QString projectName) {
     saveBackup(projectName);
 }
@@ -824,8 +828,8 @@ void DataIOHandler::saveBackup(QString projectName) {
     string backupName;
     if (QFile::exists(projectName)) {
         backupName = projectName.toStdString();
-        backupName = backupName.substr(0, backupName.find_last_of(".glass")) + "__backup.glass";
-        QFile::rename(projectName, QString(backupName.c_str()));
+        backupName = backupName.substr(0, backupName.find_last_of(".glass") - 5) + "__backup.glass";
+        QFile::rename(projectName, backupName.c_str());
     }
     ofstream out(projectName.toStdString());
     if (out.is_open()) {
