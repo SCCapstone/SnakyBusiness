@@ -209,7 +209,6 @@ void MoveLayerToBack::redo() {
         pos--;
     }
 }
-
 // Change Layer
 changeActiveLayer::changeActiveLayer(DataIOHandler *vec, const int &oldLayer, const int &layer, EditMode mode, QUndoCommand *parent) : QUndoCommand(parent) {
     lVec = vec;

@@ -8,7 +8,7 @@
 using std::string;
 using std::vector;
 
-enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon, custom};                //  TODO custom
+enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon, custom};
 
 const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon", "Custom"};
 
@@ -27,7 +27,10 @@ public:
     int getRadius();
     int getFullSize();
     const unsigned char *const *const getBrushMap();
-    void sendTo(vector<vector<unsigned char>> pattern);
+    void sendTo(vector <vector < unsigned char > > pattern);
+    vector <vector <unsigned char> > tempMap;
+
+
 private:
 
     void update();

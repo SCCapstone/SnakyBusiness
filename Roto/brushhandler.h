@@ -89,7 +89,6 @@ private:
     bool ipolActive, patternInUse;
     int sprayDensity, alpha;
     unsigned char strength, patternXDim, patternYDim, **patternMap;
-    //vector <vector <unsigned char> > checkMap;
     unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
     Brush brush;
@@ -97,7 +96,6 @@ private:
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
-    //float **radialMap;
     float radialMap[2 * maxRadius + 1][2 * maxRadius + 1];
     vector <int> radialValues;
 };

@@ -22,7 +22,11 @@ HEADERS = \
     $$PWD/ui_radialprofiler.h \
     $$PWD/ui_resizewindow.h \
     $$PWD/undoredo.h \
-    $$PWD/viewscroller.h
+    $$PWD/viewscroller.h\
+    $$PWD/ui_brushShape.h\
+    $$PWD/ui_patternprofiler.h\
+    $$PWD/brushShape.h\
+    $$PWD/patternprofiler.h\
 
 SOURCES = \
     $$PWD/brush.cpp \
@@ -42,7 +46,9 @@ SOURCES = \
     $$PWD/splinevector.cpp \
     $$PWD/triangle.cpp \
     $$PWD/undoredo.cpp \
-    $$PWD/viewscroller.cpp
+    $$PWD/viewscroller.cpp\
+    $$PWD/brushShape.cpp\
+    $$PWD/patternprofiler.cpp\
 
 LIBS += -LC:\opencv_build\install\x64\vc16\lib -lopencv_core451 -lopencv_imgproc451 -lopencv_highgui451 -lopencv_imgcodecs451 -lopencv_videoio451 -lopencv_video451 -lopencv_calib3d451 -lopencv_photo451 -lopencv_features2d451
 INCLUDEPATH += C:\opencv_build\install\include

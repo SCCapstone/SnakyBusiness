@@ -304,8 +304,8 @@ QImage graphics::ImgSupport::zoomImg(QImage qi) {
 }
 
 QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
-    qp.setX(static_cast<int>(static_cast<double>(qp.x()) / zoom));
-    qp.setY(static_cast<int>(static_cast<double>(qp.y()) / zoom));
+    qp.setX(static_cast<int>(0.5 + static_cast<double>(qp.x()) / zoom));
+    qp.setY(static_cast<int>(0.5 + static_cast<double>(qp.y()) / zoom));
     return qp;
 }
 

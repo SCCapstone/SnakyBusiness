@@ -2,12 +2,14 @@
 #include "ui_mainwindow.h"
 
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     hide();
+    long long t = stdFuncs::getTime();
+    QDir::setCurrent(startPath.c_str());
     setAcceptDrops(true);
     QLabel logo;
     QFile file(QDir::currentPath() + UI_Loc + Logo_FileName);
@@ -20,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
         center = screenRect.center();
         logo.setFixedSize(qi.size());
         logo.setWindowFlag(Qt::WindowType::FramelessWindowHint, true);
+        logo.setWindowFlag(Qt::WindowType::WindowStaysOnTopHint, true);
         logo.move(center - logo.rect().center());
         logo.show();
         QCoreApplication::processEvents();
@@ -35,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
     progress->close();
     ioh = new DataIOHandler(progress);
     sr = new screenRender(ioh, vs);
-    undoStack = new QUndoStack(this);
     setCentralWidget(vs);
     setGeometry(screenRect.width() / 4, screenRect.height() / 4, screenRect.width() / 2, screenRect.height() / 2);
     setWindowTitle("Glass Opus");
@@ -87,33 +89,49 @@ MainWindow::MainWindow(QWidget *parent)
     if (file.exists())
         setWindowIcon(QIcon(file.fileName()));
     takeFlag = false;
-    if (logoFound)
-        std::this_thread::sleep_for (std::chrono::seconds(2));
     move(center - rect().center());
-    QInputDialog resPrompt;
-    QStringList items;
-    items.push_back("360p");
-    items.push_back("480p");
-    items.push_back("720p");
-    items.push_back("900p");
-    items.push_back("1080p");
-    items.push_back("1444p");
-    items.push_back("2160p");
-    resPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
-    resPrompt.setComboBoxItems(items);
-    resPrompt.setTextValue(items.first());
-    resPrompt.setWindowTitle("New Project Resolution");
-    resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");    
-    show();
-    logo.hide();
-    resPrompt.exec();
-    int sizeY = stoi(resPrompt.textValue().toStdString());
-    ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+    if (projectFile == "") {
+        QInputDialog resPrompt;
+        QStringList items;
+        items.push_back("360p");
+        items.push_back("480p");
+        items.push_back("720p");
+        items.push_back("900p");
+        items.push_back("1080p");
+        items.push_back("1444p");
+        items.push_back("2160p");
+        resPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+        resPrompt.setComboBoxItems(items);
+        resPrompt.setTextValue(items.first());
+        resPrompt.setWindowTitle("New Project Resolution");
+        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");      
+        t = stdFuncs::getTime(t);
+        if (logoFound)
+            std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
+        show();
+        logo.hide();
+        resPrompt.exec();
+        int sizeY = stoi(resPrompt.textValue().toStdString());
+        ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+    }
     setMode(Brush_Mode);
     sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
     sr->setHoverActive(true);
     brushProlfiler = new brushShape(&bh,this);
     pp = new patternProfiler(&bh,this);
+    if (projectFile != "") {
+        show();
+        ioh->loadBackup(QString(projectFile.c_str()));
+        saveFileName = projectFile.c_str();
+        projectFile = projectFile.substr(projectFile.find_last_of("/") + 1);
+        projectFile = projectFile.substr(0, projectFile.length() - 6);
+        setWindowTitle(QString("Glass Opus - ") + projectFile.c_str());
+        refresh();
+        t = stdFuncs::getTime(t);
+        if (logoFound)
+            std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
+        logo.hide();
+    }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -124,10 +142,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
     QPoint qp = sr->getZoomCorrected(vs->getScrollCorrected(event->pos()));
     statusBar()->showMessage((to_string(qp.x()) + "," + to_string(qp.y())).c_str(), 1000);
     if (mode == Brush_Mode) {
-        if (lastButton == LeftButton) {
+        if (lastButton == LeftButton)
             bh.applyBrush(ioh->getWorkingLayer()->getCanvas(), qp);
-            undoStack->push(new BrushUndo(bh, ioh->getWorkingLayer(), qp));
-        }
         else if (lastButton == RightButton) {
             if (bh.getMethodIndex() == appMethod::sample)
                 setSamplePt(qp);
@@ -139,15 +155,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         if (ctrlFlag)
             return;
         Layer *layer = ioh->getWorkingLayer();
-        if (lastButton == Qt::LeftButton) {
+        if (lastButton == Qt::LeftButton)
             layer->moveLeft(qp);
-            undoStack->push(new TranslateVector(layer, qp));
-            undoStack->push(new TranslateVector(layer,qp));
-        }
-        else if (lastButton == RightButton && shiftFlag) {
+        else if (lastButton == RightButton && shiftFlag)
             layer->moveRight(qp);
-            undoStack->push(new RotateVec(layer, qp));
-        }
         refresh();
     }
 }
@@ -419,6 +430,50 @@ void MainWindow::doSomething(string btnPress) {
         }
         refresh();
     }
+    else if (btnPress == "Open") {
+        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
+        if (prompt == QMessageBox::Yes) {
+            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
+            if (fileName == "")
+                return;
+            ioh->loadBackup(fileName);
+            saveFileName = fileName;
+            string s = saveFileName.toStdString();
+            s = s.substr(s.find_last_of("/") + 1);
+            s = s.substr(0, s.length() - 6);
+            setWindowTitle(QString("Glass Opus - ") + s.c_str());
+        }
+        refresh();
+    }
+    else if (btnPress == "Help") {
+        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
+        if (!found)
+            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
+    }
+    else if (btnPress == "About") {
+        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Glass Opus is an open source rotoscoping software for students and artists. The software will provide a variety of features to allow the users to see their work from start to finish. Drawing with a variety brushes and vectors, image manipulation, and filtering are among the many features than one can employ to create their vision.\n\nThe focus of Glass Opus, and the team behind it, is to provide a free software that students and artists can use to further their work and portfolio. This is often a difficult endeavor for artists due to the restrictive cost of major softwares. Since Glass Opus is open source, users can tweak features or add their own to suit specific needs. It will also serve as a foundation for those who seek to improve their knowledge in image processing and manipulation, as well as basic graphics programming.", QMessageBox::Yes, this);
+        qmb.exec();
+    }
+    else if (btnPress == "Exit") {
+        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
+        if (ioh->getNumLayers() != 0)
+            qmb.addButton("Save and Close", QMessageBox::AcceptRole);
+        qmb.addButton("No", QMessageBox::RejectRole);
+        int choice = qmb.exec();
+        if (choice == QMessageBox::AcceptRole && ioh->getNumLayers() == 0)
+            choice = QMessageBox::RejectRole;
+        if (choice == QMessageBox::AcceptRole) {
+            if (saveFileName.isEmpty())
+                saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
+            ioh->saveBackup(saveFileName);
+        }
+        if (choice != QMessageBox::RejectRole)
+            QApplication::exit();
+    }
+    else if (btnPress == "Insert Layer")
+        ioh->addLayer();
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
     else if (btnPress == "Export") {    //TODO
         sr->stopFlashing();
         string formats = "";
@@ -439,47 +494,19 @@ void MainWindow::doSomething(string btnPress) {
         else {
 
         }
-        sr->resume();
+        if (mode != Brush_Mode)
+            sr->resume();
     }
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
-            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus Project (*.glass)"));
-        ioh->save(saveFileName);
-    }
-    else if (btnPress == "Save As") {
-        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus Project (*.glass)"));
-        ioh->save(saveFileName);
-    }
-    else if (btnPress == "Open") {
-        QMessageBox::StandardButton prompt;
-        prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
-        if (prompt == QMessageBox::Yes) {
-            QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus Project (*.glass)"));
-            ioh->load(fileName);
-            bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
-            setMode(Spline_Mode);
-            ioh->getWorkingLayer()->deselect();
-        }
+            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
+        ioh->saveBackup(saveFileName);
 
     }
-    else if (btnPress == "Help") {
-        bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
-        if (!found)
-            downloadItem(Doc_Loc, Doc_FileName, DownLoadThenOpen, "Documentation Not Found", "Documentation PDF not found locally/offline.\nFetch and download documentation online?");
+    else if (btnPress == "Save As") {
+        saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.glass)"));
+        ioh->saveBackup(saveFileName);
     }
-    else if (btnPress == "Exit") {
-        QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
-        qmb.addButton("No", QMessageBox::NoRole);
-        int choice = qmb.exec();
-        if (choice == QMessageBox::Yes)
-            QApplication::exit();
-    }
-    else if (btnPress == "Insert Layer") {
-        ioh->addLayer();
-        undoStack->push(new InsertLayer(ioh));
-    }
-    if (ioh->getWorkingLayer() == nullptr)
-        return;
     else if (btnPress == "On")
         sr->showFg(true);
     else if (btnPress == "Off")
@@ -531,12 +558,9 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getWidth();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector width", ioh->getWorkingLayer()->getWidth(), minWidth, maxWidth, 1, &ok );
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setWidth(ret);
-            undoStack->push(new ChangeWidth(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Filter Strength") {
         int val = ioh->getWorkingLayer()->getVectorFilterStrength();
@@ -552,24 +576,18 @@ void MainWindow::doSomething(string btnPress) {
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().first;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a first taper degree", ioh->getWorkingLayer()->getVectorTapers().first, minTaper, maxTaper, 1, &ok);
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setVectorTaper1(ret);
-            undoStack->push(new ChangeVectorTaper1(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Taper 2") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
         if (activeVects.size() != 1)
             return;
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getVectorTapers().second;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a second taper degree", ioh->getWorkingLayer()->getVectorTapers().second, minTaper, maxTaper, 1, &ok);
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setVectorTaper2(ret);
-            undoStack->push(new ChangeVectorTaper2(ioh, prevRet, ret));
-        }
     }
     else if (btnPress == "Vector Color 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -618,30 +636,23 @@ void MainWindow::doSomething(string btnPress) {
         }
     }
     else if (btnPress == "Brush Mode") {
-        sr->stopFlashing();
         ioh->getWorkingLayer()->deselect();
         setMode(Brush_Mode);
     }
     else if (btnPress == "Vector Mode") {
-        sr->resume();
         ioh->getWorkingLayer()->deselect();
         setMode(Spline_Mode);
         setSamplePt(QPoint(-1000, -1000));
-        ioh->getWorkingLayer()->deselect();
-        //setMode(Brush_Mode);
     }
     else if (btnPress == "Raster Mode") {
-        sr->resume();
         ioh->getWorkingLayer()->deselect();
         setMode(Raster_Mode);
         setSamplePt(QPoint(-1000, -1000));
         ioh->getWorkingLayer()->deselect();
     }
     else if (btnPress == "Copy") {
-        if (mode == Spline_Mode) {
+        if (mode == Spline_Mode)
             ioh->copyVectors();
-            undoStack->push(new CopyVector(ioh));
-        }
         else if (mode == Raster_Mode)
             ioh->copyRaster();
     }
@@ -658,60 +669,35 @@ void MainWindow::doSomething(string btnPress) {
             ioh->deleteRaster();
     }
     else if (btnPress == "Paste") {
-        if (mode == Spline_Mode) {
+        if (mode == Spline_Mode)
             ioh->pasteVectors();
-            undoStack->push(new PasteVector(ioh));
-        }
         else if (mode == Raster_Mode)
             ioh->pasteRaster();
     }
     else if (btnPress == "Select All")
         ioh->getWorkingLayer()->selectAll();
-    else if (btnPress == "Undo") {
-        if (undoStack->canUndo())
-            undoStack->undo();
-    }
-    else if (btnPress == "Redo") {
-        if (undoStack->canRedo())
-            undoStack->redo();
-    }
     else if (btnPress == "Set Active Layer") {
         bool ok = false;
-        int prevRet = ioh->getActiveLayer();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
             ioh->setActiveLayer(ret, mode);
-            undoStack->push(new changeActiveLayer(ioh, prevRet, ret, mode));
         }
     }
     else if (btnPress == "Layer Filter Strength") {
         bool ok = false;
-        int prevRet = ioh->getWorkingLayer()->getFilterStrength();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Set current layer's filter strength", ioh->getWorkingLayer()->getFilterStrength(), 1, graphics::maxColor, 1, &ok) - 1;
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setFilterStrength(ret);
-            undoStack->push(new ChangeFilterRange(ioh, prevRet, ret));
-        }
     }
-    else if (btnPress == "Move Backward") {
+    else if (btnPress == "Move Backward")
         ioh->moveBackward();
-        undoStack->push(new MoveLayerBackward(ioh));
-    }
-    else if (btnPress == "Move Forward") {
+    else if (btnPress == "Move Forward")
         ioh->moveForward();
-        undoStack->push(new MoveLayerForward(ioh));
-    }
-    else if (btnPress == "Move To Back") {
-        int ret = ioh->getActiveLayer();
+    else if (btnPress == "Move To Back")
         ioh->moveToBack();
-        undoStack->push(new MoveLayerToBack(ioh,ret));
-    }
-    else if (btnPress == "Move To Front") {
-        int ret = ioh->getActiveLayer();
+    else if (btnPress == "Move To Front")
         ioh->moveToFront();
-        undoStack->push(new MoveLayerToFront(ioh, ret));
-    }
     else if (btnPress == "Copy Layer")
         ioh->copyLayer();
     else if (btnPress == "Cut Layer") {
@@ -720,10 +706,8 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Paste Layer")
         ioh->pasteLayer();
-    else if (btnPress == "Delete Layer") {
+    else if (btnPress == "Delete Layer")
         ioh->deleteLayer();
-        undoStack->push(new DeleteLayer(ioh));
-    }
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();
     else if (btnPress == "Compile Frame")
@@ -742,11 +726,12 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
     else if (btnPress == "Shape Profiler"){
+        return;
         brushProlfiler->open();
     }
-    else if (btnPress == "Pattern Profiler"){
-        pp-> open();
-    }
+    else if (btnPress == "Pattern Profiler")
+        pp->open();
+
     refresh();
 }
 
@@ -923,19 +908,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         }
         break;
     case Key_A:
-        if (ctrlFlag) {
-            ioh->getWorkingLayer()->selectAll();
-        }
-    case Key_Z:
-        if(ctrlFlag)
-            if (undoStack->canUndo())
-                undoStack->undo();
-        break;
-    case Key_Y:
         if (ctrlFlag)
-            if(undoStack->canRedo())
-                undoStack->redo();
-        break;
+            ioh->getWorkingLayer()->selectAll();
     }
     refresh();
 }
@@ -988,17 +962,28 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Do you wish to Exit?", QMessageBox::Yes, this);
-    qmb.addButton("No", QMessageBox::NoRole);
+    QMessageBox qmb(QMessageBox::Question, "Glass Opus", "Close Glass Opus?", QMessageBox::Yes, this);
+    if (ioh->getNumLayers() != 0)
+        qmb.addButton("Save and Close", QMessageBox::AcceptRole);
+    qmb.addButton("No", QMessageBox::RejectRole);
     int choice = qmb.exec();
-    if (choice != QMessageBox::Yes)
+    if (choice == QMessageBox::AcceptRole && ioh->getNumLayers() == 0)
+        choice = QMessageBox::RejectRole;
+    if (choice == QMessageBox::AcceptRole) {
+        if (saveFileName.isEmpty())
+            saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
+        ioh->saveBackup(saveFileName);
+    }
+    if (choice == QMessageBox::RejectRole)
         event->ignore();
+    else
+        QApplication::exit();
 }
 
 void MainWindow::setMode(EditMode emode) {
     mode = emode;
     if (ioh->getWorkingLayer() != nullptr)
-    ioh->getWorkingLayer()->setMode(emode);
+        ioh->getWorkingLayer()->setMode(emode);
     sr->setMode(emode);
 }
 
@@ -1014,7 +999,6 @@ MainWindow::~MainWindow() {
     delete ioh;
     delete sr;
     delete vs;
-    delete undoStack;
     delete ui;
     objFetch.clear();
     while (!toDel.empty()) {

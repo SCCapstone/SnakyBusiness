@@ -73,6 +73,8 @@ void Layer::pasteVectors(list<SplineVector> svs) {
     vects.insert(vects.end(), svs.begin(), svs.end());
     while (tris.size() < vects.size())
         tris.push_back(list <Triangle> ());
+    for (size_t j = i; j < vects.size(); ++j)
+        vects[j].cleanup();
     while (i < vects.size())
         activeVects.push_back(i++);
     calcLine();
@@ -649,7 +651,7 @@ void Layer::doubleClickLeft(QPoint qp, bool ctrlFlag) {
                     activeVects.push_back(index);
             }
         }
-        else {
+        else if (vects.size() != 0) {
             int dist = INT_MAX;
             char index = -1, size = static_cast<char>(vects.size());
             for (char i = 0; i < size; ++i) {
@@ -729,6 +731,7 @@ void Layer::setWidth(int w) {
         unsigned char i = activeVects[0];
         vects[i].setWidth(w);
     }
+    calcLine();
 }
 
 void Layer::widthUp() {

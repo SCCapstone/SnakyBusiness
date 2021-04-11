@@ -84,6 +84,7 @@ private:
     unsigned char **hoverMap;
     int radius;
     bool hoverActive;
+    long long time;
 
 public slots:
 

@@ -561,6 +561,8 @@ void DataIOHandler::filterTTriSafe(QImage *toProcess, QPoint a, QPoint b, QPoint
 
 
 void DataIOHandler::setActiveLayer(int i, EditMode mode) {
+    if (i > getNumLayers())
+        return;
     activeLayer = static_cast<unsigned char>(i);
     getWorkingLayer()->setMode(mode);
     updated = true;
@@ -675,8 +677,9 @@ QImage DataIOHandler::getBackground() {
     QPainter p;
     p.begin(&qi);
     for (size_t i = 0; i < activeLayer; ++i) {
-        p.drawImage(0, 0, *layers[i]->getCanvas());
-        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        QImage temp = layers[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
     }
@@ -699,8 +702,9 @@ QImage DataIOHandler::getForeground() {
     QPainter p;
     p.begin(&qi);
     for (size_t i = activeLayer + 2; i < layers.size(); ++i) {
-        p.drawImage(0, 0, *layers[i]->getCanvas());
-        renderLayer(nullptr, nullptr, &qi, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        QImage temp = layers[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
     }
@@ -806,179 +810,119 @@ void DataIOHandler::scale(scaleType type) {
     }
 }
 
-//vector<int> DataIOHandler::findPoints(QImage *qi) {
-//    vector<int> points;
-//    for (unsigned int i = 0; i < qi->width(); i++) {
-//        for (unsigned int j = 0; j < qi->height(); j++) {
-//
-//        }
-//    }
-//}
 
 void DataIOHandler::save(QString projectName) {
-    QFile file(projectName);
-    file.open(QIODevice::WriteOnly);
-    QDataStream out(&file);
-    qDebug() << "Writing frames.at(0).size()" << (quint32)frames.at(0).size();
-    out << static_cast<int>(frames.at(0).size());
-    for (unsigned int i = 0; i < frames.at(0).size(); ++i) {
-        int a = frames.at(0).at(i)->getAlpha();
-        qDebug() << "Writing alpha" << a;
-        out << a;
-        qDebug() << "Writing canvas";
-        out << *(frames.at(0).at(i)->getCanvas());
-        qDebug() << "Number of vects in this layer" << frames[0][i]->getVectors().size();
-        out << static_cast<int>(frames[0][i]->getVectors().size());
-        for (unsigned int j = 0; j < frames[0][i]->getVectors().size(); j++) {
-            // Write size of vects
-            //qDebug() << "Writing vects size" << (uchar)frames[0][i]->getVectors().size();
-            //out << (uchar)frames[0][i]->getVectors().size();
-            // write number of points in this vector
-            SplineVector sv = frames[0][i]->getVectors()[j];
-            //vectorCheck(sv);
-            int ptNum = sv.getNumPts();
-            qDebug() << "Writing ptNum" << ptNum;
-            out << ptNum;
-            for (uchar h = 0; h < ptNum; h++) {
-                // Write the QPoints
-                qDebug() << "Writing QPoint number" << h;
-                out << sv.getControls()[h];
-            }
-            // Writing filter
-            qDebug() << "Writing filter" << (uchar)sv.getFilter().getFilterIndex();
-            out << (uchar)sv.getFilter().getFilterIndex();
-            qDebug() << "writing filter strength" << sv.getFilter().getStrength();
-            out << sv.getFilter().getStrength();
-            // Write first color
-            qDebug() << "Writing color 1" << sv.getColors().first;
-            out << sv.getColors().first;
-            // Write second color
-            qDebug() << "Writing color 2" << sv.getColors().first;
-            out << sv.getColors().second;
-            // Write width
-            qDebug() << "Writing width" << (uchar)sv.getWidth();
-            out << (uchar)sv.getWidth();
-            // Write first taper
-            qDebug() << "Writing Taper 1" << static_cast<int>(sv.getTaper().first);
-            out << static_cast<int>(sv.getTaper().first);
-            // Write second taper
-            qDebug() << "Writing Taper 2" << static_cast<int>(sv.getTaper().second);
-            out << static_cast<int>(sv.getTaper().second);
-            // Write taper type
-            qDebug() << "Writing Taper Type" << sv.taperTypeString(sv.getTaperType());
-            out << sv.taperTypeString(sv.getTaperType());
-            // Write mode (fill type)
-            qDebug() << "Writing mode" << sv.modeString(sv.getMode());
-            out << sv.modeString(sv.getMode());
-        }
-    }
-    file.flush();
-    file.close();
+    saveBackup(projectName);
 }
 
 void DataIOHandler::load(QString projectName) {
-    vectorCopySlot.clear();
-    frames[0].clear();
-    QFile file(projectName);
-    QDataStream in(&file);
-    file.open(QIODevice::ReadOnly);
-    int length;
-    in >> length;
-    qDebug() << "Reading frames length" << length;
-    int a;
-    QImage qi;
-    Layer base;
-    for (int i = 0; i < length; ++i) {
-        //qDebug() << "i loop number" << i;
-        in >> a;
-        qDebug() << "Reading alpha" << a;
-        in >> qi;
-        qDebug() << "Read QImage";
-        uchar b;
-        //uchar c;
-        int t;
-        int d;
-        //uchar pts;
-        QString qs;
-        QRgb color;
-        Layer base;
-        // Read size of vects
-        in >> d;
-        qDebug() << "Read vects size" << d;
-        // Read number of points
-        for (int j = 0; j < d; j++) {
-            qDebug() << "Reading vector " << j;
-            SplineVector sv;
-            in >> t;
-            qDebug() << "reading num pts" << t;
-            for (int h = 0; h < t; h++) {
-                qDebug() << "Reading QPoint number" << h;
-                QPoint point;
-                in >> point;
-                sv.addPt(point,h);
-            }
-            // Read filter
-            in >> b;
-            qDebug() << "read filter" << b;
-            sv.setFilter(graphics::filterNames[b]);
-            in >> t;
-            qDebug() << "read filter strength" << t;
-            sv.setFilterStrength(t);
-            // Read first color
-            //qDebug() << "read color 1";
-            in >> color;
-            qDebug() << "read color 1" << color;
-            sv.setColor1(color);
-            // Read second color
-            //qDebug() << "read color 2";
-            in >> color;
-            qDebug() << "read color 2" << color;
-            sv.setColor2(color);
-            // Read width
-            //qDebug() << "read width";
-            in >> b;
-            qDebug() << "read width" << b;
-            sv.setWidth(b);
-            // Read first taper
-            //qDebug() << "read first taper";
-            in >> t;
-            qDebug() << "read taper 1" << b;
-            sv.setTaper1(t);
-            // Read second taper
-            //qDebug() << "read second taper";
-            in >> t;
-            qDebug() << "read taper 2" << b;
-            sv.setTaper2(t);
-            // Read taper type
-            //qDebug() << "read taper type";
-            in >> qs;
-            qDebug() << "read taper type" << qs;
-            sv.setTaperType(sv.taperFromString(qs));
-            //Read mode (fill type)
-            //qDebug() << "read mode";
-            in >> qs;
-            qDebug() << "read mode" << qs;
-            sv.setMode(sv.modeFromString(qs));
-            //qDebug() << "push vector" << j;
-            //vectorCheck(sv);
-            vectorCopySlot.push_back(sv);
-        }
-        qi.save("C:/Users/Matthew Pollard/Desktop/test.png");
-        qi.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        qDebug() << "make layer";
-        Layer l(qi, a);
-        layerCopySlot = l;
-        qDebug() << "paste layer";
-        pasteLayer(a);
-        qDebug() << "paste vector";
-        pasteVectors();
-        qDebug() << "finish paste vector";
+    loadBackup(projectName);
+}
+
+void DataIOHandler::saveBackup(QString projectName) {
+    base85 encoder;
+    string backupName;
+    if (QFile::exists(projectName)) {
+        backupName = projectName.toStdString();
+        backupName = backupName.substr(0, backupName.find_last_of(".glass")) + "__backup.glass";
+        QFile::rename(projectName, QString(backupName.c_str()));
     }
-    file.close();
+    ofstream out(projectName.toStdString());
+    if (out.is_open()) {
+        out << encoder.toBase85(dims.width(), 2) << encoder.toBase85(dims.height(), 2);
+        // push the total number of frames
+        //out << encoder.toBase85(1, 1);
+        out << endl;
+        for (unsigned int layer = 0; layer < frames[activeFrame].size(); ++layer) {
+            out << "{" << encoder.toBase85(layer) << endl;
+            Layer *l = frames[activeFrame][layer];
+            out << encoder.toBase85(l->getAlpha(), 2) << encoder.toBase85(l->getFilter().getFilterIndex(), 1) << encoder.toBase85(l->getFilter().getStrength(), 2) << endl;
+            QImage *qi = l->getCanvas();
+            for (short i = 0; i < qi->height(); ++i) {
+                for (short j = 0; j < qi->width(); ++j)
+                    out << encoder.toBase85(qi->pixel(j, i));
+                out << endl;
+            }
+            vector <SplineVector> svs = l->getVectors();
+            for (SplineVector sv : svs) {
+                out << encoder.toBase85(sv.getWidth(), 1) << encoder.toBase85(VectorMode(sv.getMode()), 1) << encoder.toBase85(sv.getTaper().first, 1) << encoder.toBase85(sv.getTaper().second, 1) << encoder.toBase85(Taper(sv.getTaperType()), 1) << encoder.toBase85(sv.getColors().first) << encoder.toBase85(sv.getColors().second) << encoder.toBase85(sv.getFilter().getFilterIndex(), 1) << encoder.toBase85(sv.getFilter().getStrength(), 2);
+                for (QPoint qp : sv.getControls())
+                    out << encoder.toBase85(qp.x(), 2) << encoder.toBase85(qp.y(), 2);
+                out << endl;
+            }
+        }
+        out.close();
+        if (QFile::exists(backupName.c_str()))
+            QFile::remove(backupName.c_str());
+    }
+}
+
+void DataIOHandler::loadBackup(QString projectName) {
+    base85 decoder;
+    string inStr;
+    ifstream in(projectName.toStdString());
+    if (in.is_open()) {
+        if (frames[activeFrame].size() != 0) {
+            activeLayer = frames[activeFrame].size() - 1;
+            while (frames[activeFrame].size() > 0) {
+                delete frames[activeFrame][activeLayer];
+                frames[activeFrame].pop_back();
+                --activeLayer;
+            }
+        }
+        getline(in, inStr);
+        dims.setWidth(decoder.fromBase85(inStr.substr(0, 2)));
+        dims.setHeight(decoder.fromBase85(inStr.substr(2, 4)));
+        getline(in, inStr);
+        while (getline(in, inStr)) {
+            Layer *layer = new Layer(dims);
+            frames[activeFrame].push_back(layer);
+            layer->setAlpha(decoder.fromBase85(inStr.substr(0, 2)));
+            layer->setFilter(graphics::filterNames[decoder.fromBase85(inStr.substr(2, 1))]);
+            layer->setFilterStrength(decoder.fromBase85(inStr.substr(3, 2)));
+            QImage *qi = layer->getCanvas();
+            for (int i = 0; i < qi->height(); ++i) {
+                getline(in, inStr);
+                for (int j = 0; j < qi->width(); ++j)
+                    qi->setPixel(j, i, decoder.fromBase85(inStr.substr(j * 5, 5)));
+            }
+            if (!getline(in, inStr))
+                 break;
+            list <SplineVector> svs;
+            while (inStr[0] != '{') {
+                SplineVector sv(QPoint(0, 0), QPoint(1, 1), decoder.fromBase85(inStr.substr(0, 1)));
+                sv.setMode(VectorMode(decoder.fromBase85(inStr.substr(1, 1))));
+                sv.setTaper1(decoder.fromBase85(inStr.substr(2, 1)));
+                sv.setTaper2(decoder.fromBase85(inStr.substr(3, 1)));
+                sv.setTaperType(Taper(decoder.fromBase85(inStr.substr(4, 1))));
+                sv.setColor1(decoder.fromBase85(inStr.substr(5, 5)));
+                sv.setColor2(decoder.fromBase85(inStr.substr(10, 5)));
+                sv.setFilter(graphics::filterNames[decoder.fromBase85(inStr.substr(15, 1))]);
+                sv.setFilterStrength(decoder.fromBase85(inStr.substr(16, 2)));
+                sv.movePt(QPoint(decoder.fromBase85(inStr.substr(18, 2)), decoder.fromBase85(inStr.substr(20, 2))), 0);
+                int offset = 1;
+                for (int i = 18; i + 8 < static_cast<int>(inStr.length() - 1); i += 4) {
+                    sv.addPt(QPoint(decoder.fromBase85(inStr.substr(18 + 4 * offset, 2)), decoder.fromBase85(inStr.substr(20 + 4 * offset, 2))), offset);
+                    ++offset;
+                }
+                sv.movePt(QPoint(decoder.fromBase85(inStr.substr(18 + 4 * offset, 2)), decoder.fromBase85(inStr.substr(20 + 4 * offset, 2))), offset);
+                svs.push_back(sv);
+                if (!getline(in, inStr))
+                    break;
+            }
+            layer->setMode(Spline_Mode);
+            layer->pasteVectors(svs);
+            layer->deselect();
+            layer->setMode(Brush_Mode);
+        }
+        in.close();
+        activeLayer = frames[activeFrame].size() - 1;
+        updated = true;
+    }
 }
 
 bool DataIOHandler::importVideo(QString fileName) {
-    file = fileName;
+    //file = fileName;
     return false;
 }
 
@@ -986,17 +930,3 @@ void DataIOHandler::exportVideo(QString fileName) {
 
 }
 
-// Debuggine method, used for testing if a vector is read in correctly after writing
-void DataIOHandler::vectorCheck(SplineVector sv) {
-    qDebug() << "Vector Check";
-    qDebug() << "Num Pts is" << sv.getNumPts();
-    qDebug() << "Filter Index is" << sv.getFilter().getFilterIndex();
-    qDebug() << "Color 1 is" << sv.getColors().first;
-    qDebug() << "Color 2 is" << sv.getColors().second;
-    qDebug() << "Width is" << sv.getWidth();
-    qDebug() << "Taper 1 is" << static_cast<int>(sv.getTaper().first);
-    qDebug() << "Taper 2 is" << static_cast<int>(sv.getTaper().second);
-    qDebug() << "Taper Type is" << sv.getTaperType();
-    qDebug() << "Mode is" << sv.getMode();
-
-}
