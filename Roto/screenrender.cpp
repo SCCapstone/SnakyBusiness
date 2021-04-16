@@ -282,6 +282,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
         }
         hoverLock.unlock();
     }
+    qi.setAlphaChannel(*workLayer->getAlphaLayer());
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);

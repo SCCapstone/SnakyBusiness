@@ -219,7 +219,6 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     if (mode == Brush_Mode) {
         sr->setHoverActive(true);
         bh.setInterpolationActive(false);
-        bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
         refresh();
     }
     else if (mode == Spline_Mode || (mode == Raster_Mode && event->button() != Qt::RightButton))
@@ -631,10 +630,8 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Layer Opacity (Alpha)") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a layer alpha", ioh->getWorkingLayer()->getAlpha(), 1, graphics::maxColor, 1, &ok);
-        if (ok) {
+        if (ok)
             ioh->getWorkingLayer()->setAlpha(ret);
-            bh.setAlpha(ret);
-        }
     }
     else if (btnPress == "Brush Mode") {
         ioh->getWorkingLayer()->deselect();
@@ -682,7 +679,9 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
+            ioh->getWorkingLayer()->disposeAlphaLayer();
             ioh->setActiveLayer(ret, mode);
+            ioh->getWorkingLayer();
         }
     }
     else if (btnPress == "Layer Filter Strength") {
@@ -711,8 +710,10 @@ void MainWindow::doSomething(string btnPress) {
         ioh->deleteLayer();
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();
-    else if (btnPress == "Compile Frame")
+    else if (btnPress == "Compile Frame") {
         ioh->compileFrame();
+
+    }
     else if (btnPress == "Zoom 100%") {
         sr->setZoom(1.0);
     }

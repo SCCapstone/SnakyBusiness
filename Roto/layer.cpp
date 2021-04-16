@@ -88,14 +88,6 @@ void Layer::pasteRaster(QImage rasterIn, double angleIn, pair<QPoint, QPoint> bo
     postAngle = angleIn;
     selectOgActive = true;
     deltaMove = rotateAnchor = boundPt1;
-    for (int i = 0; i < rasterselectOg.width(); ++i)
-        for (int j = 0; j < rasterselectOg.height(); ++j) {
-            QColor qc = rasterselectOg.pixelColor(i, j);
-            if (rasterselectOg.pixelColor(i, j).alpha() != 0) {
-                qc.setAlpha(alpha);
-                rasterselectOg.setPixelColor(i, j, qc);
-            }
-        }
 }
 
 QImage Layer::getRaster() {
@@ -708,14 +700,8 @@ void Layer::setShiftFlag(bool b) {
 
 void Layer::setAlpha(int a) {
     QColor qc;
-    for (int i = 0; i < qi->width(); ++i)
-        for (int j = 0; j < qi->height(); ++j) {
-            qc = qi->pixelColor(i, j);
-            if (qc.alpha() != 0) {
-                qc.setAlpha(a);
-                qi->setPixelColor(i, j, qc);
-            }
-        }
+    if (!alphaLayer.isNull())
+        alphaLayer.fill(a);
     alpha = a;
 }
 
@@ -927,4 +913,16 @@ void Layer::setFilter(string filterName) {
 
 bool Layer::isRotating() {
     return selectOgActive;
+}
+
+QImage * Layer::getAlphaLayer() {
+    if (alphaLayer.isNull()) {
+        alphaLayer = QImage(qi->width(), qi->height(), QImage::Format_Alpha8);
+        alphaLayer.fill(alpha);
+    }
+    return &alphaLayer;
+}
+
+void Layer::disposeAlphaLayer() {
+    alphaLayer = QImage();
 }

@@ -27,15 +27,29 @@ QSize DataIOHandler::getdims() {
 
 void DataIOHandler::compileFrame() {
     QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32_Premultiplied);
-    unsigned char temp = activeLayer;
-    activeLayer = 0;
+    qi->fill(0x00FFFFFF);
     progress->setLabelText("Compiling Frame");
-    renderFrame(progress, qi, frames[temp]);
-    frames[temp].insert(frames[temp].begin(), new Layer(qi->copy(), 255));
-    for (size_t i = frames[temp].size(); i > 1; --i) {
-        delete frames[temp][i];
-        frames[temp].pop_back();
+    renderFrame(progress, qi, frames[activeFrame]);
+    frames[activeFrame][activeLayer]->clearVectors();
+    Layer *layer = frames[activeFrame][activeLayer];
+    for (size_t i = frames[activeFrame].size() - 1; i > activeLayer; --i) {
+        delete frames[activeFrame][i];
+        frames[activeFrame].pop_back();
     }
+    frames[activeFrame].pop_back();
+    for (int i = frames[activeFrame].size() - 1; i >= 0; --i) {
+        delete frames[activeFrame][i];
+        frames[activeFrame].pop_back();
+    }
+    frames[activeFrame].push_back(layer);
+    activeLayer = 0;
+    layer->setAlpha(255);
+    QImage *img = layer->getCanvas();
+    img->fill(0x00FFFFFF);
+    QPainter qp;
+    qp.begin(img);
+    qp.drawImage(0, 0, *qi);
+    qp.end();
     delete qi;
     updated = true;
 }
@@ -114,7 +128,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
         Filter vf = vects[i].getFilter();
         pair <QRgb, QRgb> colors = vects[i].getColors();
         QColor ca = QColor (colors.first), cb = QColor(colors.second);
-        ca.setAlpha(alpha);
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
         bool flag = bounds.first.x() > width && bounds.first.y() > width && bounds.second.x() < w - width && bounds.second.y() < h - width;
@@ -126,7 +139,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         fillTri(toProcess, t, color);
                 }
                 else {
-                    cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>((*dTris[i]).size());
                     float cnt = 0.0;
                     for (Triangle &t : *dTris[i]) {
@@ -134,7 +146,7 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                        color = QColor(r, g, b, alpha).rgba();
+                        color = QColor(r, g, b).rgba();
                         fillTri(toProcess, t, color);
                         cnt += 1.0;
                     }
@@ -155,7 +167,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                     }
                 }
                 else {
-                    cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>((*dTris[i]).size());
                     float cnt = 0.0;
                     for (Triangle &t : *dTris[i]) {
@@ -163,7 +174,7 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                        color = QColor(r, g, b, alpha).rgba();
+                        color = QColor(r, g, b).rgba();
                         if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                             fillTriSafe(toProcess, t, color);
                         else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
@@ -183,7 +194,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                     filterTri(toProcess, t, vf);
             else  // safe draw
                 for (Triangle &t : *dTris[i]) {
-                    unsigned char flag = 0;
                     if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                         filterTriSafe(toProcess, t, vf);
                     else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
@@ -206,6 +216,9 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
         QCoreApplication::processEvents();
     }
     filter.applyTo(toProcess);
+    QImage alphaLayer = QImage(toProcess->width(), toProcess->height(), QImage::Format_Alpha8);
+    alphaLayer.fill(alpha);
+    toProcess->setAlphaChannel(alphaLayer);
     if (qpd != nullptr) {
         qpd->close();
         qpd->hide();

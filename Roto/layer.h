@@ -89,6 +89,8 @@ public:
     void setFilterStrength(int str);
     void setFilter(string filterName);
     static float getipol(float a, float b, float ipol);
+    QImage * getAlphaLayer();
+    void disposeAlphaLayer();
 
 private:
 
@@ -102,7 +104,7 @@ private:
     vector <list <Triangle>> tris;
     vector <unsigned char> activeVects;
     char activePt;
-    QImage *qi, rasterselectOg;
+    QImage *qi, alphaLayer, rasterselectOg;
     float ipolPts, limiter = ipolMin, limitCnt = 2.0, postAngle;
     int alpha;
     bool shiftFlag, selectOgActive, selecting;
