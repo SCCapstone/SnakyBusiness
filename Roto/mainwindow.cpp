@@ -171,6 +171,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
         return;
     onePress = true;
     if (event->button() >= 8) {
+        if (mode == Brush_Mode)
+            takeFlag = true;
         setShiftFlag(true);
         return;
     }
@@ -213,7 +215,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
             bh.setBrushColor(ioh->getWorkingLayer()->getCanvas()->pixelColor(qp.x(), qp.y()));
         else if (mode == Raster_Mode)
             bh.setFillColor(ioh->getWorkingLayer()->getCanvas()->pixelColor(qp.x(), qp.y()));
-        takeFlag = false;
+        if (!shiftFlag)
+            takeFlag = false;
         return;
     }
     if (mode == Brush_Mode) {
@@ -224,6 +227,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     else if (mode == Spline_Mode || (mode == Raster_Mode && event->button() != Qt::RightButton))
         ioh->getWorkingLayer()->release(qp, event->button());
     else if (event->button() >= 8) {
+        takeFlag = false;
         setShiftFlag(false);
         if (onePress)
             ioh->getWorkingLayer()->cleanUp();
@@ -875,8 +879,11 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             ctrlFlag = true;
         break;
     case Key_Shift:
-        if (!ctrlFlag)
+        if (!ctrlFlag && !onePress) {
+            if (mode == Brush_Mode)
+                takeFlag = true;
             setShiftFlag(true);
+        }
         break;
     case Key_Escape:
         ioh->getWorkingLayer()->deselect();
@@ -920,6 +927,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
     switch (event->key()) {
     case Key_Shift:
+        if (mode == Brush_Mode)
+            takeFlag = false;
         setShiftFlag(false);
         if (onePress)
             ioh->getWorkingLayer()->cleanUp();

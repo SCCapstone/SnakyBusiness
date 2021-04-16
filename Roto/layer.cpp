@@ -331,6 +331,8 @@ void Layer::release(QPoint qp, MouseButton button) {
                 boundPt1 = minPt;
                 boundPt2 = maxPt;
                 rasterselectOg = QImage((1 + boundPt2.x()) - boundPt1.x(), (1 + boundPt2.y()) - boundPt1.y(), QImage::Format_ARGB32_Premultiplied);
+                if (boundPt1.x() < 0 || boundPt1.y() < 0)
+                    return;
                 for (int i = boundPt1.x(); i <= boundPt2.x(); ++i)
                     for (int j = boundPt1.y(); j <= boundPt2.y(); ++j) {
                         rasterselectOg.setPixel(i - boundPt1.x(), j - boundPt1.y(), qi->pixel(i, j));
