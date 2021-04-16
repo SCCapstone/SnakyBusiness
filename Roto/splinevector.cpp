@@ -49,7 +49,7 @@ vector <QPoint> SplineVector::getControls() {
 }
 
 void SplineVector::addPt(QPoint qp, size_t index) {
-    if (controlPts.size() < UCHAR_MAX) {
+    if (controlPts.size() < maxPoints) {
         controlPts.push_back(QPoint(0,0));
         for (size_t i = controlPts.size() - 1; i > index; --i)
             controlPts[i] = controlPts[i - 1];

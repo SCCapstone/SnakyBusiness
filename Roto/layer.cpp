@@ -1,5 +1,6 @@
 #include "layer.h"
 
+
 Layer::Layer() {
     activePt = -1;
     alpha = 0;

@@ -911,6 +911,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     case Key_A:
         if (ctrlFlag)
             ioh->getWorkingLayer()->selectAll();
+        break;
     }
     refresh();
 }
