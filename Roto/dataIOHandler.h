@@ -16,6 +16,7 @@
 #include <graphics.h>
 #include <base85.h>
 #include <string>
+#include <QMessageBox>
 
 using std::thread;
 using std::vector;
@@ -41,6 +42,8 @@ struct RGB {
 
 static mutex locker;
 static atomic_int progressMarker;
+const unsigned char maxLayer = 64;
+const static short maxAlpha = 255;
 
 class DataIOHandler {
 
@@ -85,6 +88,7 @@ public:
     void addLayer();
     void copyLayer();
     void pasteLayer();
+    void pasteLayer(Layer l);
     void pasteLayer(quint32 alpha);
     void deleteLayer();
     void moveBackward();
@@ -99,10 +103,11 @@ public:
     void exportVideo(QString fileName);
     void save(QString projectName);
     void saveBackup(QString projectName);
-    void loadBackup(QString projectName);
-    void load(QString projectName);
+    int loadBackup(QString projectName);
+    int load(QString projectName);
     vector<int> findPoints(QImage *qi);
     void vectorCheck(SplineVector sv);
+    void clearLayers(vector <Layer *> frameBackup);
 
 
 private:

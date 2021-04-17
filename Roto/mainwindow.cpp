@@ -431,19 +431,33 @@ void MainWindow::doSomething(string btnPress) {
         refresh();
     }
     else if (btnPress == "Open") {
-        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
+        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Proceeding will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
         if (prompt == QMessageBox::Yes) {
             QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
             if (fileName == "")
                 return;
-            ioh->loadBackup(fileName);
-            saveFileName = fileName;
-            string s = saveFileName.toStdString();
-            s = s.substr(s.find_last_of("/") + 1);
-            s = s.substr(0, s.length() - 6);
-            setWindowTitle(QString("Glass Opus - ") + s.c_str());
+            int ret = ioh->loadBackup(fileName);
+            if (ret == 0) {
+                saveFileName = fileName;
+                string s = saveFileName.toStdString();
+                s = s.substr(s.find_last_of("/") + 1);
+                s = s.substr(0, s.length() - 6);
+                setWindowTitle(QString("Glass Opus - ") + s.c_str());
+                bh.setAlpha(ioh->getWorkingLayer()->getAlpha());
+                refresh();
+            }
+           else if (ret == 1) {
+               QMessageBox msgBox;
+               msgBox.setText("File load aborted. File may be corrupted.");
+               msgBox.exec();
+           }
+           else if (ret == 2) {
+                QMessageBox msgBox;
+                msgBox.setText("File could not be opened. Aborting load");
+                msgBox.exec();
+            }
         }
-        refresh();
+
     }
     else if (btnPress == "Help") {
         bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
