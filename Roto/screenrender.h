@@ -14,10 +14,12 @@
 #include <graphics.h>
 #include <layer.h>
 #include <dataIOHandler.h>
+#include <thread>
 
 using std::find;
 using std::vector;
 using std::to_string;
+using std::thread;
 using graphics::Filter;
 using graphics::Filtering;
 using graphics::ImgSupport;
@@ -66,6 +68,7 @@ private:
     void filterBTriSafe(QPoint a, QPoint b, QPoint c);
     void filterTTriSafe(QPoint a, QPoint b, QPoint c);
     void doZoom();
+    static void applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha);
 
     QPoint brushLoc;
     Layer *workLayer;
@@ -85,6 +88,10 @@ private:
     int radius;
     bool hoverActive;
     long long time;
+
+    int yStart, yMid, yEnd;
+    unsigned int alphaVal;
+    //std::thread t1, t2;
 
 public slots:
 

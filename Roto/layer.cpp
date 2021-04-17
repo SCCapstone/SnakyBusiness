@@ -114,7 +114,7 @@ QImage Layer::getRenderCanvas() {
     QImage img = qi->copy();
     if (selectOgActive)
         drawRasterSelection(&img);
-    return img;
+    return img.convertToFormat(QImage::Format_ARGB32);
 }
 
 vector <QPoint> Layer::getRasterEdges() {
@@ -921,6 +921,7 @@ QImage * Layer::getAlphaLayer() {
     if (alphaLayer.isNull()) {
         alphaLayer = QImage(qi->width(), qi->height(), QImage::Format_Alpha8);
         alphaLayer.fill(alpha);
+        cout << "here" << endl;
     }
     return &alphaLayer;
 }
@@ -928,3 +929,16 @@ QImage * Layer::getAlphaLayer() {
 void Layer::disposeAlphaLayer() {
     alphaLayer = QImage();
 }
+
+void Layer::applyFilterToRaster(Filter f) {
+    if (!rasterselectOg.isNull())
+        f.applyTo(&rasterselectOg);
+}
+
+void Layer::applyKernalToSelection(QProgressDialog *qpd, string fileName) {
+    if (!rasterselectOg.isNull()) {
+        pair <bool, vector <vector <float> > > kernalInfo = graphics::ImgSupport::loadKernal(fileName);
+        graphics::Filtering::applyKernal(qpd, &rasterselectOg, kernalInfo);
+    }
+}
+

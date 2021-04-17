@@ -15,6 +15,9 @@ screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(paren
     setMouseTracking(true);
     setAttribute(Qt::WA_Hover);
     radius = -1;
+    yStart = 0;
+    //t1 = std::thread (applyAlpha, &qi, &yStart, &yMid, &alphaVal);
+    //t2 = std::thread(applyAlpha, &qi, &yMid, &yEnd, &alphaVal);
 }
 
 screenRender::~screenRender() {
@@ -138,6 +141,9 @@ void screenRender::updateViews() {
         bgPrescaled = ioh->getBackground();
         fgPrescaled = ioh->getForeground();
         doZoom();
+        alphaVal = static_cast<unsigned int>(workLayer->getAlpha()) << 24;
+        yEnd = workLayer->getCanvas()->height();
+        yMid = yEnd / 2;
     }
     if (mode != Brush_Mode)
         flasher->start(flashSpeed);
@@ -152,6 +158,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
     qi = workLayer->getRenderCanvas();
+    alphaVal = static_cast<unsigned int>(workLayer->getAlpha()) << 24;
     setFixedSize(screenZoom.getZoomCorrected(qi.size()));
     int w = qi.width(), h = qi.height();
     vector <list <Triangle> > tris = workLayer->getTriangles();
@@ -282,7 +289,9 @@ void screenRender::paintEvent(QPaintEvent *event) {
         }
         hoverLock.unlock();
     }
-    qi.setAlphaChannel(*workLayer->getAlphaLayer());
+    //t1.join();
+    //t2.join();
+    applyAlpha(&qi, &yStart, &yEnd, &alphaVal);
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
@@ -579,5 +588,18 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
             line[x] = filter.applyTo(line[x]);
         curx1 += invslope1;
         curx2 += invslope2;
+    }
+}
+
+void screenRender::applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha) {
+    int ys = *yStart, ye = *yEnd;
+    unsigned int a = *alpha;
+    while (ys < ye) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi->scanLine(ys));
+        for (int x = 0; x < qi->width(); ++x)
+            if (line[x] & 0xFF000000)
+                line[x] = a | (line[x] & 0x00FFFFFF);
+        ++ys;
+        //*yStart*=++*yStart++;     gross
     }
 }

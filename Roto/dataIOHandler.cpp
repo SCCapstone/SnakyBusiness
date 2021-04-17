@@ -216,9 +216,14 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
         QCoreApplication::processEvents();
     }
     filter.applyTo(toProcess);
-    QImage alphaLayer = QImage(toProcess->width(), toProcess->height(), QImage::Format_Alpha8);
-    alphaLayer.fill(alpha);
-    toProcess->setAlphaChannel(alphaLayer);
+    *toProcess = toProcess->convertToFormat(QImage::Format_ARGB32);
+    unsigned int alphaVal = static_cast<unsigned int>(alpha) << 24;
+    for (int y = 0; y < toProcess->height(); ++y) {
+        QRgb *line = reinterpret_cast<QRgb *>(toProcess->scanLine(y));
+        for (int x = 0; x < toProcess->width(); ++x)
+            if (line[x] & 0xFF000000)
+                line[x] = alphaVal | (line[x] & 0x00FFFFFF);
+    }
     if (qpd != nullptr) {
         qpd->close();
         qpd->hide();

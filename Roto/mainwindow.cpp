@@ -45,13 +45,17 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     if (exists) {
         QMenu* sFiltering = static_cast<QMenu *>(objFetch.at("Layer Filter"));
         QMenu* bFiltering = static_cast<QMenu *>(objFetch.at("Brush Filter"));
+        QMenu* rFiltering = static_cast<QMenu *>(objFetch.at("Apply Filter To Selection"));
         for (string name : filterNames) {
             QAction *sAction = sFiltering->addAction((name).c_str());
             QAction *bAction = bFiltering->addAction((name).c_str());
+            QAction *rAction = rFiltering->addAction((name).c_str());
             connect(sAction, &QAction::triggered, this, [=]() { this->changeScreenFilter(sAction->text().toStdString()); });
             connect(bAction, &QAction::triggered, this, [=]() { this->changeBrushFilter(bAction->text().toStdString()); });
+            connect(rAction, &QAction::triggered, this, [=]() { this->applyRasterFilter(rAction->text().toStdString()); });
             log(name, sAction);
             log(name, bAction);
+            log(name, rAction);
         }
         QMenu* vFiltering = static_cast<QMenu *>(objFetch.at("Vector Filter"));
         for (string name : vectorFilters) {
@@ -631,6 +635,47 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Take Color" && (mode == Brush_Mode || mode == Raster_Mode))
         takeFlag = true;
+    else if (btnPress == "Transparency Fill") {
+        bh.setFillColor(QColor(255, 255, 255, 0));
+        cout << "here" << endl;
+    }
+    else if (btnPress == "Apply Kernal To Selection") {
+        string ret;
+        while (true) {
+            QInputDialog kerPrompt;
+            QDir qdir(QDir::currentPath() + Kernal_Loc);
+            QStringList items, temp = qdir.entryList();
+            temp.pop_front();
+            temp.pop_front();
+            for (QString qs : temp)
+                if (qs != "(Custom)") {
+                    string str = qs.toStdString();
+                    str = str.substr(0, str.find_last_of("."));
+                    items.push_back(str.c_str());
+                }
+            items.push_back("(Custom)");
+            kerPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+            kerPrompt.setComboBoxItems(items);
+            kerPrompt.setTextValue(items.first());
+            kerPrompt.setWindowTitle("Kernal Selection");
+            kerPrompt.setWhatsThis("Kernals allow for a variety of effects to be applied to the image");
+            kerPrompt.exec();
+            ret = kerPrompt.textValue().toStdString();
+            if (ret != "(Custom)")
+                break;
+            else {
+                QString fileName = QFileDialog::getOpenFileName(this, tr("Import Kernal"), "/", tr("*.txt"));
+                if (fileName != "") {
+                    string file = fileName.toStdString();
+                    file = file.substr(file.find_last_of("/") + 1);
+                    vector <vector <float> > kernal = graphics::ImgSupport::loadKernal(fileName.toStdString()).second;
+                    if (!(kernal.size() == 1 && kernal[0].size() == 1 && kernal[0][0] == 1.0))
+                        QFile(fileName).copy(QDir::currentPath() + Kernal_Loc + file.c_str());
+                }
+            }
+        }
+        ioh->getWorkingLayer()->applyKernalToSelection(progress, QDir::currentPath().toStdString() + Kernal_Loc.toStdString() + ret + ".txt");
+    }
     else if (btnPress == "Layer Opacity (Alpha)") {
         bool ok = false;
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a layer alpha", ioh->getWorkingLayer()->getAlpha(), 1, graphics::maxColor, 1, &ok);
@@ -714,13 +759,10 @@ void MainWindow::doSomething(string btnPress) {
         ioh->deleteLayer();
     else if (btnPress == "Compile Layer")
         ioh->compileLayer();
-    else if (btnPress == "Compile Frame") {
+    else if (btnPress == "Compile Frame")
         ioh->compileFrame();
-
-    }
-    else if (btnPress == "Zoom 100%") {
+    else if (btnPress == "Zoom 100%")
         sr->setZoom(1.0);
-    }
     else if (btnPress == "Set Zoom") {
         bool ok = false;
         double ret = QInputDialog::getDouble(this, "Glass Opus", "Select a layer to edit", sr->getZoom(), graphics::minZoom, graphics::maxZoom, 2, &ok);
@@ -737,7 +779,6 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Pattern Profiler")
         pp->open();
-
     refresh();
 }
 
@@ -821,6 +862,21 @@ void MainWindow::changeBrushShape(string shape) {
 
 void MainWindow::changeBrushMethod(string method) {
     bh.setAppMethod(method);
+}
+
+void MainWindow::applyRasterFilter(string s) {
+    Filter f;
+    int defaultStr = 255;
+    for (int i = 0; i < graphics::numFilters; ++i)
+        if (filterNames[i] == s)
+            defaultStr = graphics::filterPresets[i];
+    bool ok = false;
+    int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a filter strength", defaultStr, graphics::minColor, graphics::maxColor, 1, &ok);
+    if (ok) {
+        f.setStrength(ret);
+        f.setFilter(s);
+        ioh->getWorkingLayer()->applyFilterToRaster(f);
+    }
 }
 
 void MainWindow::log(string title, QObject *obj) {

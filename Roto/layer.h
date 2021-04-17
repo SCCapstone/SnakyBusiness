@@ -35,6 +35,7 @@ public:
     QImage *getCanvas();
     QImage getRenderCanvas();
     vector <QPoint> getRasterEdges();
+    void applyFilterToRaster(Filter f);
     vector <list <Triangle> > getTriangles();
     vector <SplineVector> getVectors();
     void pasteVectors(list <SplineVector> svs);
@@ -91,6 +92,7 @@ public:
     static float getipol(float a, float b, float ipol);
     QImage * getAlphaLayer();
     void disposeAlphaLayer();
+    void applyKernalToSelection(QProgressDialog *qpd, string fileName);
 
 private:
 
