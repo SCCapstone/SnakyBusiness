@@ -21,6 +21,9 @@ using std::fstream;
 using std::ios;
 using std::pair;
 
+typedef vector<vector<float>> Kernal;
+typedef pair<bool,Kernal> KernalData;
+
 namespace graphics {
 
 const string filterNames[] =   {"Normal (rgb)", "Greyscale", "Polarize", "Negative", "Burn", "Dodge", "Enshadow", "Red Channel", "Green Channel", "Blue Channel", "Red Pass", "Green Pass", "Blue Pass", "Magenta Pass", "Yellow Pass", "Cyan Pass", "Red Filter", "Green Filter", "Blue Filter", "Burn Red", "Burn Green", "Burn Blue", "Burn Yellow", "Burn Cyan", "Burn Magenta", "Dodge Red", "Dodge Green", "Dodge Blue", "Dodge Yellow", "Dodge Cyan", "Dodge Magenta", "RBG", "GRB", "GBR", "BRG", "BGR", "Color Noise", "Grey Noise"};
@@ -98,7 +101,7 @@ public:
     static QRgb bgr (QColor qc, int strength);
     static QRgb greyFilmGrain (QColor qc, int strength);
     static QRgb colorFilmGrain (QColor qc, int strength);
-    static void applyKernal(QProgressDialog *qpd, QImage *qi, pair <bool, vector <vector <float> > > kernalInfo);
+    static void applyKernal(QProgressDialog *qpd, QImage *qi, KernalData kernalInfo);
 
 private:
 
@@ -121,7 +124,8 @@ public:
     static void flipVertical(QImage *qi);
     static void flipHorizontal(QImage *qi);
     static list <QImage *> resize(QSize reqSize);
-    static pair <bool, vector <vector <float> > > loadKernal(string fileName);
+    static KernalData loadKernal(string fileName);
+    static void applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha);
 
 private:
 

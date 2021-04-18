@@ -68,7 +68,6 @@ private:
     void filterBTriSafe(QPoint a, QPoint b, QPoint c);
     void filterTTriSafe(QPoint a, QPoint b, QPoint c);
     void doZoom();
-    static void applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha);
 
     QPoint brushLoc;
     Layer *workLayer;

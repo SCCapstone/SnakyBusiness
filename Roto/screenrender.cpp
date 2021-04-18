@@ -291,7 +291,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
     }
     //t1.join();
     //t2.join();
-    applyAlpha(&qi, &yStart, &yEnd, &alphaVal);
+    graphics::ImgSupport::applyAlpha(&qi, &yStart, &yEnd, &alphaVal);
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
@@ -591,15 +591,3 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
     }
 }
 
-void screenRender::applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha) {
-    int ys = *yStart, ye = *yEnd;
-    unsigned int a = *alpha;
-    while (ys < ye) {
-        QRgb *line = reinterpret_cast<QRgb *>(qi->scanLine(ys));
-        for (int x = 0; x < qi->width(); ++x)
-            if (line[x] & 0xFF000000)
-                line[x] = a | (line[x] & 0x00FFFFFF);
-        ++ys;
-        //*yStart*=++*yStart++;     gross
-    }
-}

@@ -524,7 +524,7 @@ void brushHandler::erase(QImage *qi, QPoint qp) {
     QColor color = brushColor;
     appMethod am = method;
     method = appMethod::overwrite;
-    brushColor = 0x00FFFFFF;
+    brushColor = QColor(255, 255, 255, 0);
     applyBrush(qi, qp);
     method = am;
     brushColor = color;

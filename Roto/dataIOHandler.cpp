@@ -26,7 +26,7 @@ QSize DataIOHandler::getdims() {
 }
 
 void DataIOHandler::compileFrame() {
-    QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32_Premultiplied);
+    QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32);
     qi->fill(0x00FFFFFF);
     progress->setLabelText("Compiling Frame");
     renderFrame(progress, qi, frames[activeFrame]);
@@ -218,12 +218,8 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
     filter.applyTo(toProcess);
     *toProcess = toProcess->convertToFormat(QImage::Format_ARGB32);
     unsigned int alphaVal = static_cast<unsigned int>(alpha) << 24;
-    for (int y = 0; y < toProcess->height(); ++y) {
-        QRgb *line = reinterpret_cast<QRgb *>(toProcess->scanLine(y));
-        for (int x = 0; x < toProcess->width(); ++x)
-            if (line[x] & 0xFF000000)
-                line[x] = alphaVal | (line[x] & 0x00FFFFFF);
-    }
+    int yStart = 0, yEnd = toProcess->height();
+    graphics::ImgSupport::applyAlpha(toProcess, &yStart, &yEnd, &alphaVal);
     if (qpd != nullptr) {
         qpd->close();
         qpd->hide();
@@ -781,7 +777,7 @@ void DataIOHandler::deleteRaster() {
 }
 
 bool DataIOHandler::importImage(QString fileName) {
-    importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32);
     importType = image;
     bool match = importImg.width() == dims.width() && importImg.height() == dims.height();
     if (match)
@@ -791,14 +787,14 @@ bool DataIOHandler::importImage(QString fileName) {
 
 
 void DataIOHandler::exportImage(QString fileName) {
-    QImage *out = new QImage(dims, QImage::Format_ARGB32_Premultiplied);
+    QImage *out = new QImage(dims, QImage::Format_ARGB32);
     progress->setLabelText("Exporting Image");
     renderFrame(progress, out, frames[activeFrame]);
     out->save(fileName);
 }
 
 void DataIOHandler::scale(scaleType type) {
-    QImage toLayer(dims, QImage::Format_ARGB32_Premultiplied);
+    QImage toLayer(dims, QImage::Format_ARGB32);
     QImage toDraw;
     toLayer.fill(0x00000000);
     switch (type) {

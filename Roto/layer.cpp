@@ -17,7 +17,7 @@ Layer::Layer() {
 Layer::Layer(QSize qs) {
     activePt = -1;
     alpha = 255;
-    qi = new QImage(qs, QImage::Format_ARGB32_Premultiplied);
+    qi = new QImage(qs, QImage::Format_ARGB32);
     qi->fill(0x00000000);
     shiftFlag = false;
     ipolPts = ipolMin;
@@ -330,7 +330,7 @@ void Layer::release(QPoint qp, MouseButton button) {
                 QPoint maxPt(max(boundPt1.x(), boundPt2.x()), max(boundPt1.y(), boundPt2.y()));
                 boundPt1 = minPt;
                 boundPt2 = maxPt;
-                rasterselectOg = QImage((1 + boundPt2.x()) - boundPt1.x(), (1 + boundPt2.y()) - boundPt1.y(), QImage::Format_ARGB32_Premultiplied);
+                rasterselectOg = QImage((1 + boundPt2.x()) - boundPt1.x(), (1 + boundPt2.y()) - boundPt1.y(), QImage::Format_ARGB32);
                 if (boundPt1.x() < 0 || boundPt1.y() < 0)
                     return;
                 for (int i = boundPt1.x(); i <= boundPt2.x(); ++i)
@@ -840,7 +840,7 @@ void Layer::drawRasterSelection(QImage *img) {
     float angle = atan2(rotateAnchor.y() - oy, rotateAnchor.x() - ox) - atan2(deltaMove.y() - oy, deltaMove.x() - ox);
     angle += postAngle;
     int midX1 = rasterEdit.width() / 2, midY1 = rasterEdit.height() / 2;
-    QImage rasterOverlay(static_cast<int>(1.0 + abs(static_cast<float>(rasterEdit.width()) * cos(angle)) + abs(static_cast<float>(rasterEdit.height()) * sin(angle))), static_cast<int>(1.0 + abs(static_cast<float>(rasterEdit.width()) * sin(angle)) + abs(static_cast<float>(rasterEdit.height()) * cos(angle))), QImage::Format_ARGB32_Premultiplied);
+    QImage rasterOverlay(static_cast<int>(1.0 + abs(static_cast<float>(rasterEdit.width()) * cos(angle)) + abs(static_cast<float>(rasterEdit.height()) * sin(angle))), static_cast<int>(1.0 + abs(static_cast<float>(rasterEdit.width()) * sin(angle)) + abs(static_cast<float>(rasterEdit.height()) * cos(angle))), QImage::Format_ARGB32);
     rasterOverlay.fill(0x00000000);
     int midX2 = (rasterOverlay.width() - 1) / 2, midY2 = (rasterOverlay.height() - 1) / 2;
     for (int i = -midX2; i <= midX2; ++i)
@@ -937,7 +937,7 @@ void Layer::applyFilterToRaster(Filter f) {
 
 void Layer::applyKernalToSelection(QProgressDialog *qpd, string fileName) {
     if (!rasterselectOg.isNull()) {
-        pair <bool, vector <vector <float> > > kernalInfo = graphics::ImgSupport::loadKernal(fileName);
+        KernalData kernalInfo = graphics::ImgSupport::loadKernal(fileName);
         graphics::Filtering::applyKernal(qpd, &rasterselectOg, kernalInfo);
     }
 }
