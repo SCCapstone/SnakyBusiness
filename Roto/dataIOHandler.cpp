@@ -1037,6 +1037,7 @@ int DataIOHandler::loadBackup(QString projectName) {
                 sv.setMode(sv.modeFromString(qs));
                 vectorCopySlot.push_back(sv);
             }
+            qi.convertToFormat(QImage::Format_ARGB32);
             Layer layer(qi, a);
             pasteLayer(layer);
             layer.setMode(Spline_Mode);
@@ -1077,4 +1078,11 @@ void DataIOHandler::clearLayers(vector <Layer *> frameBackup) {
     for (unsigned int i = 0; i < frameBackup.size(); i++) {
         pasteLayer(*frameBackup[i]);
     }
+}
+
+
+/* This method is to remain an exact copy of DataIOHandler::saveBackup() that is used
+    for unit testing purposes. It should never be called from application. */
+int DataIOHandler::saveTest(QString projectName, vector<Layer *> testFrames) {
+
 }

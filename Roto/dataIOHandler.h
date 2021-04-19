@@ -102,9 +102,11 @@ public:
     bool importVideo(QString fileName);
     void exportVideo(QString fileName);
     void save(QString projectName);
+    int saveTest(QString projectName, vector< Layer *> testFrames);
     void saveBackup(QString projectName);
     int loadBackup(QString projectName);
     int load(QString projectName);
+    int loadTest(QString projectName);
     vector<int> findPoints(QImage *qi);
     void vectorCheck(SplineVector sv);
     void clearLayers(vector <Layer *> frameBackup);
