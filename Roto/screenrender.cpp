@@ -291,9 +291,9 @@ void screenRender::paintEvent(QPaintEvent *event) {
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
-    long long t = stdFuncs::getTime(time);
-    time = stdFuncs::getTime();
-    cout << t << endl;
+    //long long t = stdFuncs::getTime(time);
+    //time = stdFuncs::getTime();
+    //cout << t << endl;
 }
 
 void screenRender::setSamplePt(QPoint qp) {

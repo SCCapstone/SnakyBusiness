@@ -2,6 +2,8 @@
 
 QT = core gui widgets
 
+RC_ICONS = execIco.ico
+
 HEADERS = \
     $$PWD/base85.h \
     $$PWD/brush.h \
