@@ -752,7 +752,7 @@ void DataIOHandler::deleteRaster() {
 }
 
 bool DataIOHandler::importImage(QString fileName) {
-    importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    importImg = QImage(fileName).convertToFormat(QImage::Format_ARGB32);
     importType = image;
     bool match = importImg.width() == dims.width() && importImg.height() == dims.height();
     if (match)
@@ -769,7 +769,7 @@ void DataIOHandler::exportImage(QString fileName) {
 }
 
 void DataIOHandler::scale(scaleType type) {
-    QImage toLayer(dims, QImage::Format_ARGB32_Premultiplied);
+    QImage toLayer(dims, QImage::Format_ARGB32);
     QImage toDraw;
     toLayer.fill(0x00FFFFFF);
     switch (type) {
@@ -804,13 +804,12 @@ void DataIOHandler::scale(scaleType type) {
     }
 }
 
-
 void DataIOHandler::save(QString projectName) {
     string backupName;
     if (QFile::exists(projectName)) {
         backupName = projectName.toStdString();
-        backupName = backupName.substr(0, backupName.find_last_of(".glass")) + "__backup.glass";
-        QFile::rename(projectName, QString(backupName.c_str()));
+        backupName = backupName.substr(0, backupName.find_last_of(".glass") - 5) + "__backup.glass";
+        QFile::rename(projectName, backupName.c_str());
     }
     QFile file(projectName);
     file.open(QIODevice::WriteOnly);

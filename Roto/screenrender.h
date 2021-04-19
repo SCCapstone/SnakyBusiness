@@ -14,10 +14,12 @@
 #include <graphics.h>
 #include <layer.h>
 #include <dataIOHandler.h>
+#include <thread>
 
 using std::find;
 using std::vector;
 using std::to_string;
+using std::thread;
 using graphics::Filter;
 using graphics::Filtering;
 using graphics::ImgSupport;
@@ -87,6 +89,10 @@ private:
     long long time;
     int yStart, yMid, yEnd;
     unsigned int alphaVal;
+
+    int yStart, yMid, yEnd;
+    unsigned int alphaVal;
+    //std::thread t1, t2;
 
 public slots:
 

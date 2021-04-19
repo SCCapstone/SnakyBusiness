@@ -714,7 +714,9 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
+            ioh->getWorkingLayer()->disposeAlphaLayer();
             ioh->setActiveLayer(ret, mode);
+            ioh->getWorkingLayer();
         }
     }
     else if (btnPress == "Layer Filter Strength") {

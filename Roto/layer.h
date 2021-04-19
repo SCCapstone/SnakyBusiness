@@ -105,7 +105,7 @@ private:
     vector <list <Triangle>> tris;
     vector <unsigned char> activeVects;
     char activePt;
-    QImage *qi, rasterselectOg;
+    QImage *qi, alphaLayer, rasterselectOg;
     float ipolPts, limiter = ipolMin, limitCnt = 2.0, postAngle;
     int alpha;
     bool shiftFlag, selectOgActive, selecting;
