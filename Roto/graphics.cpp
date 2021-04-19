@@ -475,7 +475,7 @@ void graphics::ImgSupport::applyAlpha(QImage *qi, int *yStart, int *yEnd, unsign
             if (line[x] & 0xFF000000)
                 line[x] = a | (line[x] & 0x00FFFFFF);
         ++ys;
-        //*yStart*=++*yStart++;     gross
+        //--*yStart&=++*yStart+++!ys;      gross
     }
 }
 

@@ -7,6 +7,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setMinimumSize(450, 450);
     hide();
     long long t = stdFuncs::getTime();
     QDir::setCurrent(startPath.c_str());
@@ -108,7 +109,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         resPrompt.setComboBoxItems(items);
         resPrompt.setTextValue(items.first());
         resPrompt.setWindowTitle("New Project Resolution");
-        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");      
+        resPrompt.setWhatsThis("This will set the resolution of the layers and resulting export. Importing a saved project file after this dialog will update the resolution");
         t = stdFuncs::getTime(t);
         if (logoFound)
             std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
@@ -125,7 +126,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     pp = new patternProfiler(&bh,this);
     if (projectFile != "") {
         show();
-        ioh->loadBackup(QString(projectFile.c_str()));
+        ioh->load(QString(projectFile.c_str()));
         saveFileName = projectFile.c_str();
         string toFind = projectFile.find_last_of("/") >= projectFile.length() ? "\\" : "/";
         projectFile = projectFile.substr(projectFile.find_last_of(toFind) + 1);
@@ -392,11 +393,10 @@ void MainWindow::addAction(QMenu *menu, string item) {
 void MainWindow::doSomething(string btnPress) {
     //cout << btnPress << endl;
     if (btnPress == "Import") {
+        bool maxFlag = isMaximized();
         QRect reset = geometry();
         string formats = "";
         for (string s : acceptedImportImageFormats)
-            formats += " *." + s;
-        for (string s : acceptedImportVideoFormats)
             formats += " *." + s;
         formats = "Media Files (" + formats.substr(1) + ")";
         QString fileName = QFileDialog::getOpenFileName(this, tr("Import"), "/", tr(formats.c_str()));
@@ -407,51 +407,41 @@ void MainWindow::doSomething(string btnPress) {
         string fileType = fn.substr(index + 1);
         if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
             bool flag = ioh->importImage(fileName);
-            setGeometry(reset);
+            if (maxFlag)
+                this->showMaximized();
+            else
+                setGeometry(reset);
             if (flag)
                 resizeCheck->showRelative();
         }
-        else {
-            VideoCapture cap = VideoCapture(fileName.toStdString());
-            if(!cap.isOpened()) {
-                return;
-            }
-            list <Mat> list;
-            long long l;
-            while(true) {
-                l = stdFuncs::getTime();
-                Mat frame;
-                cap >> frame;
-                if (frame.empty())
-                    break;
-                list.push_back(frame);
-                l = stdFuncs::getTime();
-                QImage qi = QImage(frame.cols, frame.rows, QImage::Format_ARGB32_Premultiplied);
-                for(int r = 0; r < frame.rows; ++r)
-                    for(short c = 0; c < frame.cols; ++c) {
-                        RGB& rgb = frame.ptr<RGB>(r)[c];
-                        qi.setPixel(c, r, qRgb(rgb.red,rgb.green,rgb.blue));
-                    }
-                refresh();
-            }
-            cap.release();
-        }
         refresh();
+        if (maxFlag)
+            this->showMaximized();
+        else
+            setGeometry(reset);
     }
     else if (btnPress == "Open") {
-        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will erase your current working project. Continue?", QMessageBox::Yes|QMessageBox::No);
+        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will replace the current work. Continue?", QMessageBox::Yes|QMessageBox::No);
         if (prompt == QMessageBox::Yes) {
             QString fileName = QFileDialog::getOpenFileName(this, tr("Open Project"), "/", tr("Glass Opus project files (*.glass)"));
             if (fileName == "")
                 return;
-            ioh->loadBackup(fileName);
-            saveFileName = fileName;
-            string s = saveFileName.toStdString();
-            s = s.substr(s.find_last_of("/") + 1);
-            s = s.substr(0, s.length() - 6);
-            setWindowTitle(QString("Glass Opus - ") + s.c_str());
+            int ret = 0;
+            ioh->load(fileName);
+            if (ret == 0) {
+                saveFileName = fileName;
+                string s = saveFileName.toStdString();
+                s = s.substr(s.find_last_of("/") + 1);
+                s = s.substr(0, s.length() - 6);
+                setWindowTitle(QString("Glass Opus - ") + s.c_str());
+                refresh();
+            }
+            else if (ret == 1)
+                qme->showMessage("File load aborted. File may be corrupted.");
+            else if (ret == 2)
+                qme->showMessage("File could not be opened.");
         }
-        refresh();
+
     }
     else if (btnPress == "Help") {
         bool found = QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath() + Doc_Loc + Doc_FileName));
@@ -473,7 +463,7 @@ void MainWindow::doSomething(string btnPress) {
         if (choice == QMessageBox::AcceptRole) {
             if (saveFileName.isEmpty())
                 saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
-            ioh->saveBackup(saveFileName);
+            ioh->save(saveFileName);
         }
         if (choice != QMessageBox::RejectRole)
             QApplication::exit();
@@ -486,8 +476,6 @@ void MainWindow::doSomething(string btnPress) {
         sr->stopFlashing();
         string formats = "";
         for (string s : acceptedExportImageFormats)
-            formats += " *." + s;
-        for (string s : acceptedExportVideoFormats)
             formats += " *." + s;
         formats = "Media Files (" + formats.substr(1) + ")";
         QString fileName = QFileDialog::getSaveFileName(this, tr("Export"), "/", tr(formats.c_str()));
@@ -508,12 +496,12 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Save") {
         if (saveFileName.isEmpty())
             saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
-        ioh->saveBackup(saveFileName);
+        ioh->save(saveFileName);
 
     }
     else if (btnPress == "Save As") {
         saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.glass)"));
-        ioh->saveBackup(saveFileName);
+        ioh->save(saveFileName);
     }
     else if (btnPress == "On")
         sr->showFg(true);
@@ -635,10 +623,8 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Take Color" && (mode == Brush_Mode || mode == Raster_Mode))
         takeFlag = true;
-    else if (btnPress == "Transparency Fill") {
+    else if (btnPress == "Transparency Fill")
         bh.setFillColor(QColor(255, 255, 255, 0));
-        cout << "here" << endl;
-    }
     else if (btnPress == "Apply Kernal To Selection") {
         string ret;
         while (true) {
@@ -773,7 +759,7 @@ void MainWindow::doSomething(string btnPress) {
         sr->zoomIn();
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
-    else if (btnPress == "Shape Profiler"){
+    else if (btnPress == "Shape Profiler") {
         return;
         brushProlfiler->open();
     }
@@ -865,18 +851,16 @@ void MainWindow::changeBrushMethod(string method) {
 }
 
 void MainWindow::applyRasterFilter(string s) {
-    Filter f;
     int defaultStr = 255;
     for (int i = 0; i < graphics::numFilters; ++i)
-        if (filterNames[i] == s)
+        if (filterNames[i] == s) {
             defaultStr = graphics::filterPresets[i];
+            break;
+        }
     bool ok = false;
-    int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a filter strength", defaultStr, graphics::minColor, graphics::maxColor, 1, &ok);
-    if (ok) {
-        f.setStrength(ret);
-        f.setFilter(s);
-        ioh->getWorkingLayer()->applyFilterToRaster(f);
-    }
+    int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a strength", defaultStr, graphics::minColor, graphics::maxColor, 1, &ok);
+    if (ok)
+        ioh->getWorkingLayer()->applyFilterToRaster(Filter(defaultStr, s));
 }
 
 void MainWindow::log(string title, QObject *obj) {
@@ -935,7 +919,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             ctrlFlag = true;
         break;
     case Key_Shift:
-        if (!ctrlFlag && !onePress) {
+        if (!ctrlFlag) {
             if (mode == Brush_Mode)
                 takeFlag = true;
             setShiftFlag(true);
@@ -1010,6 +994,8 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
 void MainWindow::dropEvent(QDropEvent *event) {
     const QMimeData* mimeData = event->mimeData();
     if (mimeData->hasUrls()) {
+        bool maxFlag = isMaximized();
+        QRect reset = geometry();
         QList<QUrl> urlList = mimeData->urls();
         for (int i = 0; i < urlList.size(); ++i) {
             QString fileName = urlList.at(i).toLocalFile();
@@ -1019,6 +1005,10 @@ void MainWindow::dropEvent(QDropEvent *event) {
             if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
                 bool flag = ioh->importImage(fileName);
                 if (flag) {
+                    if (maxFlag)
+                        this->showMaximized();
+                    else
+                        setGeometry(reset);
                     resizeCheck->showRelative();
                     while (resizeCheck->isVisible())
                         QCoreApplication::processEvents();
@@ -1026,6 +1016,10 @@ void MainWindow::dropEvent(QDropEvent *event) {
             }
         }
         refresh();
+        if (maxFlag)
+            this->showMaximized();
+        else
+            setGeometry(reset);
     }
 }
 
@@ -1040,7 +1034,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (choice == QMessageBox::AcceptRole) {
         if (saveFileName.isEmpty())
             saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project"), "/", tr("Glass Opus project files (*.glass)"));
-        ioh->saveBackup(saveFileName);
+        ioh->save(saveFileName);
     }
     if (choice == QMessageBox::RejectRole)
         event->ignore();

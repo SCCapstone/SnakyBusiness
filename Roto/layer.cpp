@@ -701,9 +701,6 @@ void Layer::setShiftFlag(bool b) {
 }
 
 void Layer::setAlpha(int a) {
-    QColor qc;
-    if (!alphaLayer.isNull())
-        alphaLayer.fill(a);
     alpha = a;
 }
 
@@ -915,19 +912,6 @@ void Layer::setFilter(string filterName) {
 
 bool Layer::isRotating() {
     return selectOgActive;
-}
-
-QImage * Layer::getAlphaLayer() {
-    if (alphaLayer.isNull()) {
-        alphaLayer = QImage(qi->width(), qi->height(), QImage::Format_Alpha8);
-        alphaLayer.fill(alpha);
-        cout << "here" << endl;
-    }
-    return &alphaLayer;
-}
-
-void Layer::disposeAlphaLayer() {
-    alphaLayer = QImage();
 }
 
 void Layer::applyFilterToRaster(Filter f) {

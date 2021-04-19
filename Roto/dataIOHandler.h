@@ -41,6 +41,7 @@ struct RGB {
 
 static mutex locker;
 static atomic_int progressMarker;
+const unsigned char maxLayer = 64;
 
 class DataIOHandler {
 
@@ -85,7 +86,6 @@ public:
     void addLayer();
     void copyLayer();
     void pasteLayer();
-    void pasteLayer(quint32 alpha);
     void deleteLayer();
     void moveBackward();
     void moveForward();
@@ -94,25 +94,22 @@ public:
     Layer *getWorkingLayer();
     QImage getBackground();
     QImage getForeground();
-
-    bool importVideo(QString fileName);
-    void exportVideo(QString fileName);
     void save(QString projectName);
-    void saveBackup(QString projectName);
-    void loadBackup(QString projectName);
-    void load(QString projectName);
+    int load(QString projectName);
+
+    int saveTest(QString projectName, vector< Layer *> testFrames);
+    int loadTest(QString projectName);
     vector<int> findPoints(QImage *qi);
     void vectorCheck(SplineVector sv);
-
 
 private:
 
     QSize dims;
-    vector <vector <Layer *> > frames;
+    vector <Layer *> frame;
     list <SplineVector> vectorCopySlot;
     Layer layerCopySlot;
     QString file;
-    unsigned char activeLayer, activeFrame;
+    unsigned char activeLayer;
     QImage importImg, rasterCopySlot;
     importType importType;
     bool updated;

@@ -15,6 +15,8 @@ using graphics::Filtering;
 enum VectorMode {ColorFill, Filtered};
 enum Taper {Single, Double};
 
+const VectorMode lastMode = Filtered;
+const Taper lastTaper = Double;
 const int minTaper = 0;
 const int maxTaper = 10;
 const int minWidth = 0;

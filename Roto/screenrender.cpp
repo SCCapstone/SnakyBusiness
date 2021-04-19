@@ -16,8 +16,6 @@ screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(paren
     setAttribute(Qt::WA_Hover);
     radius = -1;
     yStart = 0;
-    //t1 = std::thread (applyAlpha, &qi, &yStart, &yMid, &alphaVal);
-    //t2 = std::thread(applyAlpha, &qi, &yMid, &yEnd, &alphaVal);
 }
 
 screenRender::~screenRender() {
@@ -289,8 +287,6 @@ void screenRender::paintEvent(QPaintEvent *event) {
         }
         hoverLock.unlock();
     }
-    //t1.join();
-    //t2.join();
     graphics::ImgSupport::applyAlpha(&qi, &yStart, &yEnd, &alphaVal);
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())

@@ -21,6 +21,7 @@ const float ipolMin = 0.001;
 const float ipolMax = 0.1;
 const unsigned char ptSize = 5;
 const float pi = 3.14159;
+const unsigned char maxVects = UCHAR_MAX;
 
 class Layer {
 
@@ -90,8 +91,6 @@ public:
     void setFilterStrength(int str);
     void setFilter(string filterName);
     static float getipol(float a, float b, float ipol);
-    QImage * getAlphaLayer();
-    void disposeAlphaLayer();
     void applyKernalToSelection(QProgressDialog *qpd, string fileName);
 
 private:
