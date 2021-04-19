@@ -3,18 +3,13 @@
 
 DataIOHandler::DataIOHandler(QProgressDialog *qpd) {
     progress = qpd;
-    activeFrame = activeLayer = 0;
-    vector <Layer *> frame;
-    frames.push_back(frame);
+    activeLayer = 0;
     updated = true;
 }
 
 DataIOHandler::~DataIOHandler() {
-    for (size_t i = 0; i < frames.size(); ++i) {
-        for (size_t j = 0; j < frames[i].size(); ++j)
-            delete frames[i][j];
-        frames[i].clear();
-    }
+    for (size_t i = 0; i < frame.size(); ++i)
+        delete frame[i];
 }
 
 void DataIOHandler::setDims(QSize size) {
@@ -26,15 +21,30 @@ QSize DataIOHandler::getdims() {
 }
 
 void DataIOHandler::compileFrame() {
-    QImage *qi = new QImage(frames[activeFrame][0]->getCanvas()->size(), QImage::Format_ARGB32_Premultiplied);
-    unsigned char temp = activeLayer;
-    activeLayer = 0;
-    renderFrame(progress, qi, frames[temp]);
-    frames[temp].insert(frames[temp].begin(), new Layer(qi->copy(), 255));
-    for (size_t i = frames[temp].size(); i > 1; --i) {
-        delete frames[temp][i];
-        frames[temp].pop_back();
+    QImage *qi = new QImage(frame[0]->getCanvas()->size(), QImage::Format_ARGB32);
+    qi->fill(0x00FFFFFF);
+    progress->setLabelText("Compiling Frame");
+    renderFrame(progress, qi, frame);
+    frame[activeLayer]->clearVectors();
+    Layer *layer = frame[activeLayer];
+    for (size_t i = frame.size() - 1; i > activeLayer; --i) {
+        delete frame[i];
+        frame.pop_back();
     }
+    frame.pop_back();
+    for (int i = frame.size() - 1; i >= 0; --i) {
+        delete frame[i];
+        frame.pop_back();
+    }
+    frame.push_back(layer);
+    activeLayer = 0;
+    layer->setAlpha(255);
+    QImage *img = layer->getCanvas();
+    img->fill(0x00FFFFFF);
+    QPainter qp;
+    qp.begin(img);
+    qp.drawImage(0, 0, *qi);
+    qp.end();
     delete qi;
     updated = true;
 }
@@ -42,6 +52,7 @@ void DataIOHandler::compileFrame() {
 void DataIOHandler::compileLayer() {
     Layer *layer = getWorkingLayer();
     layer->deselect();
+    progress->setLabelText("Compiling Layer");
     renderLayer(nullptr, progress, layer->getCanvas(), layer->getAlpha(), layer->getFilter(), layer->getVectors(), layer->getTriangles());
     layer->clearVectors();
 }
@@ -112,7 +123,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
         Filter vf = vects[i].getFilter();
         pair <QRgb, QRgb> colors = vects[i].getColors();
         QColor ca = QColor (colors.first), cb = QColor(colors.second);
-        ca.setAlpha(alpha);
         int width = vects[i].getWidth();
         pair <QPoint, QPoint> bounds = vects[i].getBounds();
         bool flag = bounds.first.x() > width && bounds.first.y() > width && bounds.second.x() < w - width && bounds.second.y() < h - width;
@@ -124,7 +134,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         fillTri(toProcess, t, color);
                 }
                 else {
-                    cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>((*dTris[i]).size());
                     float cnt = 0.0;
                     for (Triangle &t : *dTris[i]) {
@@ -132,7 +141,7 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                        color = QColor(r, g, b, alpha).rgba();
+                        color = QColor(r, g, b).rgba();
                         fillTri(toProcess, t, color);
                         cnt += 1.0;
                     }
@@ -153,7 +162,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                     }
                 }
                 else {
-                    cb.setAlpha(alpha);
                     float ccomp = 1.0 / static_cast<float>((*dTris[i]).size());
                     float cnt = 0.0;
                     for (Triangle &t : *dTris[i]) {
@@ -161,7 +169,7 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                         int r = static_cast<int>((ccc * static_cast<float>(ca.red())) + ((1.0 - ccc) * static_cast<float>(cb.red())));
                         int g = static_cast<int>((ccc * static_cast<float>(ca.green())) + ((1.0 - ccc) * static_cast<float>(cb.green())));
                         int b = static_cast<int>((ccc * static_cast<float>(ca.blue())) + ((1.0 - ccc) * static_cast<float>(cb.blue())));
-                        color = QColor(r, g, b, alpha).rgba();
+                        color = QColor(r, g, b).rgba();
                         if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                             fillTriSafe(toProcess, t, color);
                         else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
@@ -181,7 +189,6 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
                     filterTri(toProcess, t, vf);
             else  // safe draw
                 for (Triangle &t : *dTris[i]) {
-                    unsigned char flag = 0;
                     if (t.A().x() < 0 || t.A().x() >= w || t.A().y() < 0 || t.A().y() >= h)
                         filterTriSafe(toProcess, t, vf);
                     else if (t.B().x() < 0 || t.B().x() >= w || t.B().y() < 0 || t.B().y() >= h)
@@ -204,6 +211,10 @@ void DataIOHandler::renderLayer(QProgressDialog *fqpd, QProgressDialog *qpd, QIm
         QCoreApplication::processEvents();
     }
     filter.applyTo(toProcess);
+    *toProcess = toProcess->convertToFormat(QImage::Format_ARGB32);
+    unsigned int alphaVal = static_cast<unsigned int>(alpha) << 24;
+    int yStart = 0, yEnd = toProcess->height();
+    graphics::ImgSupport::applyAlpha(toProcess, &yStart, &yEnd, &alphaVal);
     if (qpd != nullptr) {
         qpd->close();
         qpd->hide();
@@ -569,7 +580,7 @@ void DataIOHandler::setActiveLayer(int i, EditMode mode) {
 }
 
 int DataIOHandler::getNumLayers() {
-    return frames[activeFrame].size();
+    return frame.size();
 }
 
 int DataIOHandler::getActiveLayer() {
@@ -583,81 +594,55 @@ bool DataIOHandler::wasUpdated() {
 }
 
 Layer * DataIOHandler::getWorkingLayer() {
-    if (frames.empty() || frames[activeFrame].empty())
-        return nullptr;
-    return frames[activeFrame][activeLayer];
+    return frame.empty() ? nullptr : frame[activeLayer];
 }
 
 void DataIOHandler::addLayer() {
-    frames[activeFrame].push_back(new Layer(dims));
+    frame.push_back(new Layer(dims));
     updated = true;
-    activeLayer = frames[activeFrame].size() - 1;
+    activeLayer = frame.size() - 1;
 }
 
 void DataIOHandler::copyLayer() {
-    layerCopySlot = Layer(*frames[activeFrame][activeLayer]);
+    layerCopySlot = Layer(*frame[activeLayer]);
 }
 
 void DataIOHandler::pasteLayer() {
     if (layerCopySlot.getCanvas()->isNull())
         return;
-    frames[activeFrame].push_back(new Layer(layerCopySlot));
+    frame.push_back(new Layer(layerCopySlot));
     updated = true;
-    activeLayer = frames[activeFrame].size() - 1;
-}
-
-void DataIOHandler::pasteLayer(Layer l) {
-    if (l.getCanvas()->isNull())
-        return;
-    frames[activeFrame].push_back(new Layer(l));
-    updated = true;
-    activeLayer = frames[activeFrame].size() - 1;
-}
-
-void DataIOHandler::pasteLayer(quint32 alpha) {
-    if (layerCopySlot.getCanvas()->isNull())
-        return;
-    activeLayer = frames[activeFrame].size();
-    Layer *l = new Layer(layerCopySlot);
-    l->setAlpha(alpha);
-    frames[activeFrame].push_back(new Layer(*l));
-    updated = true;
+    activeLayer = frame.size() - 1;
 }
 
 void DataIOHandler::deleteLayer() {
     unsigned char temp = activeLayer;
-    if (activeLayer == frames[activeFrame].size() - 1)
+    if (activeLayer == frame.size() - 1)
         --activeLayer;
-    delete frames[activeFrame][temp];
-    frames[activeFrame].erase((frames[activeFrame].begin() + temp));
-//    if (temp == 0)
-//        deleteFrame();
-    if (activeFrame > 0) {
-        //delete frame
-        --activeFrame;
-    }
+    delete frame[temp];
+    frame.erase((frame.begin() + temp));
     updated = true;
 }
 
 void DataIOHandler::moveBackward() {
     if (activeLayer != 0) {
-        swap(frames[activeFrame][activeLayer - 1], frames[activeFrame][activeLayer]);
+        swap(frame[activeLayer - 1], frame[activeLayer]);
         --activeLayer;
     }
     updated = true;
 }
 
 void DataIOHandler::moveForward() {
-    if (activeLayer != frames[activeFrame].size() - 1) {
-        swap(frames[activeFrame][activeLayer], frames[activeFrame][activeLayer + 1]);
+    if (activeLayer != frame.size() - 1) {
+        swap(frame[activeLayer], frame[activeLayer + 1]);
         ++activeLayer;
     }
     updated = true;
 }
 
 void DataIOHandler::moveToFront() {
-    while (activeLayer != frames[activeFrame].size() - 1) {
-        swap(frames[activeFrame][activeLayer], frames[activeFrame][activeLayer + 1]);
+    while (activeLayer != frame.size() - 1) {
+        swap(frame[activeLayer], frame[activeLayer + 1]);
         ++activeLayer;
     }
     updated = true;
@@ -665,7 +650,7 @@ void DataIOHandler::moveToFront() {
 
 void DataIOHandler::moveToBack() {
     while (activeLayer != 0) {
-        swap(frames[activeFrame][activeLayer - 1], frames[activeFrame][activeLayer]);
+        swap(frame[activeLayer - 1], frame[activeLayer]);
         --activeLayer;
     }
     updated = true;
@@ -674,25 +659,25 @@ void DataIOHandler::moveToBack() {
 QImage DataIOHandler::getBackground() {
     if (activeLayer == 0)
         return QImage();
-    progress->setMaximum(frames[activeFrame].size());
+    progress->setLabelText("Updating Background View");
+    progress->setMaximum(frame.size());
     progress->show();
     QCoreApplication::processEvents();
-    vector <Layer *> layers = frames[activeFrame];
-    QImage qi = layers[0]->getCanvas()->copy();
-    renderLayer(nullptr, nullptr, &qi, layers[0]->getAlpha(), layers[0]->getFilter(), layers[0]->getVectors(), layers[0]->getTriangles());
+    QImage qi = frame[0]->getCanvas()->copy();
+    renderLayer(nullptr, nullptr, &qi, frame[0]->getAlpha(), frame[0]->getFilter(), frame[0]->getVectors(), frame[0]->getTriangles());
     progress->setValue(0);
     QCoreApplication::processEvents();
     QPainter p;
     p.begin(&qi);
     for (size_t i = 0; i < activeLayer; ++i) {
-        QImage temp = layers[i]->getCanvas()->copy();
-        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+        QImage temp = frame[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, frame[i]->getAlpha(), frame[i]->getFilter(), frame[i]->getVectors(), frame[i]->getTriangles());
         p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
     }
     p.end();
-    if (progress->value() == static_cast<int>(frames[activeFrame].size() - 1)) {
+    if (progress->value() == static_cast<int>(frame.size() - 1)) {
         progress->close();
         progress->hide();
     }
@@ -700,18 +685,18 @@ QImage DataIOHandler::getBackground() {
 }
 
 QImage DataIOHandler::getForeground() {
-    vector <Layer *> layers = frames[activeFrame];
-    if (frames[activeFrame].size() == 0 || activeLayer == layers.size() - 1)
+    progress->setLabelText("Updating Foreground View");
+    if (frame.size() == 0 || activeLayer == frame.size() - 1)
         return QImage();
-    QImage qi = layers[activeLayer + 1]->getCanvas()->copy();
-    renderLayer(nullptr, nullptr, &qi, layers[activeLayer + 1]->getAlpha(), layers[activeLayer + 1]->getFilter(), layers[activeLayer + 1]->getVectors(), layers[activeLayer + 1]->getTriangles());
+    QImage qi = frame[activeLayer + 1]->getCanvas()->copy();
+    renderLayer(nullptr, nullptr, &qi, frame[activeLayer + 1]->getAlpha(), frame[activeLayer + 1]->getFilter(), frame[activeLayer + 1]->getVectors(), frame[activeLayer + 1]->getTriangles());
     progress->setValue(progress->value() + 2);
     QCoreApplication::processEvents();
     QPainter p;
     p.begin(&qi);
-    for (size_t i = activeLayer + 2; i < layers.size(); ++i) {
-        QImage temp = layers[i]->getCanvas()->copy();
-        renderLayer(nullptr, nullptr, &temp, layers[i]->getAlpha(), layers[i]->getFilter(), layers[i]->getVectors(), layers[i]->getTriangles());
+    for (size_t i = activeLayer + 2; i < frame.size(); ++i) {
+        QImage temp = frame[i]->getCanvas()->copy();
+        renderLayer(nullptr, nullptr, &temp, frame[i]->getAlpha(), frame[i]->getFilter(), frame[i]->getVectors(), frame[i]->getTriangles());
         p.drawImage(0, 0, temp);
         progress->setValue(i + 1);
         QCoreApplication::processEvents();
@@ -777,15 +762,16 @@ bool DataIOHandler::importImage(QString fileName) {
 
 
 void DataIOHandler::exportImage(QString fileName) {
-    QImage *out = new QImage(dims, QImage::Format_ARGB32_Premultiplied);
-    renderFrame(progress, out, frames[activeFrame]);
+    QImage *out = new QImage(dims, QImage::Format_ARGB32);
+    progress->setLabelText("Exporting Image");
+    renderFrame(progress, out, frame);
     out->save(fileName);
 }
 
 void DataIOHandler::scale(scaleType type) {
     QImage toLayer(dims, QImage::Format_ARGB32_Premultiplied);
     QImage toDraw;
-    toLayer.fill(0x00000000);
+    toLayer.fill(0x00FFFFFF);
     switch (type) {
     case dontScale:
         toDraw = importImg;
@@ -812,22 +798,14 @@ void DataIOHandler::scale(scaleType type) {
     qp.end();
     importImg = toLayer;
     if (importType == image) {
-        frames[activeFrame].push_back(new Layer(importImg, 255));
+        frame.push_back(new Layer(importImg, 255));
         updated = true;
-        activeLayer = frames[activeFrame].size() - 1;
+        activeLayer = frame.size() - 1;
     }
 }
 
 
 void DataIOHandler::save(QString projectName) {
-    saveBackup(projectName);
-}
-
-int DataIOHandler::load(QString projectName) {
-    return loadBackup(projectName);
-}
-
-void DataIOHandler::saveBackup(QString projectName) {
     string backupName;
     if (QFile::exists(projectName)) {
         backupName = projectName.toStdString();
@@ -837,252 +815,175 @@ void DataIOHandler::saveBackup(QString projectName) {
     QFile file(projectName);
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);
-    out << static_cast<short>(frames.size());
     out << static_cast<short>(dims.width());
     out << static_cast<short>(dims.height());
-    for (unsigned int f = 0; f < frames.size(); f++){
-        out << static_cast<short>(frames.at(f).size());
-            for (unsigned int i = 0; i < frames.at(f).size(); ++i) {
-                int a = frames.at(f).at(i)->getAlpha();
-                out << a;
-                out << *(frames.at(f).at(i)->getCanvas());
-                out << static_cast<int>(frames[f][i]->getVectors().size());
-                for (unsigned int j = 0; j < frames[f][i]->getVectors().size(); j++) {
-                    SplineVector sv = frames[f][i]->getVectors()[j];
-                    // write number of points in this vector
-                    int ptNum = sv.getNumPts();
-                    out << ptNum;
-                    for (uchar h = 0; h < ptNum; h++) {
-                        // Write the QPoints
-                        out << sv.getControls()[h];
-                    }
-                    // Writing filter
-                    out << (uchar)sv.getFilter().getFilterIndex();
-                    out << sv.getFilter().getStrength();
-                    // Write first color
-                    out << sv.getColors().first;
-                    // Write second color
-                    out << sv.getColors().second;
-                    // Write width
-                    out << (uchar)sv.getWidth();
-                    // Write first taper
-                    out << static_cast<int>(sv.getTaper().first);
-                    // Write second taper
-                    out << static_cast<int>(sv.getTaper().second);
-                    // Write taper type
-                    out << sv.taperTypeString(sv.getTaperType());
-                    // Write mode (fill type)
-                    out << sv.modeString(sv.getMode());
-            }
+    out << static_cast<unsigned char>(frame.size());
+    for (size_t i = 0; i < frame.size(); ++i) {
+        // Write layer alpha and image
+        unsigned char a = static_cast<unsigned char>(frame[i]->getAlpha());
+        out << a;
+        out << *(frame[i]->getCanvas());
+        out << static_cast<unsigned char>(frame[i]->getVectors().size());
+        vector <SplineVector> svs = frame[i]->getVectors();
+        for (size_t j = 0; j < svs.size(); j++) {
+            SplineVector sv = svs[j];
+            // Write vector control point details
+            unsigned char numPts = static_cast<unsigned char>(sv.getNumPts());
+            out << numPts;
+            vector <QPoint> controlPts = sv.getControls();
+            for (short h = 0; h < numPts; ++h)
+                out << controlPts[h];
+            out << static_cast<unsigned char>(sv.getFilter().getFilterIndex());
+            out << static_cast<unsigned char>(sv.getFilter().getStrength());
+            out << sv.getColors().first;
+            out << sv.getColors().second;
+            out << static_cast<unsigned char>(sv.getWidth());
+            out << static_cast<unsigned char>(sv.getTaper().first);
+            out << static_cast<unsigned char>(sv.getTaper().second);
+            out << static_cast<unsigned char>(Taper(sv.getTaperType()));
+            out << static_cast<unsigned char>(VectorMode(sv.getMode()));
         }
     }
-
     if (QFile::exists(backupName.c_str()))
         QFile::remove(backupName.c_str());
-
     file.flush();
     file.close();
 }
 
-int DataIOHandler::loadBackup(QString projectName) {
+int DataIOHandler::load(QString projectName) {
     int retCode = 0;
     QFile file(projectName);
     QDataStream in(&file);
     if (!file.open(QIODevice::ReadOnly))
         return 2;
-    vector <Layer *> frameBackup;
-    for (unsigned int i = 0; i < frames[0].size(); i++) {
-        frameBackup.push_back(frames[0][i]);
-    }
+    vector <Layer *> frameBackup = frame;
+    int backupLayer = activeLayer;
+    frame.clear();
+    activeLayer = 0;
     try {
-    //QFile file(projectName);
-    //QDataStream in(&file);
-    //file.open(QIODevice::ReadOnly);
-    short frameCount;
-    in >> frameCount;
-    frames.resize(frameCount);
-    for (int f = 0; f < frameCount; f++) {
-        if (file.isOpen()) {
-            activeFrame = f;
-            if (frames[activeFrame].size() != 0) {
-                activeLayer = frames[activeFrame].size() - 1;
-                while (frames[activeFrame].size() > 0) {
-                    delete frames[activeFrame][activeLayer];
-                    frames[activeFrame].pop_back();
-                    --activeLayer;
-                }
-            }
-        }
-    }
-    for (int f = 0; f < frameCount && retCode == 0; f++) {
-        activeFrame = f;
-        short length;
         short size;
+        unsigned char numLayers;
         in >> size;
-        if (size > dims.width()) {
-            retCode = 1;
-            break;
-        }
         dims.setWidth(size);
         in >> size;
-        if (size > dims.height()) {
-            retCode = 1;
-            break;
-        }
         dims.setHeight(size);
-        in >> length;
-        if (length > maxLayer) {
-            retCode = 1;
-            break;
+        in >> numLayers;
+        if (numLayers <= maxLayer) {
+            for (int i = 0; i < numLayers; ++i) {
+                unsigned char alpha;
+                in >> alpha;
+                QImage qi;
+                in >> qi;
+                unsigned char ucharTemp, numVects;
+                QRgb color;
+                // Read size of vects
+                in >> numVects;
+                if (numVects > maxVects)  {
+                    cout << "here" << endl;
+                    retCode = 1;
+                    break;
+                }
+                list <SplineVector> svs;
+                for (int j = 0; j < numVects; ++j) {
+                    SplineVector sv;
+                    // Read number of points
+                    in >> ucharTemp;
+                    if (ucharTemp > maxPoints)  {
+                        retCode = 1;
+                        break;
+                    }
+                    for (int h = 0; h < ucharTemp; h++) {
+                        QPoint point;
+                        in >> point;
+                        sv.addPt(point, h);
+                    }
+                    // Read filter
+                    in >> ucharTemp;
+                    if (ucharTemp > graphics::numFilters)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setFilter(graphics::filterNames[ucharTemp]);
+                    in >> ucharTemp;
+                    sv.setFilterStrength(ucharTemp);
+                    // Read colors
+                    in >> color;
+                    sv.setColor1(color);
+                    in >> color;
+                    sv.setColor2(color);
+                    // Read width
+                    in >> ucharTemp;
+                    if (ucharTemp > maxWidth)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setWidth(ucharTemp);
+                    // Read first taper
+                    in >> ucharTemp;
+                    if (ucharTemp > maxTaper)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setTaper1(ucharTemp);
+                    // Read second taper
+                    in >> ucharTemp;
+                    if (ucharTemp > maxTaper)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setTaper2(ucharTemp);
+                    // Read taper type
+                    in >> ucharTemp;
+                    if (ucharTemp > lastTaper)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setTaperType(static_cast<Taper>(ucharTemp));
+                    //Read mode (fill type)
+                    in >> ucharTemp;
+                    if (ucharTemp > lastMode)  {
+                        retCode = 1;
+                        break;
+                    }
+                    sv.setMode(static_cast<VectorMode>(ucharTemp));
+                    svs.push_back(sv);
+                }
+                if (retCode == 0) {
+                    qi.convertToFormat(QImage::Format_ARGB32);
+                    Layer *layer = new Layer(qi, alpha);
+                    if (!svs.empty()) {
+                        layer->setMode(Spline_Mode);
+                        layer->pasteVectors(svs);
+                        layer->deselect();
+                        layer->setMode(Brush_Mode);
+                    }
+                    frame.push_back(layer);
+                }
+                else
+                    break;
+            }
         }
-        int a;
-        QImage qi;
-        Layer base;
-        for (int i = 0; i < length && retCode == 0; ++i) {
-            vectorCopySlot.clear();
-            in >> a;
-            if (a > maxAlpha)  {
-                retCode = 1;
-                break;
-            }
-            in >> qi;
-            uchar b;
-            int t;
-            int d;
-            QString qs;
-            QRgb color;
-            Layer base;
-            // Read size of vects
-            in >> d;
-            if (d > UCHAR_MAX)  {
-                retCode = 1;
-                break;
-            }
-            qDebug() << "Size of vects retCode = " << retCode;
-            for (int j = 0; j < d && retCode == 0; j++) {
-                SplineVector sv;
-                // Read number of points
-                in >> t;
-                if (t > UCHAR_MAX)  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Number of points retCode = " << retCode;
-                for (int h = 0; h < t && retCode == 0; h++) {
-                    QPoint point;
-                    in >> point;
-                    sv.addPt(point,h);
-                }
-                // Read filter
-                in >> b;
-                if (b > graphics::numFilters)  {
-                    retCode = 1;
-                    break;
-                }qDebug() << "Filter index retCode = " << retCode;
-                sv.setFilter(graphics::filterNames[b]);
-                in >> t;
-                if (t > graphics::maxColor)  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Filter strength retCode = " << retCode;
-                sv.setFilterStrength(t);
-                // Read first color
-                in >> color;
-                color |= static_cast<QRgb>(a) << 24;
-                sv.setColor1(color);
-                // Read second color
-                in >> color;
-                color |= static_cast<QRgb>(a) << 24;
-                sv.setColor2(color);
-                // Read width
-                in >> b;
-                if (b > maxWidth)  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Vect width retCode = " << retCode;
-                sv.setWidth(b);
-                // Read first taper
-                in >> t;
-                if (t > maxTaper)  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Taper 1 retCode = " << retCode;
-                sv.setTaper1(t);
-                // Read second taper
-                in >> t;
-                if (t > maxTaper)  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Taper 2 retCode = " << retCode;
-                sv.setTaper2(t);
-                // Read taper type
-                in >> qs;
-                if (qs != "Double" && qs != "Single")  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Taper Type retCode = " << retCode;
-                sv.setTaperType(sv.taperFromString(qs));
-                //Read mode (fill type)
-                in >> qs;
-                if (qs != "ColorFill" && qs != "Filtered")  {
-                    retCode = 1;
-                    break;
-                }
-                qDebug() << "Mode retCode = " << retCode;
-                sv.setMode(sv.modeFromString(qs));
-                vectorCopySlot.push_back(sv);
-            }
-            qi.convertToFormat(QImage::Format_ARGB32);
-            Layer layer(qi, a);
-            pasteLayer(layer);
-            layer.setMode(Spline_Mode);
-            pasteVectors();
-            layer.deselect();
-            layer.setMode(Brush_Mode);
+        if (retCode == 0) {
+            activeLayer = frame.size() - 1;
+            updated = true;
         }
-    }
-    //file.close();
-    activeLayer = frames[activeFrame].size() - 1;
-    updated = true;
-    //retCode = 0;
     }
     catch (...) {
         retCode = 1;
     }
     file.close();
-    if (retCode != 0)
-        clearLayers(frameBackup);
+    if (retCode != 0) {
+        for (size_t i = 0; i < frame.size(); ++i)
+            delete frame[i];
+        frame = frameBackup;
+        activeLayer = backupLayer;
+    }
     return retCode;
 }
 
-
-bool DataIOHandler::importVideo(QString fileName) {
-    //file = fileName;
-    return false;
-}
-
-void DataIOHandler::exportVideo(QString fileName) {
-
-}
-
-void DataIOHandler::clearLayers(vector <Layer *> frameBackup) {
-    for (unsigned int i = 0; i < frames[0].size(); i++) {
-        delete frames[0][i];
-        frames[0].pop_back();
-    }
-    for (unsigned int i = 0; i < frameBackup.size(); i++) {
-        pasteLayer(*frameBackup[i]);
-    }
-}
-
-
-/* This method is to remain an exact copy of DataIOHandler::saveBackup() that is used
+/* This method is to remain an exact copy of DataIOHandler::save() that is used
     for unit testing purposes. It should never be called from application. */
 int DataIOHandler::saveTest(QString projectName, vector<Layer *> testFrames) {
-
+    return -1;
 }
+

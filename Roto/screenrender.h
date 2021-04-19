@@ -85,6 +85,8 @@ private:
     int radius;
     bool hoverActive;
     long long time;
+    int yStart, yMid, yEnd;
+    unsigned int alphaVal;
 
 public slots:
 

@@ -30,7 +30,6 @@ public:
 
     brushHandler(unsigned char str = 128, int size = 10, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
-    void setAlpha(int val);
     void setAppMethod(string type);
     void setPoint(QPoint qp);
     void setDensity(int density);
@@ -87,7 +86,7 @@ private:
     void shiftDown();
 
     bool ipolActive, patternInUse;
-    int sprayDensity, alpha;
+    int sprayDensity;
     unsigned char strength, patternXDim, patternYDim, **patternMap;
     unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;

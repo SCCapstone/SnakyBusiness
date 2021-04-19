@@ -15,6 +15,7 @@ screenRender::screenRender(DataIOHandler *dioh, QWidget *parent) : QWidget(paren
     setMouseTracking(true);
     setAttribute(Qt::WA_Hover);
     radius = -1;
+    yStart = 0;
 }
 
 screenRender::~screenRender() {
@@ -138,6 +139,9 @@ void screenRender::updateViews() {
         bgPrescaled = ioh->getBackground();
         fgPrescaled = ioh->getForeground();
         doZoom();
+        alphaVal = static_cast<unsigned int>(workLayer->getAlpha()) << 24;
+        yEnd = workLayer->getCanvas()->height();
+        yMid = yEnd / 2;
     }
     if (mode != Brush_Mode)
         flasher->start(flashSpeed);
@@ -152,6 +156,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
     if (!bgLayers.isNull())
         qp.drawPixmap(0, 0, bgLayers);
     qi = workLayer->getRenderCanvas();
+    alphaVal = static_cast<unsigned int>(workLayer->getAlpha()) << 24;
     setFixedSize(screenZoom.getZoomCorrected(qi.size()));
     int w = qi.width(), h = qi.height();
     vector <list <Triangle> > tris = workLayer->getTriangles();
@@ -282,6 +287,7 @@ void screenRender::paintEvent(QPaintEvent *event) {
         }
         hoverLock.unlock();
     }
+    graphics::ImgSupport::applyAlpha(&qi, &yStart, &yEnd, &alphaVal);
     qp.drawImage(0, 0, screenZoom.zoomImg(qi));
     if (fgVisible && !fgLayers.isNull())
         qp.drawPixmap(0, 0, fgLayers);
@@ -580,3 +586,4 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
         curx2 += invslope2;
     }
 }
+

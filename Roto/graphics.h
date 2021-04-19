@@ -4,7 +4,11 @@
 #include <string>
 #include <list>
 #include <functional>
+#include <vector>
+#include <fstream>
 #include <QImage>
+#include <QProgressDialog>
+#include <QCoreApplication>
 #include <stdfuncs.h>
 
 using std::max;
@@ -12,6 +16,13 @@ using std::min;
 using std::string;
 using std::list;
 using std::function;
+using std::vector;
+using std::fstream;
+using std::ios;
+using std::pair;
+
+typedef vector<vector<float>> Kernal;
+typedef pair<bool,Kernal> KernalData;
 
 namespace graphics {
 
@@ -90,6 +101,7 @@ public:
     static QRgb bgr (QColor qc, int strength);
     static QRgb greyFilmGrain (QColor qc, int strength);
     static QRgb colorFilmGrain (QColor qc, int strength);
+    static void applyKernal(QProgressDialog *qpd, QImage *qi, KernalData kernalInfo);
 
 private:
 
@@ -112,6 +124,8 @@ public:
     static void flipVertical(QImage *qi);
     static void flipHorizontal(QImage *qi);
     static list <QImage *> resize(QSize reqSize);
+    static KernalData loadKernal(string fileName);
+    static void applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha);
 
 private:
 

@@ -103,8 +103,6 @@ const QString Doc_Loc = "/Documentation/";
 const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
 const vector <string> acceptedImportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm", "gif", "pbm", "pgm"};
 const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm"};
-const vector <string> acceptedImportVideoFormats = {"mp4", "avi", "mkv"};
-const vector <string> acceptedExportVideoFormats = acceptedImportVideoFormats;
 
 enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
