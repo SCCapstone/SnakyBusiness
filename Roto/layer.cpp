@@ -925,4 +925,3 @@ void Layer::applyKernalToSelection(QProgressDialog *qpd, string fileName) {
         graphics::Filtering::applyKernal(qpd, &rasterselectOg, kernalInfo);
     }
 }
-

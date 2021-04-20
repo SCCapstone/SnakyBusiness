@@ -90,10 +90,6 @@ private:
     int yStart, yMid, yEnd;
     unsigned int alphaVal;
 
-    int yStart, yMid, yEnd;
-    unsigned int alphaVal;
-    //std::thread t1, t2;
-
 public slots:
 
     void toggleFlasher();

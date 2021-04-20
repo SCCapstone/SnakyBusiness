@@ -985,4 +985,3 @@ int DataIOHandler::load(QString projectName) {
 int DataIOHandler::saveTest(QString projectName, vector<Layer *> testFrames) {
     return -1;
 }
-
