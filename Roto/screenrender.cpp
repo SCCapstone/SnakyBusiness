@@ -586,4 +586,3 @@ void screenRender::filterTTriSafe(QPoint a, QPoint b, QPoint c) {
         curx2 += invslope2;
     }
 }
-

@@ -484,12 +484,8 @@ void MainWindow::doSomething(string btnPress) {
         string fn = fileName.toStdString();
         int index = fn.find_last_of('.');
         string fileType = fn.substr(index + 1);
-        if (std::find(acceptedExportImageFormats.begin(), acceptedExportImageFormats.end(), fileType) != acceptedExportImageFormats.end()) {
+        if (std::find(acceptedExportImageFormats.begin(), acceptedExportImageFormats.end(), fileType) != acceptedExportImageFormats.end())
             ioh->exportImage(fileName);
-        }
-        else {
-
-        }
         if (mode != Brush_Mode)
             sr->resume();
     }
@@ -502,6 +498,10 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Save As") {
         saveFileName = QFileDialog::getSaveFileName(this, tr("Save Project As"), "/", tr("Glass Opus project files (*.glass)"));
         ioh->save(saveFileName);
+        string s = saveFileName.toStdString();
+        s = s.substr(s.find_last_of("/") + 1);
+        s = s.substr(0, s.length() - 6);
+        setWindowTitle(QString("Glass Opus - ") + s.c_str());
     }
     else if (btnPress == "On")
         sr->showFg(true);
@@ -714,7 +714,6 @@ void MainWindow::doSomething(string btnPress) {
         int ret = QInputDialog::getInt(this, "Glass Opus", "Select a layer to edit", ioh->getActiveLayer() + 1, 1, ioh->getNumLayers(), 1, &ok) - 1;
         if (ok && ret != ioh->getActiveLayer()) {
             ioh->getWorkingLayer()->deselect();
-            ioh->getWorkingLayer()->disposeAlphaLayer();
             ioh->setActiveLayer(ret, mode);
             ioh->getWorkingLayer();
         }
@@ -1069,4 +1068,3 @@ MainWindow::~MainWindow() {
         toDel.pop_front();
     }
 }
-

@@ -478,4 +478,3 @@ void graphics::ImgSupport::applyAlpha(QImage *qi, int *yStart, int *yEnd, unsign
         //--*yStart&=++*yStart+++!ys;      gross
     }
 }
-
