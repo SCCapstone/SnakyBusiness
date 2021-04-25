@@ -1061,8 +1061,9 @@ void MainWindow::runTests() {
     tests.push_back("Run All Tests");
     tests.push_back("Brush Shapes");
     tests.push_back("Brush Colors");
+    tests.push_back("Spray Density");
+    tests.push_back("Brush Methods");
     tests.push_back("Save/Load");
-    tests.push_back("Test Vectors");
     testPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
     testPrompt.setComboBoxItems(tests);
     testPrompt.setWindowTitle("Test Selection");
@@ -1077,6 +1078,12 @@ void MainWindow::runTests() {
         qmb.setText("Running Brush Colors Test");
         qmb.exec();
         BrushColorsTest();
+        qmb.setText("Running Spray Density Test");
+        qmb.exec();
+        sprayDensityTest();
+        qmb.setText("Running Brush Methods Test");
+        qmb.exec();
+        BrushMethodsTest();
         qmb.setText("Running Save Load Test");
         qmb.exec();
         saveLoadTest();
@@ -1087,10 +1094,12 @@ void MainWindow::runTests() {
         BrushShapesTest();
     else if (testPrompt.textValue() == "Brush Colors")
         BrushColorsTest();
+    else if (testPrompt.textValue() == "Spray Density")
+        sprayDensityTest();
+    else if (testPrompt.textValue() == "Brush Methods")
+        BrushMethodsTest();
     else if (testPrompt.textValue() == "Save/Load")
         saveLoadTest();
-    //else if (testPrompt.textValue() == "Test Vectors")
-    //    VectorTest();
 }
 
 void MainWindow::BrushShapesTest() {
@@ -1176,6 +1185,50 @@ void MainWindow::BrushColorsTest() {
     for (int i = h*0.25; i < h*0.75; i++) {
         bh.applyBrush(canvas, QPoint(9*(w/10), i));
     }
+}
+
+void MainWindow::sprayDensityTest() {
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    canvas->fill(0xFFFFFFFF);
+    bh.setBrushColor(0xFF000000);
+    bh.setDensity(1);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(w/5, i));
+    }
+    bh.setDensity(41);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(2*(w/5), i));
+    }
+    bh.setDensity(81);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(3*(w/5), i));
+    }
+    bh.setDensity(121);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(4*(w/5), i));
+    }
+    bh.setDensity(1);
+}
+
+void MainWindow::BrushMethodsTest() {
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    canvas->fill(0xFF222222);
+    bh.setBrushColor(0xFFFF0000);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.setAppMethod("Overwrite");
+        bh.applyBrush(canvas, QPoint(w/5, i));
+        bh.setAppMethod("Additive");
+        bh.applyBrush(canvas, QPoint(2*(w/5), i));
+        bh.setAppMethod("Subtractive");
+        bh.applyBrush(canvas, QPoint(3*(w/5), i));
+    }
+    bh.setAppMethod("Overwrite");
 }
 
 void MainWindow::saveLoadTest() {
