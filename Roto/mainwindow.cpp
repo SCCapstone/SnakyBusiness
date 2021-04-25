@@ -774,7 +774,9 @@ void MainWindow::doSomething(string btnPress) {
         kerPrompt.setComboBoxItems(items);
         kerPrompt.setTextValue(items.first());
         kerPrompt.setWindowTitle("Histogram Equalization");
-        kerPrompt.exec();
+        int execCode = kerPrompt.exec();
+        if (execCode == 0)
+            return;
         int index = items.indexOf(kerPrompt.textValue());
         int histo[bins];
         for (int i = 0; i < bins; ++i)
