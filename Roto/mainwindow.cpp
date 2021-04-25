@@ -516,10 +516,15 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Brush Radius") {
         bool ok = false;
-        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
-        if (ok) {
+        if(tshape == "Custom"){
+            int ret = QMessageBox::warning(this,"Glass Opus", "Custom brushes cannot be resized");
+        }
+        else{
+            int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
+            if (ok) {
             radialProfiler->updateSize(ret);
             sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
+             }
         }
     }
     else if (btnPress == "Brush Strength") {
@@ -759,11 +764,21 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
     else if (btnPress == "Shape Profiler") {
-        return;
+        //return;
+        tshape = "Custom";
         brushProlfiler->open();
     }
-    else if (btnPress == "Pattern Profiler")
-        pp->open();
+    else if (btnPress == "Pattern Profiler"){
+        if(tshape == "Custom"){
+            bh.setShape("Square");
+            tshape = "Square";
+            pp->open();
+            //int ret = QMessageBox::warning(this,"Glass Opus", "Switch brushes to open pattern profiler");
+        }
+        else{
+            pp->open();
+        }
+    }
     refresh();
 }
 
@@ -841,8 +856,13 @@ void MainWindow::changeBrushFilter(string filterName) {
 }
 
 void MainWindow::changeBrushShape(string shape) {
+    tshape = shape;
+    if(shape == "Custom"){
+        brushProlfiler->open();
+    }
+    else{
     bh.setShape(shape);
-    sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
+    sr->updateHoverMap(bh.getSize(), bh.getBrushMap());}
 }
 
 void MainWindow::changeBrushMethod(string method) {

@@ -54,8 +54,8 @@ void brushHandler::setFilter(string filterName) {
     brushFilter.setFilter(filterName);
 }
 
-void brushHandler::setShape(string shape) {
-    brush.setShape(shape);
+void brushHandler::setShape(string shape, vector<vector<unsigned char>> pattern) {
+    brush.setShape(shape,pattern);
 }
 
 int brushHandler::getMethodIndex() {

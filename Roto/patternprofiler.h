@@ -23,7 +23,6 @@ class patternProfiler : public QDialog
 public:
     patternProfiler(brushHandler *bah, QWidget *parent = nullptr);
     ~patternProfiler();
-    void paintEvent(QPaintEvent *event);
     vector<vector<unsigned char>> getPattern();
     int getWidth();
     int getHight();
@@ -46,7 +45,7 @@ private:
     RadialProfiler *rd;
     Qt::MouseButton lb;
     QImage *qb;
-
+    unsigned char pattern[maxRadius][maxRadius];
 
 };
 

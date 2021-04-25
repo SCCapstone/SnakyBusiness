@@ -164,6 +164,7 @@ private:
     QProgressDialog *progress;
     brushShape *brushProlfiler;
     patternProfiler *pp;
+    string tshape;
 };
 
 #endif // MAINWINDOW_H
