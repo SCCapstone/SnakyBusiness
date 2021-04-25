@@ -117,13 +117,13 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
         logo.hide();
         resPrompt.exec();
         int sizeY = stoi(resPrompt.textValue().toStdString());
-        ioh->setDims(QSize(static_cast<int>((16.0/9.0) * static_cast<float>(sizeY)), sizeY));
+        ioh->setDims(QSize(static_cast<int>((16.0 / 9.0) * static_cast<float>(sizeY)), sizeY));
     }
     setMode(Brush_Mode);
     sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
     sr->setHoverActive(true);
-    brushProlfiler = new brushShape(&bh,this);
-    pp = new patternProfiler(&bh,this);
+    brushProlfiler = new brushShape(&bh, this);
+    pp = new patternProfiler(&bh, this);
     if (projectFile != "") {
         show();
         ioh->load(QString(projectFile.c_str()));
@@ -138,6 +138,7 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
             std::this_thread::sleep_for(std::chrono::milliseconds(t > 2000 ? 0 : 2000 - t));
         logo.hide();
     }
+    histograms = new QLabel();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
@@ -407,18 +408,16 @@ void MainWindow::doSomething(string btnPress) {
         string fileType = fn.substr(index + 1);
         if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
             bool flag = ioh->importImage(fileName);
+            setGeometry(reset);
             if (maxFlag)
                 this->showMaximized();
-            else
-                setGeometry(reset);
             if (flag)
                 resizeCheck->showRelative();
         }
         refresh();
+        setGeometry(reset);
         if (maxFlag)
             this->showMaximized();
-        else
-            setGeometry(reset);
     }
     else if (btnPress == "Open") {
         QMessageBox::StandardButton prompt = QMessageBox::question(this, "Open Project File", "Opening a project file will replace the current work. Continue?", QMessageBox::Yes|QMessageBox::No);
@@ -764,6 +763,130 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Pattern Profiler")
         pp->open();
+    else if (btnPress == "Histogram Equalization") {
+        QInputDialog kerPrompt;
+        QStringList items;
+        items.push_back("Equalize Intensity");
+        items.push_back("Equalize Red Channel");
+        items.push_back("Equalize Green Channel");
+        items.push_back("Equalize Blue Channel");
+        kerPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+        kerPrompt.setComboBoxItems(items);
+        kerPrompt.setTextValue(items.first());
+        kerPrompt.setWindowTitle("Histogram Equalization");
+        kerPrompt.exec();
+        int index = items.indexOf(kerPrompt.textValue());
+        int histo[bins];
+        for (int i = 0; i < bins; ++i)
+            histo[i] = 0;
+        QImage image = ioh->getWorkingLayer()->getCanvas()->copy();
+        // Fill the array(s) tht the histograms will be constructed from.
+        int value;
+        for (int x = 0; x < image.width(); ++x)
+            for (int y = 0; y < image.height(); ++y) {
+                QColor qc = image.pixelColor(x, y);
+                switch (index) {
+                case 0:
+                    value = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
+                    break;
+                case 1:
+                    value = qc.red();
+                    break;
+                case 2:
+                    value = qc.green();
+                    break;
+                case 3:
+                    value = qc.blue();
+                    break;
+                }
+                ++histo[value];
+            }
+        int i = 0;
+        while (i < bins && histo[i] == 0)
+            ++i;
+        int total = image.width() * image.height();
+        if (i == bins || histo[i] == total)
+            return;
+        float scale = static_cast<double>(bins - 1) / static_cast<double>(total - histo[i]);
+        int lut[bins];
+        for (int j = 0; j < bins; ++j)
+            lut[j] = 0;
+        int sum = 0;
+        for (++i; i < bins; ++i) {
+            sum += histo[i];
+            lut[i] = max(0, min(255, static_cast<int>(static_cast<float>(sum) * scale)));
+        }
+        QImage *canvas = ioh->getWorkingLayer()->getCanvas();
+        for (int x = 0; x < image.width(); ++x)
+            for (int y = 0; y < image.height(); ++y) {
+                QColor qc = image.pixelColor(x, y);
+                switch (index) {
+                case 0:
+                    qc = QColor(lut[qc.red()], lut[qc.green()], lut[qc.blue()]);
+                    break;
+                case 1:
+                    qc.setRed(lut[qc.red()]);
+                    break;
+                case 2:
+                    qc.setGreen(lut[qc.green()]);
+                    break;
+                case 3:
+                    qc.setBlue(lut[qc.blue()]);
+                    break;
+                }
+                canvas->setPixelColor(x, y, qc);
+            }
+    }
+    else if (btnPress == "Histograms") {
+        int h = 3 * bins;
+        QImage qi (QSize(bins * 2, h), QImage::Format_ARGB32_Premultiplied);
+        histograms->resize(qi.width(), qi.height());
+        histograms->setWindowFilePath(("Histogram of Layer " + to_string(ioh->getActiveLayer() + 1)).c_str());
+        qi.fill(0xFF000000);
+        int histo[4][bins];
+        for (int x = 0; x < bins; ++x)
+            for (int y = 0; y < 4; ++y)
+                histo[y][x] = 0;
+        QImage image = ioh->getWorkingLayer()->getCanvas()->copy();
+        // Fill the array(s) tht the histograms will be constructed from.
+        for (int x = 0; x < image.width(); ++x)
+            for (int y = 0; y < image.height(); ++y) {
+                QColor qc = image.pixelColor(x, y);
+                int intensity = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
+                ++histo[0][intensity];
+                ++histo[1][qc.red()];
+                ++histo[2][qc.green()];
+                ++histo[3][qc.blue()];
+            }
+        int maxI = 0, cutoff = (image.width() * image.height()) / 4;
+        for (int j = 0; j < 4; ++j)
+            for (int i = 1; i < bins - 1; ++i)
+                if (histo[j][i] < cutoff)
+                    maxI = max(maxI, histo[j][i]);
+        // Draw histograms.
+        double div = static_cast<double>(h / 2 - 1) / static_cast<double>(maxI);
+        for (int x = 0; x < bins; ++x) {
+            QRgb value = static_cast<QRgb>(bins + x) / 2;
+            for  (int j = 0; j < 4; ++j) {
+                QRgb color = 0xFF000000;
+                if (j != 0)
+                    color += (value << (8 * (2 - (j - 1))));
+                else
+                    for (unsigned char i= 0; i < 3; ++i)
+                        color += value << (8 * i);
+                int rowOffset = (h / 2) * (j / 2);
+                int colOffset = x + bins * (j % 2);
+                int stop = h / 2 + rowOffset;
+                int start = stop - static_cast<int>(static_cast<double>(histo[j][x]) * div);
+                start = max(start, rowOffset);
+                for (int y = start; y < stop; ++y)
+                    qi.setPixelColor(colOffset, y, color);
+            }
+        }
+        histograms->setPixmap(QPixmap::fromImage(qi));
+        histograms->setWindowModality(Qt::ApplicationModal);
+        histograms->show();
+    }
     refresh();
 }
 
@@ -1004,10 +1127,9 @@ void MainWindow::dropEvent(QDropEvent *event) {
             if (std::find(acceptedImportImageFormats.begin(), acceptedImportImageFormats.end(), fileType) != acceptedImportImageFormats.end()) {
                 bool flag = ioh->importImage(fileName);
                 if (flag) {
+                    setGeometry(reset);
                     if (maxFlag)
                         this->showMaximized();
-                    else
-                        setGeometry(reset);
                     resizeCheck->showRelative();
                     while (resizeCheck->isVisible())
                         QCoreApplication::processEvents();
@@ -1015,10 +1137,9 @@ void MainWindow::dropEvent(QDropEvent *event) {
             }
         }
         refresh();
+        setGeometry(reset);
         if (maxFlag)
             this->showMaximized();
-        else
-            setGeometry(reset);
     }
 }
 
@@ -1053,6 +1174,7 @@ void MainWindow::refresh() {
 }
 
 MainWindow::~MainWindow() {
+    delete histograms;
     delete qme;
     resizeCheck->doClose();
     delete resizeCheck;
