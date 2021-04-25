@@ -782,29 +782,32 @@ void MainWindow::doSomething(string btnPress) {
         QImage image = ioh->getWorkingLayer()->getCanvas()->copy();
         // Fill the array(s) tht the histograms will be constructed from.
         int value;
+        int total = 0;
         for (int x = 0; x < image.width(); ++x)
             for (int y = 0; y < image.height(); ++y) {
                 QColor qc = image.pixelColor(x, y);
-                switch (index) {
-                case 0:
-                    value = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
-                    break;
-                case 1:
-                    value = qc.red();
-                    break;
-                case 2:
-                    value = qc.green();
-                    break;
-                case 3:
-                    value = qc.blue();
-                    break;
+                if (qc.alpha() != 0) {
+                    switch (index) {
+                    case 0:
+                        value = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
+                        break;
+                    case 1:
+                        value = qc.red();
+                        break;
+                    case 2:
+                        value = qc.green();
+                        break;
+                    case 3:
+                        value = qc.blue();
+                        break;
+                    }
+                    ++total;
+                    ++histo[value];
                 }
-                ++histo[value];
             }
         int i = 0;
         while (i < bins && histo[i] == 0)
             ++i;
-        int total = image.width() * image.height();
         if (i == bins || histo[i] == total)
             return;
         float scale = static_cast<double>(bins - 1) / static_cast<double>(total - histo[i]);
@@ -820,21 +823,23 @@ void MainWindow::doSomething(string btnPress) {
         for (int x = 0; x < image.width(); ++x)
             for (int y = 0; y < image.height(); ++y) {
                 QColor qc = image.pixelColor(x, y);
-                switch (index) {
-                case 0:
-                    qc = QColor(lut[qc.red()], lut[qc.green()], lut[qc.blue()]);
-                    break;
-                case 1:
-                    qc.setRed(lut[qc.red()]);
-                    break;
-                case 2:
-                    qc.setGreen(lut[qc.green()]);
-                    break;
-                case 3:
-                    qc.setBlue(lut[qc.blue()]);
-                    break;
+                if (qc.alpha() != 0) {
+                    switch (index) {
+                    case 0:
+                        qc = QColor(lut[qc.red()], lut[qc.green()], lut[qc.blue()]);
+                        break;
+                    case 1:
+                        qc.setRed(lut[qc.red()]);
+                        break;
+                    case 2:
+                        qc.setGreen(lut[qc.green()]);
+                        break;
+                    case 3:
+                        qc.setBlue(lut[qc.blue()]);
+                        break;
+                    }
+                    canvas->setPixelColor(x, y, qc);
                 }
-                canvas->setPixelColor(x, y, qc);
             }
     }
     else if (btnPress == "Histograms") {
@@ -849,16 +854,20 @@ void MainWindow::doSomething(string btnPress) {
                 histo[y][x] = 0;
         QImage image = ioh->getWorkingLayer()->getCanvas()->copy();
         // Fill the array(s) tht the histograms will be constructed from.
+        int total = 0;
         for (int x = 0; x < image.width(); ++x)
             for (int y = 0; y < image.height(); ++y) {
                 QColor qc = image.pixelColor(x, y);
-                int intensity = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
-                ++histo[0][intensity];
-                ++histo[1][qc.red()];
-                ++histo[2][qc.green()];
-                ++histo[3][qc.blue()];
+                if (qc.alpha() != 0) {
+                    int intensity = static_cast<int>(static_cast<float>(qc.red() + qc.green() + qc.blue()) / 3.0 + 0.5);
+                    ++histo[0][intensity];
+                    ++histo[1][qc.red()];
+                    ++histo[2][qc.green()];
+                    ++histo[3][qc.blue()];
+                    ++total;
+                }
             }
-        int maxI = 0, cutoff = (image.width() * image.height()) / 4;
+        int maxI = 0, cutoff = (total) / 4;
         for (int j = 0; j < 4; ++j)
             for (int i = 1; i < bins - 1; ++i)
                 if (histo[j][i] < cutoff)
