@@ -857,7 +857,7 @@ int DataIOHandler::load(QString projectName) {
         return 2;
     vector <Layer *> frameBackup = frame;
     int backupLayer = activeLayer;
-    frame.clear();
+    clearFrame();
     activeLayer = 0;
     try {
         short size;
@@ -980,8 +980,11 @@ int DataIOHandler::load(QString projectName) {
     return retCode;
 }
 
-/* This method is to remain an exact copy of DataIOHandler::save() that is used
-    for unit testing purposes. It should never be called from application. */
-int DataIOHandler::saveTest(QString projectName, vector<Layer *> testFrames) {
-    return -1;
+void DataIOHandler::clearFrame() {
+    frame.clear();
+}
+
+vector <Layer *> DataIOHandler::backup() {
+    vector <Layer *> compare = frame;
+    return compare;
 }

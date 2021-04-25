@@ -959,8 +959,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         if (ctrlFlag)
             ioh->getWorkingLayer()->selectAll();
         break;
+    case Key_F7:
+        if (ctrlFlag)
+            runTests();
     }
-    refresh();
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event) {
@@ -1050,6 +1052,213 @@ void MainWindow::setMode(EditMode emode) {
 
 void MainWindow::refresh() {
     sr->repaint();
+}
+
+void MainWindow::runTests() {
+    QInputDialog testPrompt;
+    QStringList tests;
+    QMessageBox qmb;
+    tests.push_back("Run All Tests");
+    tests.push_back("Brush Shapes");
+    tests.push_back("Brush Colors");
+    tests.push_back("Save/Load");
+    tests.push_back("Test Vectors");
+    testPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
+    testPrompt.setComboBoxItems(tests);
+    testPrompt.setWindowTitle("Test Selection");
+    testPrompt.setWhatsThis("This menu is for selection of what test to run");
+    testPrompt.exec();
+    if (testPrompt.textValue() == "")
+        return;
+    if (testPrompt.textValue() == "Run All Tests") {
+        qmb.setText("Running Brush Shapes Test");
+        qmb.exec();
+        BrushShapesTest();
+        qmb.setText("Running Brush Colors Test");
+        qmb.exec();
+        BrushColorsTest();
+        qmb.setText("Running Save Load Test");
+        qmb.exec();
+        saveLoadTest();
+        qmb.setText("All Tests Concluded");
+        qmb.exec();
+    }
+    if (testPrompt.textValue() == "Brush Shapes")
+        BrushShapesTest();
+    else if (testPrompt.textValue() == "Brush Colors")
+        BrushColorsTest();
+    else if (testPrompt.textValue() == "Save/Load")
+        saveLoadTest();
+    //else if (testPrompt.textValue() == "Test Vectors")
+    //    VectorTest();
+}
+
+void MainWindow::BrushShapesTest() {
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    canvas->fill(0xFFFFFFFF);
+    bh.setBrushColor(0xFF000000);
+    bh.setShape("Square");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(w/9, i));
+    }
+    bh.setShape("Circle");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*2, i));
+    }
+    bh.setShape("Horizontal");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*3, i));
+    }
+    bh.setShape("Vertical");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*4, i));
+    }
+    bh.setShape("Left Diagonal");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*5, i));
+    }
+    bh.setShape("Right Diagonal");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*6, i));
+    }
+    bh.setShape("Diamond");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*7, i));
+    }
+    bh.setShape("Octagon");
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint((w/9)*8, i));
+    }
+}
+
+void MainWindow::BrushColorsTest() {
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    canvas->fill(0xFFFFFFFF);
+    bh.setBrushColor(0xFF000000);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(w/10, i));
+    }
+    bh.setBrushColor(0xFFFF0000);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(2*(w/10), i));
+    }
+    bh.setBrushColor(0xFFFFFF00);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(3*(w/10), i));
+    }
+    bh.setBrushColor(0xFF00FF00);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(4*(w/10), i));
+    }
+    bh.setBrushColor(0xFF00FFFF);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(5*(w/10), i));
+    }
+    bh.setBrushColor(0xFF0000FF);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(6*(w/10), i));
+    }
+    bh.setBrushColor(0xFFA0A0A0);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(7*(w/10), i));
+    }
+    bh.setBrushColor(0xFF55AA22);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(8*(w/10), i));
+    }
+    bh.setBrushColor(0xFFBB0AAA);
+    for (int i = h*0.25; i < h*0.75; i++) {
+        bh.applyBrush(canvas, QPoint(9*(w/10), i));
+    }
+}
+
+void MainWindow::saveLoadTest() {
+    ioh->clearFrame();
+    QMessageBox qmb;
+    qmb.setText("Populating Layers");
+    qmb.exec();
+    ioh->addLayer();
+    QImage * canvas = ioh->getWorkingLayer()->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    for (int i = 0; i < w/4; i++) {
+        for (int j = 0; j < h; j++) {
+            canvas->setPixelColor(i,j,0xFF000000);
+        }
+    }
+    ioh->addLayer();
+    ioh->getWorkingLayer()->setAlpha(150);
+    canvas = ioh->getWorkingLayer()->getCanvas();
+    for (int i = w/4; i < w/2; i++) {
+        for (int j = 0; j < h; j++) {
+            canvas->setPixelColor(i,j,0xFFFF0000);
+        }
+    }
+    ioh->addLayer();
+    ioh->getWorkingLayer()->setAlpha(100);
+    canvas = ioh->getWorkingLayer()->getCanvas();
+    for (int i = w/2; i < 3*(w/4); i++) {
+        for (int j = 0; j < h; j++) {
+            canvas->setPixelColor(i,j,0xFFFFFF00);
+        }
+    }
+    ioh->addLayer();
+    ioh->getWorkingLayer()->setAlpha(10);
+    canvas = ioh->getWorkingLayer()->getCanvas();
+    for (int i = 3*(w/4); i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            canvas->setPixel(i,j,0xFFFF00FF);
+        }
+    }
+    qmb.setText("Saving Project");
+    qmb.exec();
+    ioh->save("SaveLoadTest.glass");
+    ioh->clearFrame();
+    qmb.setText("Loading Project");
+    qmb.exec();
+    ioh->load("SaveLoadTest.glass");
+    QFile file("SaveLoadTest.glass");
+    file.remove();
+}
+
+void MainWindow::VectorTest() {
+    /*
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    canvas->fill(0xFFFFFFFF);
+    layer->setFilter("NormalRGB");
+    SplineVector sv;
+    sv.addPt(QPoint(w/4, h/4), 1);
+    sv.addPt(QPoint(w/2, h/4), 2);
+    sv.addPt(QPoint(w/4, h/2), 3);
+    sv.addPt(QPoint(w/2, h/2), 4);
+    layer->getVectors().push_back(sv);
+    for (int i = 0; i < Filtered; ++i) {
+        sv.setMode(static_cast<VectorMode>(i));
+        for (int j = 0; j < Double; ++j) {
+            sv.setTaperType(static_cast<Taper>(j));
+            for (int h = 0; h < maxWidth; ++h) {
+                sv.setWidth(i);
+                for (int k = 0; k < maxTaper; ++k) {
+                    sv.setTaper1(k);
+                    for (int l = 0; l < maxTaper; ++l) {
+                        sv.setTaper2(l);
+                        for (int theta = 0; theta < 3600; ++theta) {
+                            //sv.rotate(QPoint(0,0));
+                        }
+                    }
+                }
+            }
+        }
+    }*/
 }
 
 MainWindow::~MainWindow() {

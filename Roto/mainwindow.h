@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <brushshape.h>
 #include <patternprofiler.h>
+#include <Windows.h>
 
 using std::string;
 using std::to_string;
@@ -74,6 +75,7 @@ using Qt::Key_V;
 using Qt::Key_A;
 using Qt::Key_Y;
 using Qt::Key_Z;
+using Qt::Key_F7;
 
 using graphics::vectorFilters;
 using graphics::filterNames;
@@ -116,6 +118,11 @@ public:
     void resizeEvent(QResizeEvent *event);
     void closeEvent(QCloseEvent *event);
     void hoverEvent(QHoverEvent *event);
+    void BrushShapesTest();
+    void BrushColorsTest();
+    void VectorTest();
+    void saveLoadTest();
+    void runTests();
 
 public slots:
     void changeVectorFilter(string s);

@@ -96,9 +96,9 @@ public:
     QImage getForeground();
     void save(QString projectName);
     int load(QString projectName);
+    void clearFrame();
+    vector <Layer *> backup();
 
-    int saveTest(QString projectName, vector< Layer *> testFrames);
-    int loadTest(QString projectName);
     vector<int> findPoints(QImage *qi);
     void vectorCheck(SplineVector sv);
 
