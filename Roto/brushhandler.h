@@ -35,7 +35,7 @@ public:
     void setDensity(int density);
     void setFilterStrength(int val);
     void setStrength(int str);
-    void setShape(string shape);
+    void setShape(string shape,vector<vector<unsigned char>> pattern ={{0,0},{0,0}});
     void setBrushColor(QColor qc);
     void setFillColor(QColor qc);
     void setFilter(string filterName);

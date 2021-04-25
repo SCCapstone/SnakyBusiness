@@ -22,18 +22,17 @@ public:
 
     Brush(string brushName = brushShapes[0], int Radius = 10);
     ~Brush();
-    void setShape(string brushName);
+    void setShape(string brushName, vector <vector< unsigned char >> pattern = {{1,1,},{1,1}});
     void setRadius(int r);
     int getRadius();
     int getFullSize();
     const unsigned char *const *const getBrushMap();
-    void sendTo(vector <vector < unsigned char > > pattern);
-    vector <vector <unsigned char> > tempMap;
+
 
 
 private:
 
-    void update();
+    void update(vector <vector < unsigned char > > pattern = {{0,0},{0,0}});
     void createSquare();
     void createCircle();
     void createVertical();
@@ -42,9 +41,9 @@ private:
     void createRightDiagonal();
     void createDiamond();
     void createOctagon();
-    void createCustom();
-
-    unsigned char radius, **brushMap;
+    void createCustom(vector <vector<unsigned char>> pattern = {{NULL,0},{0,0}});
+    unsigned char radius, **brushMap, tempPat[2*maxRadius+1][2*maxRadius+1];
+    //vector<vector<unsigned char>> temPattern((20),vector<unsigned char>(20));
     Shape shape;
     unsigned short size;
 };
