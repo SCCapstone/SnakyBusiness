@@ -23,7 +23,7 @@ The app be run via the executable in the zip folder under the most recent releas
 
 There are two options to running the software:  
 1. Once Qt <!--and the OpenCV libs have-->has been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
-2. Open the bin folder and run the Roto.exe file.  
+2. Launch Glass Opus via the Windows start menu, desktop shortcut, or by opening the executable in the installation (or zip folder if used).  
 
 # Testing
 
