@@ -766,18 +766,14 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Shape Profiler") {
         //return;
         tshape = "Custom";
+        bh.setShape("Square");
         brushProlfiler->open();
     }
     else if (btnPress == "Pattern Profiler"){
-        if(tshape == "Custom"){
             bh.setShape("Square");
             tshape = "Square";
             pp->open();
-            //int ret = QMessageBox::warning(this,"Glass Opus", "Switch brushes to open pattern profiler");
-        }
-        else{
-            pp->open();
-        }
+            //int ret = QMessageBox::warning(this,"Glass Opus", "Switch brushes to open pattern profiler";
     }
     refresh();
 }

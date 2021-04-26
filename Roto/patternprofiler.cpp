@@ -116,7 +116,7 @@ void patternProfiler::mousePressEvent(QMouseEvent *event){
         bh->setBrushColor(Qt::black);
         QPoint lPoint = event-> pos();
         QPoint temPoint =  QPoint(lPoint.x()-15,lPoint.y()-15);
-        bh->applyBrush(qb,temPoint);;
+        bh->applyBrush(qb,temPoint);
         drawing = true;
         lb = Qt::LeftButton;
         bh->setInterpolationActive(true);
