@@ -155,6 +155,7 @@ private:
    int prevTaper;
    int newTaper;
 };
+// Change Vector Filter
 //Paste Vector
 class PasteVector : public QUndoCommand {
   public:
@@ -164,7 +165,7 @@ class PasteVector : public QUndoCommand {
 private:
     DataIOHandler *pVec;
 };
-// Change Vector Filter Range
+// Change Vector Filter Strength
 class ChangeVectorRange : public QUndoCommand {
 public:
     ChangeVectorRange(DataIOHandler *vec, const int &oldStrength, const int &strength, QUndoCommand *parent = nullptr);
@@ -175,7 +176,7 @@ private:
     int prevStrength;
     int newStrength;
 };
-// Change Filter Range
+// Change Filter Strength
 class ChangeFilterRange : public QUndoCommand {
 public:
     ChangeFilterRange(DataIOHandler *vec, const int &oldStrength, const int &strength, QUndoCommand *parent = nullptr);

@@ -752,8 +752,11 @@ void MainWindow::doSomething(string btnPress) {
         bool ok = false;
         int prevRet = ioh->getWorkingLayer()->getFilterStrength();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Set current layer's filter strength", ioh->getWorkingLayer()->getFilterStrength(), 1, graphics::maxColor, 1, &ok) - 1;
-        if (ok)
+        if (ok) {
             ioh->getWorkingLayer()->setFilterStrength(ret);
+            if(undo==true)
+                undoStack->push(new ChangeFilterRange(ioh, prevRet, ret));
+        }
     }
     else if (btnPress == "Move Backward") {
         ioh->moveBackward();

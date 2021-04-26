@@ -37,6 +37,8 @@ void ChangeVectorTaper2::undo() {
 void ChangeVectorTaper2::redo() {
     tVec->getWorkingLayer()->setVectorTaper2(newTaper);
 }
+//Change Vector Filter Strength
+
 //Paste Vector
 PasteVector::PasteVector(DataIOHandler *vec, QUndoCommand *parent) : QUndoCommand(parent) {
     pVec = vec;
