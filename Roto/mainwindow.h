@@ -93,6 +93,7 @@ const QString Kernal_Loc = "/Kernals/";
 const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
 const vector <string> acceptedImportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm", "gif", "pbm", "pgm"};
 const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm"};
+static mutex scrollLock;
 
 enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
@@ -177,6 +178,7 @@ private:
     QProgressDialog *progress;
     brushShape *brushProlfiler;
     patternProfiler *pp;
+    bool lock;
     QLabel *histograms;
 };
 
