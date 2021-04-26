@@ -51,6 +51,7 @@
 #include <radialprofiler.h>
 #include <undoRedo.h>
 #include <viewscroller.h>
+#include <undoRedo.h>
 #include <algorithm>
 
 using std::string;
@@ -156,6 +157,7 @@ private:
     Ui::MainWindow *ui;
     screenRender *sr;
     viewScroller *vs;
+    QUndoStack *undoStack;
     EditMode mode;
     bool shiftFlag, ctrlFlag, onePress;
     MouseButton lastButton;

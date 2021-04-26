@@ -1,5 +1,6 @@
 #include "undoRedo.h"
 
+<<<<<<< Updated upstream
 // Brush Undo
 BrushUndo::BrushUndo(const brushHandler &brush, Layer *layer, const QPoint &qp, QUndoCommand *parent) : QUndoCommand(parent) {
     myBrush = brush;
@@ -63,6 +64,8 @@ void RotateVec::undo() {
 void RotateVec::redo() {
     myVec->moveRight(aP);
 }
+=======
+>>>>>>> Stashed changes
 // Change Vector Width
 ChangeWidth::ChangeWidth(DataIOHandler *vec, const int &oldWidth, const int &width, QUndoCommand *parent) : QUndoCommand(parent) {
    // default
@@ -100,6 +103,7 @@ void ChangeVectorTaper2::undo() {
 void ChangeVectorTaper2::redo() {
     tVec->getWorkingLayer()->setVectorTaper2(newTaper);
 }
+<<<<<<< Updated upstream
 // Copy Vector
 CopyVector::CopyVector(DataIOHandler *vec, QUndoCommand *parent) : QUndoCommand(parent) {
     cVec = vec;
@@ -110,6 +114,8 @@ void CopyVector::undo() {
 void CopyVector::redo() {
     cVec->copyVectors();
 }
+=======
+>>>>>>> Stashed changes
 //Paste Vector
 PasteVector::PasteVector(DataIOHandler *vec, QUndoCommand *parent) : QUndoCommand(parent) {
     pVec = vec;
@@ -137,20 +143,36 @@ InsertLayer::InsertLayer(DataIOHandler *vec, QUndoCommand *parent) : QUndoComman
     myVec = vec;
 }
 void InsertLayer::undo() {
+<<<<<<< Updated upstream
     myVec->deleteLayer();
 }
 void InsertLayer::redo() {
     myVec->addLayer();
+=======
+    myVec->copyLayer();
+    myVec->deleteLayer();
+}
+void InsertLayer::redo() {
+    myVec->pasteLayer();
+>>>>>>> Stashed changes
 }
 // Delete Layer
 DeleteLayer::DeleteLayer(DataIOHandler *vec, QUndoCommand *parent) : QUndoCommand(parent) {
     myVec = vec;
 }
 void DeleteLayer::undo() {
+<<<<<<< Updated upstream
     myVec->deleteLayer();
 }
 void DeleteLayer::redo() {
     myVec->addLayer();
+=======
+    myVec->copyLayer();
+    myVec->deleteLayer();
+}
+void DeleteLayer::redo() {
+    myVec->pasteLayer();
+>>>>>>> Stashed changes
 }
 // Move Layer Forward
 MoveLayerForward::MoveLayerForward(DataIOHandler *vec, QUndoCommand *parent) : QUndoCommand(parent) {
@@ -210,7 +232,76 @@ void MoveLayerToBack::redo() {
         pos--;
     }
 }
+<<<<<<< Updated upstream
 =======
+>>>>>>> Stashed changes
+=======
+// Change Layer
+changeActiveLayer::changeActiveLayer(DataIOHandler *vec, const int &oldLayer, const int &layer, EditMode mode, QUndoCommand *parent) : QUndoCommand(parent) {
+    lVec = vec;
+    prevLayer = oldLayer;
+    newLayer = layer;
+    lMode = mode;
+}
+void changeActiveLayer::undo() {
+    lVec->getWorkingLayer()->deselect();
+    lVec->setActiveLayer(prevLayer, lMode);
+}
+void changeActiveLayer::redo() {
+    lVec->getWorkingLayer()->deselect();
+}
+// Un-implememted
+// Brush Undo
+/*
+BrushUndo::BrushUndo(brushHandler bh, list <Triple> l, QUndoCommand *parent) : QUndoCommand(parent) {
+    myBrush = bh;
+    trip = l;
+
+}
+void BrushUndo::undo() {
+    // display original canvas before the brush
+    BrushAction b (true, true);
+    if(b.hasStopped(true)) {
+
+    }
+}
+void BrushUndo::redo() {
+    // update canvas to the new
+
+}
+RadialBrushUndo::RadialBrushUndo(brushHandler *bh, QPoint qp, vector<vector<QRgb>> colors, QUndoCommand *parent): QUndoCommand(parent) {
+    myBrush = bh;
+    myPoint = qp;
+    deltaColors = colors;
+}
+void RadialBrushUndo::undo() {
+
+}
+void RadialBrushUndo::redo() {
+
+}
+// Create Vector
+CreateVector::CreateVector(DataIOHandler *vec, const QPoint &a, const MouseButton &button, QUndoCommand *parent) : QUndoCommand(parent) {
+    cVec = vec;
+    cButton = button;
+    cP = a;
+}
+void CreateVector::undo() {
+    // if one point is added, undo
+
+    // if a vector/one point is created, undo
+}
+void CreateVector::redo() {
+    // if vector has less than 2 points, create vector
+
+    // if the vector has more than 2 points, add a point
+}
+// Delete Vector
+DeleteVector::DeleteVector(DataIOHandler *vec, QPoint a, QUndoCommand *parent) : QUndoCommand(parent) {
+    dVec = vec;
+    dP = a;
+}
+void DeleteVector::undo() {
 >>>>>>> Stashed changes
 
 }
@@ -218,6 +309,7 @@ void DeleteVector::redo() {
 
 }
 // Translate Vector
+<<<<<<< Updated upstream
 TranslateVector::TranslateVector(Layer *vec, const QPoint &pos, QUndoCommand *parent) : QUndoCommand(parent) {
     tVec = vec;
     newPos = pos;
@@ -227,6 +319,16 @@ void TranslateVector::undo() {
 }
 void TranslateVector::redo() {
     tVec->moveLeft(newPos);
+=======
+TranslateVector::TranslateVector(Layer *vec, const QPoint &prevPos, const QPoint &pos, QUndoCommand *parent) : QUndoCommand(parent) {
+    tVec = vec;
+    oldPos = prevPos;
+    newPos = pos;
+}
+void TranslateVector::undo() {
+}
+void TranslateVector::redo() {
+>>>>>>> Stashed changes
 }
 // Rotate Vector
 RotateVec::RotateVec(Layer *vec, const QPoint &pos, QUndoCommand *parent) : QUndoCommand(parent) {
@@ -239,6 +341,7 @@ void RotateVec::undo() {
 void RotateVec::redo() {
     myVec->moveRight(aP);
 }
+<<<<<<< Updated upstream
 // Change Vector Width
 ChangeWidth::ChangeWidth(DataIOHandler *vec, const int &oldWidth, const int &width, QUndoCommand *parent) : QUndoCommand(parent) {
    // default
@@ -401,3 +504,6 @@ void changeActiveLayer::undo() {
 void changeActiveLayer::redo() {
     lVec->getWorkingLayer()->deselect();
 }
+=======
+*/
+>>>>>>> Stashed changes

@@ -420,6 +420,15 @@ void MainWindow::doSomething(string btnPress) {
         }
         refresh();
     }
+<<<<<<< Updated upstream
+=======
+    else if (btnPress == "Insert Layer") {
+        ioh->addLayer();
+        undoStack->push(new InsertLayer(ioh));
+    }
+    if (ioh->getWorkingLayer() == nullptr)
+        return;
+>>>>>>> Stashed changes
     else if (btnPress == "Export") {    //TODO
         sr->stopFlashing();
         string formats = "";
@@ -545,9 +554,12 @@ void MainWindow::doSomething(string btnPress) {
         if (val == -1)
             return;
         bool ok = false;
+        int prevRet = ioh->getWorkingLayer()->getFilterStrength();
         int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a vector filter strength", val, graphics::minColor, graphics::maxColor, 1, &ok );
-        if (ok)
+        if (ok) {
             ioh->getWorkingLayer()->setVectorFilterStrength(ret);
+            undoStack->push(new ChangeFilterRange(ioh, prevRet, ret));
+        }
     }
     else if (btnPress == "Vector Taper 1") {
         vector <unsigned char> activeVects = ioh->getWorkingLayer()->getActiveVectors();
@@ -705,6 +717,7 @@ void MainWindow::doSomething(string btnPress) {
         undoStack->push(new MoveLayerForward(ioh));
     }
     else if (btnPress == "Move To Back") {
+<<<<<<< Updated upstream
         int ret = ioh->getActiveLayer();
         ioh->moveToBack();
         undoStack->push(new MoveLayerToBack(ioh,ret));
@@ -713,6 +726,16 @@ void MainWindow::doSomething(string btnPress) {
         int ret = ioh->getActiveLayer();
         ioh->moveToFront();
         undoStack->push(new MoveLayerToFront(ioh, ret));
+=======
+        int prevRet = ioh->getActiveLayer();
+        ioh->moveToBack();
+        undoStack->push(new MoveLayerToBack(ioh, prevRet));
+    }
+    else if (btnPress == "Move To Front") {
+        int prevRet = ioh->getActiveLayer();
+        ioh->moveToFront();
+        undoStack->push(new MoveLayerToBack(ioh, prevRet));
+>>>>>>> Stashed changes
     }
     else if (btnPress == "Copy Layer")
         ioh->copyLayer();
@@ -929,6 +952,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 undoStack->undo();
         break;
     case Key_Y:
+        if (ctrlFlag)
+            if(undoStack->canRedo())
+                undoStack->redo();
+        break;
+    case Key_Y:
+        if (ctrlFlag)
+            if(undoStack->count() > 0)
+                undoStack->undo();
+        break;
+    case Key_Z:
         if (ctrlFlag)
             if(undoStack->canRedo())
                 undoStack->redo();
