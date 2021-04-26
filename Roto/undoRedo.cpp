@@ -47,6 +47,18 @@ void PasteVector::undo() {
 void PasteVector::redo() {
     pVec->pasteVectors();
 }
+// Change Vector Filter Strength
+ChangeVectorRange::ChangeVectorRange(DataIOHandler *vec, const int &oldStrength, const int &strength, QUndoCommand *parent) : QUndoCommand(parent) {
+    rVec = vec;
+    prevStrength = oldStrength;
+    newStrength = strength;
+}
+void ChangeVectorRange::undo() {
+    rVec->getWorkingLayer()->setVectorFilterStrength(prevStrength);
+}
+void ChangeVectorRange::redo() {
+    rVec->getWorkingLayer()->setVectorFilterStrength(newStrength);
+}
 // Change Filter Strength
 ChangeFilterRange::ChangeFilterRange(DataIOHandler *vec, const int &oldStrength, const int &strength, QUndoCommand *parent) : QUndoCommand(parent) {
     rVec = vec;

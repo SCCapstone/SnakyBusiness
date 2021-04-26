@@ -147,6 +147,7 @@ private:
     screenRender *sr;
     viewScroller *vs;
     QUndoStack *undoStack;
+    bool undo;
     EditMode mode;
     bool shiftFlag, ctrlFlag, onePress;
     MouseButton lastButton;
