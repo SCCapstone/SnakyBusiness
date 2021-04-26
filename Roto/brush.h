@@ -8,11 +8,11 @@
 using std::string;
 using std::vector;
 
-enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon};                //  TODO custom
+enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond, octagon, custom};
 
-const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon"};
+const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon", "Custom"};
 
-const int numBrushes = 8;
+const int numBrushes = 9;
 const unsigned char maxRadius = 64;
 const unsigned char minRadius = 0;
 
@@ -22,15 +22,17 @@ public:
 
     Brush(string brushName = brushShapes[0], int Radius = 10);
     ~Brush();
-    void setShape(string brushName);
+    void setShape(string brushName, vector <vector< unsigned char >> pattern = {{1,1,},{1,1}});
     void setRadius(int r);
     int getRadius();
     int getFullSize();
     const unsigned char *const *const getBrushMap();
 
+
+
 private:
 
-    void update();
+    void update(vector <vector < unsigned char > > pattern = {{0,0},{0,0}});
     void createSquare();
     void createCircle();
     void createVertical();
@@ -39,8 +41,9 @@ private:
     void createRightDiagonal();
     void createDiamond();
     void createOctagon();
-
-    unsigned char radius, **brushMap;
+    void createCustom(vector <vector<unsigned char>> pattern = {{NULL,0},{0,0}});
+    unsigned char radius, **brushMap, tempPat[2*maxRadius+1][2*maxRadius+1];
+    //vector<vector<unsigned char>> temPattern((20),vector<unsigned char>(20));
     Shape shape;
     unsigned short size;
 };

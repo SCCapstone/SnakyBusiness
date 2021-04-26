@@ -1,29 +1,251 @@
-Roto.pro.user
-*.user
+
+*.stash
 *.obj
-*.lib
-*.dll
-*.exp
-*.ilk
-*.pdb
-*.exe
-.qmake.stash
-Makefile
-Makefile.Debug
-Makefile.Release
-*.png
-*.txt
-*.zip
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_mainwindow.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_predefs.h
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_radialprofiler.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_resizewindow.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_predefs.h
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_mainwindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_radialprofiler.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/Roto.exe
+Roto/Roto.pro.user
+Roto/Roto.pro
 Roto/Roto.pro
 Roto/Roto.pro
 *.pro
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_screenrender.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_radialprofiler.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_mainwindow.cpp
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_predefs.h
-build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug/debug/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Roto.exe
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/platforms/qwindows.dll
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_radialprofiler.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_predefs.h
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_patternprofiler.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_mainwindow.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_brushshape.cpp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/mainMenubar.zip
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/mainMenubar.txt
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Logo.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Zoom Out.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Zoom In.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vertical.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Zoom 100%.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vector Width.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vector Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vector Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vector Color 2.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Vector Color 1.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Taper 2.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Taper 1.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Take Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Swap Tapers.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Swap Colors.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Subtractive.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Square.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Spray Density.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Spline Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Single Taper.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Shape Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Set Zoom.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Set Active Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Select All.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Save.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Save As.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Sample.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Right Diagonal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Raster Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Raster Edit Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Radial.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Radial Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Pattern Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Paste.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Paste Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Overwrite.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Open.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Open Recent.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/On.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Off.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Octagon.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/New.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Move To Front.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Move To Back.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Move Forward.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Move Backward.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Left Diagonal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Layer Opacity (Alpha).png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Layer Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Insert Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Import.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Horizontal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Help.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Flip Selection Vertical.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Flip Selection Horizontal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Filter.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Filter Vector.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Fill Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Export.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Exit.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/execIco.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/execIco.ico
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Double Taper.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Diamond.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Delete.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Delete Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Cut.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Cut Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Copy.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Copy Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Compile Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Compile Frame.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Color Vector.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Circle.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Brush Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Brush Radius.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Brush Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Brush Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Brush Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/Additive.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/Menus/Icons/About.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/mainMenubar.txt
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Qt5Widgets.dll
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Qt5Gui.dll
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Qt5Core.dll
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_videoio451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_video451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_stitching451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_photo451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_objdetect451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_ml451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_imgproc451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_imgcodecs451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_highgui451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_gapi451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_flann451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_features2d451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_dnn451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_core451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/opencv_calib3d451.lib
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/mainMenubar.zip
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/mainMenubar.txt
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Logo.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Zoom Out.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Zoom In.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Zoom 100%.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vertical.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vector Width.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vector Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vector Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vector Color 2.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Vector Color 1.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Taper 2.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Taper 1.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Take Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Swap Tapers.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Swap Colors.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Subtractive.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Square.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Spray Density.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Spline Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Single Taper.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Shape Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Set Zoom.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Set Active Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Select All.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Save.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Save As.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Sample.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Right Diagonal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Raster Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Raster Edit Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Radial.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Radial Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Pattern Profiler.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Paste.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Paste Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Overwrite.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Open.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Open Recent.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/On.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Off.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Octagon.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/New.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Move To Front.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Move To Back.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Move Forward.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Move Backward.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Left Diagonal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Layer Opacity (Alpha).png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Layer Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Insert Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Import.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Horizontal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Help.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Flip Selection Vertical.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Flip Selection Horizontal.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Filter.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Filter Vector.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Fill Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Export.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Exit.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/execIco.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/execIco.ico
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Double Taper.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Diamond.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Delete.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Delete Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Cut.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Cut Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Copy.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Copy Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Compile Layer.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Compile Frame.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Color Vector.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Circle.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Brush Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Brush Radius.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Brush Mode.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Brush Filter Strength.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Brush Color.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/Additive.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Menus/Icons/About.png
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Makefile.Release
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Makefile.Debug
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/Makefile
+*.lib
+*.pdb
+*.exp
+*.Release
+*.Debug
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/Makefile
+*.ico
+*.rc
+*.txt
+*.png
+*.pdf
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/Makefile
+*.zip
+*.exe
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_radialprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_patternprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_predefs.h
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_mainwindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_brushshape.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_mainwindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_patternprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_radialprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_predefs.h
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Debug/debug/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_brushshape.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_mainwindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_patternprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_predefs.h
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_radialprofiler.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_resizewindow.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/debug/moc_screenrender.cpp
+build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_brushshape.cpp
+*.pro
+*.pro
+Roto/Roto.pro
+*.res
+*.pro

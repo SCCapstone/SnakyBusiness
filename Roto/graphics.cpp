@@ -20,11 +20,12 @@ graphics::Filter& graphics::Filter::operator=(const Filter &rhs) {
 }
 void graphics::Filter::applyTo(QImage *qi) {
     int h = qi->height(), w = qi->width();
-    for (int y = 0; y < h; ++y)
-        for (int x = 0; x < w; ++x) {
-            QColor qc = qi->pixelColor(x, y);
-            qi->setPixel(x, y, filterApplicator(qc, strength));
-        }
+    for (int y = 0; y < h; ++y) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi->scanLine(y));
+        for (int x = 0; x < w; ++x)
+            if (line[x] & 0xFF000000)
+                line[x] = filterApplicator(QColor(line[x]), strength);
+    }
 }
 
 QRgb graphics::Filter::applyTo(QColor qc) {
@@ -273,6 +274,74 @@ QRgb graphics::Filtering::colorFilmGrain (QColor qc, int strength) {
     return toRGB(qc.alpha(), red, green, blue);
 }
 
+void graphics::Filtering::applyKernal(QProgressDialog *qpd, QImage *qi, KernalData kernalInfo) {
+    bool needGreyscale = kernalInfo.first;
+    if (qpd != nullptr) {
+        qpd->setValue(0);
+        qpd->setLabelText("Applying Kernal");
+        qpd->setMaximum(qi->height());
+        qpd->show();
+    }
+    if (needGreyscale) {
+        qpd->setMaximum(qpd->maximum() * 2 + 1);
+        Filter filter(255, "Greyscale");
+        filter.applyTo(qi);
+        if (qpd != nullptr) {
+            qpd->setValue(qpd->value() + 1);
+            QCoreApplication::processEvents();
+        }
+    }
+    int boost = 1;
+    Kernal kernal = kernalInfo.second;
+    int kernalSize = kernal.size();
+    int offset = kernalSize / 2;
+    QImage image = qi->copy();
+    // Apply kernal to the image.
+    for (int j = 0; j < qi->height(); ++j) {
+        if (qpd != nullptr) {
+            qpd->setValue(qpd->value() + 1);
+            QCoreApplication::processEvents();
+        }
+        QRgb *qiLine = reinterpret_cast<QRgb *>(qi->scanLine(j));
+        for (int i = 0; i < qi->width(); ++i) {
+            int xstart = i - offset, ystart = j - offset, xend = i + offset, yend = j + offset;
+            float r = 0.0, g = 0.0, b = 0.0;
+            for (int y = ystart; y <= yend; ++y) {
+                int dy = y - ystart;
+                QRgb *imgLine = reinterpret_cast<QRgb *>(image.scanLine(y));
+                for (int x = xstart; x <= xend; ++x) {
+                    int dx = x - xstart;
+                    QColor qc = (x < 0 || y < 0 || y >= qi->height() || x >= qi->width()) ? qiLine[i] : imgLine[x];
+                    r += kernal[dx][dy] * static_cast<float>(qc.red());
+                    g += kernal[dx][dy] * static_cast<float>(qc.green());
+                    b += kernal[dx][dy] * static_cast<float>(qc.blue());
+                }
+            }
+            r = stdFuncs::clamp(r, 0.0, 255.0);
+            g = stdFuncs::clamp(g, 0.0, 255.0);
+            b = stdFuncs::clamp(b, 0.0, 255.0);
+            if (needGreyscale)
+                boost = max(boost, min(static_cast<int>(max(r, max(g, b))), 255));
+            qiLine[i] = QColor(static_cast<int>(r), static_cast<int>(g), static_cast<int>(b)).rgba();
+        }
+    }
+    // Boost contrast with greyscale output so that the result is more visible / distinguishable.
+    if (needGreyscale) {
+        float boostF = 255.0 / static_cast<float>(boost);
+        for (int j = 0; j < qi->height(); ++j) {
+            QRgb *line = reinterpret_cast<QRgb *>(qi->scanLine(j));
+            if (qpd != nullptr) {
+                qpd->setValue(qpd->value() + 1);
+                QCoreApplication::processEvents();
+            }
+            for (int i = 0; i < qi->height(); ++i) {
+                int color = static_cast<int>(static_cast<float>(line[i] & 0x000000FF) * boostF);
+                line[i] = QColor(color, color, color).rgba();
+            }
+        }
+    }
+}
+
 graphics::ImgSupport::ImgSupport() {
     zoom = 1.0;
 }
@@ -304,8 +373,8 @@ QImage graphics::ImgSupport::zoomImg(QImage qi) {
 }
 
 QPoint graphics::ImgSupport::getZoomCorrected(QPoint qp) {
-    qp.setX(static_cast<int>(static_cast<double>(qp.x()) / zoom));
-    qp.setY(static_cast<int>(static_cast<double>(qp.y()) / zoom));
+    qp.setX(static_cast<int>(0.5 + static_cast<double>(qp.x()) / zoom));
+    qp.setY(static_cast<int>(0.5 + static_cast<double>(qp.y()) / zoom));
     return qp;
 }
 
@@ -335,4 +404,77 @@ void graphics::ImgSupport::flipHorizontal(QImage *qi) {
             qi->setPixel(i, j, qi->pixel(i, h - j));
             qi->setPixel(i, h - j, qc);
         }
+}
+
+KernalData graphics::ImgSupport::loadKernal(string fileName) {
+    Kernal kernal, identity;
+    identity.push_back(vector <float> ());
+    identity[0].push_back(1.0);
+    KernalData ret = KernalData (false, identity);
+    if (fileName != "") {
+        int tKernalSize;
+        fstream file;
+        bool needGreyscale = false;
+        file.open(fileName, ios::in);
+        if (file.is_open()) {
+            string fromFile;
+            if (getline(file, fromFile)) {
+                try {
+                    tKernalSize = stoi(fromFile);
+                    tKernalSize -= 1 - (tKernalSize % 2);
+                    needGreyscale = fromFile.find("G") != string::npos;
+                }
+                catch (...) {
+                    return ret;
+                }
+            }
+            else
+                return ret;
+            if (tKernalSize < 1)
+                return ret;
+            for (int i = 0; i < tKernalSize; ++i) {
+                kernal.push_back(vector <float> ());
+                for (int j = 0; j < tKernalSize; ++j)
+                    kernal[i].push_back(0.0);
+            }
+            int lines = 0;
+            while(lines < tKernalSize && getline(file, fromFile)) {
+                int cnt = 0;
+                while (cnt < tKernalSize && fromFile != "") {
+                    size_t index = fromFile.find(" ");
+                    if (index == string::npos)
+                        index = fromFile.length();
+                    try {
+                        kernal[lines][cnt] = stof(fromFile.substr(0, index));
+                    }
+                    catch (...) {
+                        return ret;
+                    }
+                    ++cnt;
+                    fromFile = index + 1 >= fromFile.length() ? "" : fromFile.substr(index + 1);
+                }
+                if (cnt < tKernalSize)
+                    return ret;
+                ++lines;
+            }
+            file.close();
+        }
+        ret.first = needGreyscale;
+        ret.second = kernal;
+        return ret;
+    }
+    return ret;
+}
+
+void graphics::ImgSupport::applyAlpha(QImage *qi, int *yStart, int *yEnd, unsigned int *alpha) {
+    int ys = *yStart, ye = *yEnd;
+    unsigned int a = *alpha;
+    while (ys < ye) {
+        QRgb *line = reinterpret_cast<QRgb *>(qi->scanLine(ys));
+        for (int x = 0; x < qi->width(); ++x)
+            if (line[x] & 0xFF000000)
+                line[x] = a | (line[x] & 0x00FFFFFF);
+        ++ys;
+        //--*yStart&=++*yStart+++!ys;      gross
+    }
 }

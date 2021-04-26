@@ -30,20 +30,19 @@ public:
 
     brushHandler(unsigned char str = 128, int size = 10, int density = 0, string type = appMethods[0], QColor qc = QColor(0xFF000000));
     ~brushHandler();
-    void setAlpha(int val);
     void setAppMethod(string type);
     void setPoint(QPoint qp);
     void setDensity(int density);
     void setFilterStrength(int val);
     void setStrength(int str);
-    void setShape(string shape);
+    void setShape(string shape,vector<vector<unsigned char>> pattern ={{0,0},{0,0}});
     void setBrushColor(QColor qc);
     void setFillColor(QColor qc);
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
     const unsigned char *const *const getBrushMap();
-    void setPattern(int xDim, int yDim, unsigned char **pattern);
+    void setPattern(int xDim, int yDim, vector<vector<unsigned char>>pattern);
     void setPatternInUse(int used);
     void radialUpdate(int size, vector <int> pts);
     const unsigned char *const *const getPatternMap();
@@ -66,10 +65,10 @@ public:
     void applyBrush(QImage *qi, QPoint qp);
     void erase(QImage *qi, QPoint qp);
     void setInterpolationActive(bool flag);
+    void setSize(int size);
 
 private:
 
-    void setSize(int size);
     void resetPoint();
     int onScreen(int x, int y, int xMax, int yMax);
     void overwrite(QImage *qi);
@@ -87,9 +86,8 @@ private:
     void shiftDown();
 
     bool ipolActive, patternInUse;
-    int sprayDensity, alpha;
-    unsigned char strength, patternXDim, patternYDim, **patternMap;;
-    //vector <vector <unsigned char> > checkMap;
+    int sprayDensity;
+    unsigned char strength, patternXDim, patternYDim, **patternMap;
     unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
     Brush brush;
@@ -97,7 +95,6 @@ private:
     Filter brushFilter;
     QPoint currPnt, lastPnt, relativityPoint, samplePoint;
     list <QPoint> toProcess;
-    //float **radialMap;
     float radialMap[2 * maxRadius + 1][2 * maxRadius + 1];
     vector <int> radialValues;
 };

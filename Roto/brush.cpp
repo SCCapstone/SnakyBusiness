@@ -1,6 +1,5 @@
 #include "brush.h"
 
-
 Brush::Brush(string brushName, int Radius)
 {
     size = 0;
@@ -20,7 +19,7 @@ const unsigned char *const *const Brush::getBrushMap() {
     return retMap;
 }
 
-void Brush::setShape(string brushName) {
+void Brush::setShape(string brushName, vector <vector < unsigned char > > pattern) {
     int i;
     for (i = 0; i < numBrushes; ++i)
         if (brushName == brushShapes[i])
@@ -28,7 +27,7 @@ void Brush::setShape(string brushName) {
     if (i == numBrushes)
         i = 0;
     shape = Shape(i);
-    update();
+    update(pattern);
 }
 
 void Brush::setRadius(int r) {
@@ -40,7 +39,7 @@ void Brush::setRadius(int r) {
     update();
 }
 
-void Brush::update() {
+void Brush::update(vector <vector < unsigned char >> pattern) {
     brushMap = new unsigned char*[static_cast<size_t>(size)];
     for (int i = 0; i < size; ++i)
         brushMap[i] = new unsigned char[static_cast<size_t>(size)];
@@ -68,6 +67,9 @@ void Brush::update() {
         break;
     case octagon:
         createOctagon();
+        break;
+    case custom:
+       createCustom(pattern);
         break;
     }
 }
@@ -136,4 +138,12 @@ void Brush::createOctagon() {
             int x = abs(i - radius), y = abs(j - radius);
             brushMap[i][j] = (x + y < (3 * radius) / 2);
         }
+}
+void Brush::createCustom(vector <vector < unsigned char > > pattern){
+    for(int i = 0; i< size; i++){
+        for(int j = 0; j< size; j++){
+            brushMap[i][j] = pattern[i][j];
+
+        }
+    }
 }

@@ -14,10 +14,12 @@
 #include <graphics.h>
 #include <layer.h>
 #include <dataIOHandler.h>
+#include <thread>
 
 using std::find;
 using std::vector;
 using std::to_string;
+using std::thread;
 using graphics::Filter;
 using graphics::Filtering;
 using graphics::ImgSupport;
@@ -84,6 +86,9 @@ private:
     unsigned char **hoverMap;
     int radius;
     bool hoverActive;
+    long long time;
+    int yStart, yMid, yEnd;
+    unsigned int alphaVal;
 
 public slots:
 

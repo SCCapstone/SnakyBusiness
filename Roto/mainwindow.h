@@ -5,16 +5,12 @@
 #include <list>
 #include <functional>
 #include <unordered_map>
-#include <map>
 #include <fstream>
 #include <thread>
 #include <algorithm>
 #include <QMainWindow>
-#include <QImage>
-#include <QPainter>
 #include <QKeyEvent>
 #include <QFileDialog>
-#include <QImageReader>
 #include <QMenuBar>
 #include <QColorDialog>
 #include <QInputDialog>
@@ -37,11 +33,6 @@
 #include <QDragEnterEvent>
 #include <QProgressDialog>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
 #include <dataIOHandler.h>
 #include <brushhandler.h>
 #include <graphics.h>
@@ -49,10 +40,11 @@
 #include <resizewindow.h>
 #include <screenrender.h>
 #include <radialprofiler.h>
-#include <undoRedo.h>
 #include <viewscroller.h>
 #include <undoRedo.h>
 #include <algorithm>
+#include <brushshape.h>
+#include <patternprofiler.h>
 
 using std::string;
 using std::to_string;
@@ -60,7 +52,6 @@ using std::list;
 using std::to_string;
 using std::function;
 using std::unordered_map;
-using std::map;
 using std::fstream;
 using std::ios;
 using std::find;
@@ -85,10 +76,6 @@ using Qt::Key_A;
 using Qt::Key_Y;
 using Qt::Key_Z;
 
-using cv::VideoCapture;
-using cv::Mat;
-using cv::destroyAllWindows;
-
 using graphics::vectorFilters;
 using graphics::filterNames;
 using graphics::Filter;
@@ -100,13 +87,14 @@ const QString Logo_FileName = "Logo.png";
 const QString UI_Loc = "/Menus/";
 const QString Icon_Loc = UI_Loc + "Icons/";
 const QString Doc_Loc = "/Documentation/";
+const QString Kernal_Loc = "/Kernals/";
 const QString FetchLink = "https://github.com/SCCapstone/SnakyBusiness/raw/master";
 const vector <string> acceptedImportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm", "gif", "pbm", "pgm"};
 const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png", "ppm", "xbm", "xpm"};
-const vector <string> acceptedImportVideoFormats = {"mp4", "avi", "mkv"};
-const vector <string> acceptedExportVideoFormats = acceptedImportVideoFormats;
 
 enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
+
+const int bins = 256;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -117,7 +105,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(string startPath, string projectFile, QWidget *parent = nullptr);
     ~MainWindow();
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
@@ -138,6 +126,7 @@ public slots:
     void changeBrushFilter(string s);
     void changeBrushMethod(string s);
     void changeBrushShape(string s);
+    void applyRasterFilter(string s);
     void doSomething(string btnPress);
     void downloadFinished();
     void downloadTimeout();
@@ -177,13 +166,10 @@ private:
     QString saveFileName;
     appMethod tempMethod = overwrite;
     QProgressDialog *progress;
-<<<<<<< Updated upstream
-=======
-    QUndoStack *undoStack;
-
->>>>>>> Stashed changes
+    brushShape *brushProlfiler;
+    patternProfiler *pp;
+    string tshape;
+    QLabel *histograms;
 };
-
-void appTo(QImage *qi, Filter f);
 
 #endif // MAINWINDOW_H

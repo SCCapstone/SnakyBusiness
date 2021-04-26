@@ -49,7 +49,7 @@ vector <QPoint> SplineVector::getControls() {
 }
 
 void SplineVector::addPt(QPoint qp, size_t index) {
-    if (controlPts.size() < UCHAR_MAX) {
+    if (controlPts.size() < maxPoints) {
         controlPts.push_back(QPoint(0,0));
         for (size_t i = controlPts.size() - 1; i > index; --i)
             controlPts[i] = controlPts[i - 1];
@@ -92,14 +92,16 @@ void SplineVector::removePt(size_t index) {
 
 void SplineVector::movePt(QPoint loc, size_t index) {
     if (controlPts.size() == 2) {
-        QPoint qp = controlPts[index];
-        controlPts[index] = loc;
-        if (controlPts[0].x() == controlPts[1].x() && controlPts[0].y() == controlPts[1].y())
+        QPoint qp = controlPts[1 - index];
+        if (loc.x() != qp.x() || loc.y() != qp.y()) {
             controlPts[index] = qp;
-        minX = min(controlPts[0].x(), controlPts[1].x());
-        minY = min(controlPts[0].y(), controlPts[1].y());
-        maxX = max(controlPts[0].x(), controlPts[1].x());
-        maxY = max(controlPts[0].y(), controlPts[1].y());
+            minX = min(controlPts[0].x(), controlPts[1].x());
+            minY = min(controlPts[0].y(), controlPts[1].y());
+            maxX = max(controlPts[0].x(), controlPts[1].x());
+            maxY = max(controlPts[0].y(), controlPts[1].y());
+        }
+        else
+            return;
     }
     QPoint qp = controlPts[index];
     controlPts[index] = loc;

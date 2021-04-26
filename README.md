@@ -8,41 +8,39 @@ The team is using Microsoft coding guidelines. Found [here](https://www.cise.ufl
 
 ## External Requirements
 
-The app should be able to be run by using the executable in the bin folder.
+The app be run via the executable in the zip folder under the most recent release.
 
 ## Dev Setup
 
-1. Install C++ libraries, specifically <!--either -->[MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/)<!-- or [MinGW](http://www.mingw.org/)-->.
+1. Install C++ libraries, specifically <!--either -->[MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/)
 2. Install [Qt and Qt Creator](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5)
-3. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows_with_MSVC2017)<!--(https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows)--> if needed.
-4. Make sure system path aligns with current installation of OpenCV and MSVC. Verify that the includes and libs within the project file are correct.
-5. Copy the .libs from the OpenCV build folder to the highest/top directory of the build folder.
-6. Copy the mainMenubar.txt into same location as the .libs mentioned above.
+<!--3. Install [OpenCV](https://opencv.org/) libraries. [Tutorial](https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows_with_MSVC2017)(https://wiki.qt.io/How_to_setup_Qt_and_openCV_on_Windows) if needed.-->
+3. Make sure system path aligns with current installation of <!--OpenCV and--> MSVC. <!--Verify that the includes and libs within the project file are correct.-->
+<!--5. Copy the .libs from the OpenCV build folder to the highest/top directory of the build folder.-->
+4. Copy the mainMenubar.txt into the Menu folder. If the menu folder is absent, redownload it from the repo. The icons can be accessed the same way.
 
 ## Running
 
 There are two options to running the software:  
-1. Once Qt and the OpenCV libs have been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
+1. Once Qt <!--and the OpenCV libs have-->has been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
 2. Open the bin folder and run the Roto.exe file.  
 
 # Testing
 
-TBD
-
-In 492 you will write automated tests. When you do you will need to add a 
-section that explains how to run them.
-
-The unit tests are in `/test/unit`.
-
-The behavioral tests are in `/test/casper/`.
+Tests are run automatically, verified by the user. Test are used to verify that basic functionality has not been altered or damaged.
 
 ## Testing Technology
 
-TBD
+Testing can only be done in the Debug Release of Glass Opus.
 
 ## Running Tests
 
-TBD
+After launching the Debug Release, add a new Layer, then press the F7 Key. A prompt appears warning the user that running tests will wipe thier project and ask them if
+they wish to continue. Upon selecting Yes, a list will be brought up with all tests that can be run. Clicking on the name of a test will run that test, then re-prompt
+for further testing. Selecting Run All Tests will go through each test one by one. When using Run All Tests, or certain other tests, there will be pop up windows at 
+certain intervals, clicking OK on these windows will allow the test to progress. 
+
+When finished testing, simply close the prompt box or click Cancel. 
 
 # Authors
 
