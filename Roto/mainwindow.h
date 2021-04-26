@@ -119,13 +119,13 @@ public:
     void resizeEvent(QResizeEvent *event);
     void closeEvent(QCloseEvent *event);
     void hoverEvent(QHoverEvent *event);
-    void BrushShapesTest();
-    void BrushColorsTest();
-    void VectorTest();
+    void brushShapesTest();
+    void brushColorsTest();
+    void vectorTest();
     void saveLoadTest();
     void sprayDensityTest();
-    void BrushMethodsTest();
-    void RasterTest();
+    void brushMethodsTest();
+    void rasterTest();
     void runTests();
 
 public slots:
