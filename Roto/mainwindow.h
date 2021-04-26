@@ -75,6 +75,7 @@ using Qt::Key_V;
 using Qt::Key_A;
 using Qt::Key_Y;
 using Qt::Key_Z;
+using Qt::Key_D;
 using Qt::Key_F7;
 
 using graphics::vectorFilters;

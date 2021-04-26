@@ -960,8 +960,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             ioh->getWorkingLayer()->selectAll();
         break;
     case Key_F7:
-        if (ctrlFlag)
+        QMessageBox::StandardButton prompt = QMessageBox::question(this, "Run Diagnostic Mode", "You are about to run Diagnostic Mode. Running tests will wipe your current project. Continue?", QMessageBox::Yes|QMessageBox::No);
+        if (prompt == QMessageBox::Yes) {
             runTests();
+        }
     }
 }
 
@@ -1063,6 +1065,7 @@ void MainWindow::runTests() {
     tests.push_back("Brush Colors");
     tests.push_back("Spray Density");
     tests.push_back("Brush Methods");
+    tests.push_back("Vector Test");
     tests.push_back("Save/Load");
     testPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
     testPrompt.setComboBoxItems(tests);
@@ -1084,6 +1087,9 @@ void MainWindow::runTests() {
         qmb.setText("Running Brush Methods Test");
         qmb.exec();
         BrushMethodsTest();
+        qmb.setText("Running Vector Test");
+        qmb.exec();
+        VectorTest();
         qmb.setText("Running Save Load Test");
         qmb.exec();
         saveLoadTest();
@@ -1098,16 +1104,22 @@ void MainWindow::runTests() {
         sprayDensityTest();
     else if (testPrompt.textValue() == "Brush Methods")
         BrushMethodsTest();
+    else if (testPrompt.textValue() == "Vector Test")
+        VectorTest();
     else if (testPrompt.textValue() == "Save/Load")
         saveLoadTest();
+    runTests();
 }
 
 void MainWindow::BrushShapesTest() {
+    ioh->clearFrame();
+    ioh->addLayer();
     Layer *layer = ioh->getWorkingLayer();
     QImage *canvas = layer->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
     canvas->fill(0xFFFFFFFF);
+    layer->setAlpha(255);
     bh.setBrushColor(0xFF000000);
 
     bh.setShape("Square");
@@ -1116,6 +1128,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(w/9, h/4));
     bh.applyBrush(canvas, QPoint(w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Circle");
     bh.applyBrush(canvas, QPoint(2*(w/9), h/4));
@@ -1123,6 +1137,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(2*w/9, h/4));
     bh.applyBrush(canvas, QPoint(2*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Horizontal");
     bh.applyBrush(canvas, QPoint(3*w/9, h/4));
@@ -1130,6 +1146,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(3*w/9, h/4));
     bh.applyBrush(canvas, QPoint(3*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Vertical");
     bh.applyBrush(canvas, QPoint(4*w/9, h/4));
@@ -1137,6 +1155,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(4*w/9, h/4));
     bh.applyBrush(canvas, QPoint(4*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Left Diagonal");
     bh.applyBrush(canvas, QPoint(5*w/9, h/4));
@@ -1144,6 +1164,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(5*w/9, h/4));
     bh.applyBrush(canvas, QPoint(5*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Right Diagonal");
     bh.applyBrush(canvas, QPoint(6*w/9, h/4));
@@ -1151,6 +1173,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(6*w/9, h/4));
     bh.applyBrush(canvas, QPoint(6*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Diamond");
     bh.applyBrush(canvas, QPoint(7*w/9, h/4));
@@ -1158,6 +1182,8 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(7*w/9, h/4));
     bh.applyBrush(canvas, QPoint(7*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setShape("Octagon");
     bh.applyBrush(canvas, QPoint(8*w/9, h/4));
@@ -1165,15 +1191,226 @@ void MainWindow::BrushShapesTest() {
     bh.applyBrush(canvas, QPoint(8*w/9, h/4));
     bh.applyBrush(canvas, QPoint(8*w/9, 3*(h/4)));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Square");
+    bh.applyBrush(canvas, QPoint(w/4, h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Circle");
+    bh.applyBrush(canvas, QPoint(w/4, 2*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 2*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 2*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Horizontal");
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Vertical");
+    bh.applyBrush(canvas, QPoint(w/4, 4*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 4*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 4*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Left Diagonal");
+    bh.applyBrush(canvas, QPoint(w/4, 5*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 5*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 5*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Right Diagonal");
+    bh.applyBrush(canvas, QPoint(w/4, 6*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 6*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 6*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Diamond");
+    bh.applyBrush(canvas, QPoint(w/4, 7*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 7*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 7*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    bh.setShape("Octagon");
+    bh.applyBrush(canvas, QPoint(w/4, 8*h/9));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, 8*h/9));
+    bh.applyBrush(canvas, QPoint(3*w/4, 8*h/9));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Square");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Circle");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Horizontal");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Vertical");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Left Diagonal");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Right Diagonal");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Diamond");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+
+    canvas->fill(0xFFFFFFFF);
+    bh.setShape("Octagon");
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(w/4, h/4));
+    bh.applyBrush(canvas, QPoint(3*w/4, 3*h/4));
+    bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.setInterpolationActive(true);
+    bh.applyBrush(canvas, QPoint(3*w/4, h/4));
+    bh.applyBrush(canvas, QPoint(w/4, 3*h/4));
+    bh.setInterpolationActive(false);
 }
 
 void MainWindow::BrushColorsTest() {
+    ioh->clearFrame();
+    ioh->addLayer();
     Layer *layer = ioh->getWorkingLayer();
     QImage *canvas = layer->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
     canvas->fill(0xFFFFFFFF);
+    layer->setAlpha(255);
 
     bh.setBrushColor(0xFF000000);
     bh.applyBrush(canvas, QPoint(w/10, h/4));
@@ -1181,6 +1418,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(w/10, h/4));
     bh.applyBrush(canvas, QPoint(w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFFFF0000);
     bh.applyBrush(canvas, QPoint(2*w/10, h/4));
@@ -1188,6 +1427,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(2*w/10, h/4));
     bh.applyBrush(canvas, QPoint(2*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFFFFFF00);
     bh.applyBrush(canvas, QPoint(3*w/10, h/4));
@@ -1195,6 +1436,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(3*w/10, h/4));
     bh.applyBrush(canvas, QPoint(3*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFF00FF00);
     bh.applyBrush(canvas, QPoint(4*w/10, h/4));
@@ -1202,6 +1445,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(4*w/10, h/4));
     bh.applyBrush(canvas, QPoint(4*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFF00FFFF);
     bh.applyBrush(canvas, QPoint(5*w/10, h/4));
@@ -1209,6 +1454,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(5*w/10, h/4));
     bh.applyBrush(canvas, QPoint(5*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFF0000FF);
     bh.applyBrush(canvas, QPoint(6*w/10, h/4));
@@ -1216,6 +1463,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(6*w/10, h/4));
     bh.applyBrush(canvas, QPoint(6*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFFA0A0A0);
     bh.applyBrush(canvas, QPoint(7*w/10, h/4));
@@ -1223,6 +1472,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(7*w/10, h/4));
     bh.applyBrush(canvas, QPoint(7*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFF55AA22);
     bh.applyBrush(canvas, QPoint(8*w/10, h/4));
@@ -1230,6 +1481,8 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(8*w/10, h/4));
     bh.applyBrush(canvas, QPoint(8*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setBrushColor(0xFFBB0AAA);
     bh.applyBrush(canvas, QPoint(9*w/10, h/4));
@@ -1237,13 +1490,18 @@ void MainWindow::BrushColorsTest() {
     bh.applyBrush(canvas, QPoint(9*w/10, h/4));
     bh.applyBrush(canvas, QPoint(9*w/10, 3*h/4));
     bh.setInterpolationActive(false);
+
+    bh.setBrushColor(0xFF000000);
 }
 
 void MainWindow::sprayDensityTest() {
+    ioh->clearFrame();
+    ioh->addLayer();
     Layer *layer = ioh->getWorkingLayer();
     QImage *canvas = layer->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
+    layer->setAlpha(255);
     canvas->fill(0xFFFFFFFF);
     bh.setBrushColor(0xFF000000);
     bh.setDensity(1);
@@ -1252,6 +1510,8 @@ void MainWindow::sprayDensityTest() {
     bh.applyBrush(canvas, QPoint(w/5, h/4));
     bh.applyBrush(canvas, QPoint(w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setDensity(41);
     bh.applyBrush(canvas, QPoint(2*w/5, h/4));
@@ -1259,6 +1519,8 @@ void MainWindow::sprayDensityTest() {
     bh.applyBrush(canvas, QPoint(2*w/5, h/4));
     bh.applyBrush(canvas, QPoint(2*w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setDensity(81);
     bh.applyBrush(canvas, QPoint(3*w/5, h/4));
@@ -1266,6 +1528,8 @@ void MainWindow::sprayDensityTest() {
     bh.applyBrush(canvas, QPoint(3*w/5, h/4));
     bh.applyBrush(canvas, QPoint(3*w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setDensity(121);
     bh.applyBrush(canvas, QPoint(4*w/5, h/4));
@@ -1278,11 +1542,14 @@ void MainWindow::sprayDensityTest() {
 }
 
 void MainWindow::BrushMethodsTest() {
+    ioh->clearFrame();
+    ioh->addLayer();
     Layer *layer = ioh->getWorkingLayer();
     QImage *canvas = layer->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
-    canvas->fill(0xFF111111);
+    layer->setAlpha(255);
+    canvas->fill(0xFF55AA22);
     bh.setBrushColor(0xFFFF0000);
     bh.setAppMethod("Overwrite");
     bh.applyBrush(canvas, QPoint(w/5, h/4));
@@ -1290,6 +1557,8 @@ void MainWindow::BrushMethodsTest() {
     bh.applyBrush(canvas, QPoint(w/5, h/4));
     bh.applyBrush(canvas, QPoint(w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setAppMethod("Additive");
     bh.applyBrush(canvas, QPoint(2*w/5, h/4));
@@ -1297,6 +1566,8 @@ void MainWindow::BrushMethodsTest() {
     bh.applyBrush(canvas, QPoint(2*w/5, h/4));
     bh.applyBrush(canvas, QPoint(2*w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setAppMethod("Subtractive");
     bh.applyBrush(canvas, QPoint(3*w/5, h/4));
@@ -1304,6 +1575,8 @@ void MainWindow::BrushMethodsTest() {
     bh.applyBrush(canvas, QPoint(3*w/5, h/4));
     bh.applyBrush(canvas, QPoint(3*w/5, 3*h/4));
     bh.setInterpolationActive(false);
+    refresh();
+    Sleep(500);
 
     bh.setAppMethod("Filter");
     bh.setFilter("Negative");
@@ -1312,7 +1585,7 @@ void MainWindow::BrushMethodsTest() {
     bh.setInterpolationActive(true);
     bh.applyBrush(canvas, QPoint(4*w/5, h/4));
     bh.applyBrush(canvas, QPoint(4*w/5, 3*h/4));
-    bh.setInterpolationActive(true);
+    bh.setInterpolationActive(false);
 
     // Reset brush type for further testing
     bh.setAppMethod("Overwrite");
@@ -1327,11 +1600,25 @@ void MainWindow::saveLoadTest() {
     QImage * canvas = ioh->getWorkingLayer()->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
+    ioh->getWorkingLayer()->setAlpha(255);
     for (int i = 0; i < w/4; i++) {
         for (int j = 0; j < h; j++) {
             canvas->setPixelColor(i,j,0xFF000000);
         }
     }
+    list <SplineVector> svs;
+    SplineVector sv;
+    sv.addPt(QPoint(w/6, h/6), 0);
+    sv.addPt(QPoint(w/6, h/2), 1);
+    sv.addPt(QPoint(w/5, h/4), 2);
+    sv.setColor1(0xFFFFFFFF);
+    sv.setColor2(0xFFFFFFFF);
+    svs.push_back(sv);
+    ioh->getWorkingLayer()->pasteVectors(svs);
+    refresh();
+
+    Sleep(500);
+
     ioh->addLayer();
     ioh->getWorkingLayer()->setAlpha(150);
     canvas = ioh->getWorkingLayer()->getCanvas();
@@ -1340,6 +1627,9 @@ void MainWindow::saveLoadTest() {
             canvas->setPixelColor(i,j,0xFFFF0000);
         }
     }
+    refresh();
+    Sleep(500);
+
     ioh->addLayer();
     ioh->getWorkingLayer()->setAlpha(100);
     canvas = ioh->getWorkingLayer()->getCanvas();
@@ -1348,6 +1638,9 @@ void MainWindow::saveLoadTest() {
             canvas->setPixelColor(i,j,0xFFFFFF00);
         }
     }
+    refresh();
+    Sleep(500);
+
     ioh->addLayer();
     ioh->getWorkingLayer()->setAlpha(10);
     canvas = ioh->getWorkingLayer()->getCanvas();
@@ -1356,6 +1649,8 @@ void MainWindow::saveLoadTest() {
             canvas->setPixel(i,j,0xFFFF00FF);
         }
     }
+    refresh();
+    Sleep(500);
     qmb.setText("Saving Project");
     qmb.exec();
     ioh->save("SaveLoadTest.glass");
@@ -1368,37 +1663,31 @@ void MainWindow::saveLoadTest() {
 }
 
 void MainWindow::VectorTest() {
-    /*
+    ioh->clearFrame();
+    ioh->addLayer();
     Layer *layer = ioh->getWorkingLayer();
     QImage *canvas = layer->getCanvas();
     int w = canvas->width();
     int h = canvas->height();
     canvas->fill(0xFFFFFFFF);
-    layer->setFilter("NormalRGB");
     SplineVector sv;
-    sv.addPt(QPoint(w/4, h/4), 1);
-    sv.addPt(QPoint(w/2, h/4), 2);
-    sv.addPt(QPoint(w/4, h/2), 3);
-    sv.addPt(QPoint(w/2, h/2), 4);
-    layer->getVectors().push_back(sv);
-    for (int i = 0; i < Filtered; ++i) {
-        sv.setMode(static_cast<VectorMode>(i));
-        for (int j = 0; j < Double; ++j) {
-            sv.setTaperType(static_cast<Taper>(j));
-            for (int h = 0; h < maxWidth; ++h) {
-                sv.setWidth(i);
-                for (int k = 0; k < maxTaper; ++k) {
-                    sv.setTaper1(k);
-                    for (int l = 0; l < maxTaper; ++l) {
-                        sv.setTaper2(l);
-                        for (int theta = 0; theta < 3600; ++theta) {
-                            //sv.rotate(QPoint(0,0));
-                        }
-                    }
-                }
-            }
-        }
-    }*/
+    sv.addPt(QPoint(w/4, h/4), 0);
+    sv.addPt(QPoint(w/2, h/4), 1);
+    sv.addPt(QPoint(w/4, h/2), 2);
+    sv.addPt(QPoint(w/2, h/2), 3);
+    list <SplineVector> svs;
+    svs.push_back(sv);
+    layer->setMode(Spline_Mode);
+    layer->pasteVectors(svs);
+    for (int i = 0; i < 10; ++i) {
+        layer->setWidth(i);
+        refresh();
+        Sleep(200);
+    }
+    layer->setWidth(0);
+    refresh();
+    layer->deleteSelected();
+    layer->setMode(Brush_Mode);
 }
 
 MainWindow::~MainWindow() {
