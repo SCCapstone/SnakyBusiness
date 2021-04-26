@@ -5,6 +5,13 @@
 vector<vector<unsigned char>>Spattern (64,vector<unsigned char>(64));
 int wi,hi;
 
+/* This Profiler takes the applications
+ * most basic drawing fuctions and using
+ * them to allow the user to create their
+ * patterns
+ */
+
+//Initalizes brush's Pattern Profiler
 patternProfiler::patternProfiler(brushHandler *bah, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::patternProfiler)
@@ -31,7 +38,7 @@ patternProfiler::patternProfiler(brushHandler *bah, QWidget *parent) :
 
 
 }
-
+// deconstructor of pattern profiler
 patternProfiler::~patternProfiler()
 {
     delete qb;
@@ -39,18 +46,34 @@ patternProfiler::~patternProfiler()
 
 }
 
+/* Width spindail change signal call
+ * controls the size of the
+ * width of the pattern that
+ * will be made
+ */
 void patternProfiler::on_spinBox_2_valueChanged(int width)
 {
     wi = width;
     repaint();
 }
 
+/* hight spindail change signal call
+ * controls the size of the
+ * hight of the pattern that
+ * will be made
+ */
 void patternProfiler::on_spinBox_valueChanged(int hight)
 {
     hi = hight;
     repaint();
 }
 
+/* Accepting button signal call
+ * Changes exterenal brush to
+ * selected size then stores
+ * custom(drawn) shape in vector
+ * to be sent off to brush handler
+ */
 void patternProfiler::on_buttonBox_accepted()
 {
     for(int i = 0; i < (64*8)+1; i++){
@@ -73,27 +96,43 @@ void patternProfiler::on_buttonBox_accepted()
     rd -> updateSize(30);
     done(1);
 }
-
+/* recjeting button signal call
+ * closes programe wiht out sending
+ * a vector and resets size
+ */
 void patternProfiler::on_buttonBox_rejected()
 {
     rd -> updateSize(30);
     done(0);
 }
-
+/* Fucntion that returns the width
+ * in case extrenal function needs it
+ */
 int getWidth(){
     int w = wi;
     return w;
 }
-
+/* Fucntion that returns the hight
+ * in case extrenal function needs it
+ */
 int getHighth(){
     int h = hi;
     return h;
 }
-
+/* Fucntion that returns the pattern
+ * in case extrenal function needs it
+ */
 vector<vector<unsigned char>> getPattern(){
     return Spattern;
 }
 
+/* Mouse movent dection
+ * gets point as mouse is moving if
+ * the user is drawing and applies white or
+ * black square at that point depending on
+ * right or left mouse button is being
+ * pressed respectively
+ */
 void patternProfiler::mouseMoveEvent(QMouseEvent *event){
     if((lb == Qt::LeftButton)&& drawing){
         QPoint lPoint = event->pos();
@@ -110,6 +149,12 @@ void patternProfiler::mouseMoveEvent(QMouseEvent *event){
     update();
 }
 
+/* Mouse button press dection
+ * gets point at mouse click and applies
+ * white or black square at that point depending on
+ * right or left mouse button is being pressed respectively
+ * sets lets the mouse movement event know that the user is drawing
+ */
 void patternProfiler::mousePressEvent(QMouseEvent *event){
     rd -> updateSize(8);
     if(event->button() == Qt::LeftButton){
@@ -136,6 +181,9 @@ void patternProfiler::mousePressEvent(QMouseEvent *event){
     }
 }
 
+/* Mouse button release dection
+ * resets brush color to black
+ */
 void patternProfiler::mouseReleaseEvent(QMouseEvent *event){
     bh->setInterpolationActive(false);
     bh->setBrushColor(Qt::black);
