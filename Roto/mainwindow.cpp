@@ -260,6 +260,7 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event) {
+    scrollLock.lock();
     if (ioh->getWorkingLayer() == nullptr)
         return;
     int dy = event->angleDelta().y();
@@ -302,6 +303,7 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
     }
     else if (mode == Raster_Mode)
         ioh->getWorkingLayer()->spinWheel(dy);
+    scrollLock.unlock();
     refresh();
 }
 
