@@ -125,6 +125,7 @@ public:
     void saveLoadTest();
     void sprayDensityTest();
     void BrushMethodsTest();
+    void RasterTest();
     void runTests();
 
 public slots:

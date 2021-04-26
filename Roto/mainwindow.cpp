@@ -1066,14 +1066,18 @@ void MainWindow::runTests() {
     tests.push_back("Spray Density");
     tests.push_back("Brush Methods");
     tests.push_back("Vector Test");
+    tests.push_back("Raster Test");
     tests.push_back("Save/Load");
     testPrompt.setOptions(QInputDialog::UseListViewForComboBoxItems);
     testPrompt.setComboBoxItems(tests);
     testPrompt.setWindowTitle("Test Selection");
     testPrompt.setWhatsThis("This menu is for selection of what test to run");
     testPrompt.exec();
-    if (testPrompt.textValue() == "")
+    if (testPrompt.textValue() == "") {
+        ioh->clearFrame();
+        ioh->addLayer();
         return;
+    }
     if (testPrompt.textValue() == "Run All Tests") {
         qmb.setText("Running Brush Shapes Test");
         qmb.exec();
@@ -1090,6 +1094,9 @@ void MainWindow::runTests() {
         qmb.setText("Running Vector Test");
         qmb.exec();
         VectorTest();
+        qmb.setText("Running Raster Test");
+        qmb.exec();
+        RasterTest();
         qmb.setText("Running Save Load Test");
         qmb.exec();
         saveLoadTest();
@@ -1106,6 +1113,8 @@ void MainWindow::runTests() {
         BrushMethodsTest();
     else if (testPrompt.textValue() == "Vector Test")
         VectorTest();
+    else if (testPrompt.textValue() == "Raster Test")
+        RasterTest();
     else if (testPrompt.textValue() == "Save/Load")
         saveLoadTest();
     runTests();
@@ -1539,6 +1548,59 @@ void MainWindow::sprayDensityTest() {
     bh.setInterpolationActive(false);
 
     bh.setDensity(0);
+}
+
+void MainWindow::RasterTest() {
+    ioh->clearFrame();
+    ioh->addLayer();
+    Layer *layer = ioh->getWorkingLayer();
+    QImage *canvas = layer->getCanvas();
+    int w = canvas->width();
+    int h = canvas->height();
+    layer->setAlpha(255);
+    canvas->fill(0xFFFFFFFF);
+
+    for (int i = w/4; i < w/2; ++i) {
+        for (int j = h/4; j < h/2; ++j) {
+            canvas->setPixelColor(i, j, 0xFFFF0000);
+        }
+    }
+    for (int i = w/2; i < 3*w/4; ++i) {
+        for (int j = h/4; j < h/2; ++j) {
+            canvas->setPixelColor(i, j, 0xFF0000FF);
+        }
+    }
+    for (int i = w/4; i < w/2; ++i) {
+        for (int j = h/2; j < 3*h/4; ++j) {
+            canvas->setPixelColor(i, j, 0xFF00FF00);
+        }
+    }
+    for (int i = w/2; i < 3*w/4; ++i) {
+        for (int j = h/2; j < 3*h/4; ++j) {
+            canvas->setPixelColor(i, j, 0xFFFFFF00);
+        }
+    }
+    refresh();
+    Sleep(500);
+
+    layer->setMode(Raster_Mode);
+    layer->selectAll();
+    layer->flipHori();
+    refresh();
+    Sleep(500);
+    layer->flipVert();
+    refresh();
+    Sleep(500);
+
+    for (int i = 1; i < 315; ++i) {
+        layer->spinWheel(30*i);
+        refresh();
+        Sleep(2);
+    }
+    refresh();
+    Sleep(500);
+    layer->deselect();
+    layer->setMode(Brush_Mode);
 }
 
 void MainWindow::BrushMethodsTest() {
