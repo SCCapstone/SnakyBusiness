@@ -763,17 +763,16 @@ void MainWindow::doSomething(string btnPress) {
         sr->zoomOut();
     else if (btnPress == "Shape Profiler") {
         tshape = "Custom";
+        bh.setPatternInUse(0);
+        bh.setShape("Square");
         brushProlfiler->open();
     }
     else if (btnPress == "Pattern Profiler") {
-        if(tshape == "Custom") {
+            bh.setPatternInUse(0);
             bh.setShape("Square");
             tshape = "Square";
             pp->open();
             //int ret = QMessageBox::warning(this,"Glass Opus", "Switch brushes to open pattern profiler");
-        }
-        else
-            pp->open();
     }
     else if (btnPress == "Histogram Equalization") {
         QInputDialog kerPrompt;
