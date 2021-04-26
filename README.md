@@ -6,6 +6,8 @@ The focus of Glass Opus, and the team behind it, is to provide a free software t
 
 The team is using Microsoft coding guidelines. Found [here](https://www.cise.ufl.edu/~mschneid/Research/C++%20Programming%20Style%20Guidelines.htm) and implemented via [this](https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019).
 
+Visit our [website](https://sccapstone.github.io/SnakyBusiness/) to learn more about Glass Opus and view the demo video. 
+
 ## External Requirements
 
 The app be run via the executable in the zip folder under the most recent release.
