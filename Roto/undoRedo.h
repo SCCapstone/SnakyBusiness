@@ -8,12 +8,6 @@
 #include <brushhandler.h>
 // sample Undo Functionality
 
-<<<<<<< Updated upstream
-// Brush Undo
-class BrushUndo : public QUndoCommand {
-public:
-    BrushUndo(const brushHandler &brush, Layer *layer, const QPoint &qp, QUndoCommand *parent = nullptr);
-=======
 /*
 class Triple {
 public:
@@ -58,19 +52,13 @@ private:
 class BrushUndo : public QUndoCommand {
 public:
     BrushUndo(brushHandler bh, list <Triple> l, QUndoCommand *parent=nullptr);
->>>>>>> Stashed changes
     void undo() override;
     void redo() override;
 
 private:
     brushHandler myBrush;
-<<<<<<< Updated upstream
     Layer *myLayer;
     QPoint myPoint;
-};
-//TO-DO : Implement
-=======
-    list <Triple> trip;
 };
 class RadialBrushUndo : public QUndoCommand {
 public:
@@ -83,8 +71,6 @@ private:
     QPoint myPoint;
     vector <vector<QRgb>> deltaColors;
 };
-
->>>>>>> Stashed changes
 // Create Vector -> Add Point
 class CreateVector : public QUndoCommand {
 public:
@@ -113,20 +99,13 @@ private:
 // Translate Vector -> MovePt
 class TranslateVector : public QUndoCommand {
 public:
-<<<<<<< Updated upstream
-    TranslateVector(Layer *vec, const QPoint &pos, QUndoCommand *parent = nullptr);
-=======
     TranslateVector(Layer *vec, const QPoint &prevPos, const QPoint &pos, QUndoCommand *parent = nullptr);
->>>>>>> Stashed changes
     void undo() override;
     void redo() override;
 
 private:
     Layer *tVec;
-<<<<<<< Updated upstream
-=======
     QPoint oldPos;
->>>>>>> Stashed changes
     QPoint newPos;
 };
 // Rotate Vector
@@ -142,10 +121,7 @@ private:
     QPoint aP;
 
 };
-<<<<<<< Updated upstream
-=======
 */
->>>>>>> Stashed changes
 // Change Vector Width
 class ChangeWidth : public QUndoCommand {
 public:
@@ -179,18 +155,6 @@ private:
    int prevTaper;
    int newTaper;
 };
-<<<<<<< Updated upstream
-// Copy Vector
-class CopyVector : public QUndoCommand {
-  public:
-    CopyVector(DataIOHandler *vec, QUndoCommand *parent = nullptr);
-    void undo() override;
-    void redo() override;
-private:
-    DataIOHandler *cVec;
-};
-=======
->>>>>>> Stashed changes
 //Paste Vector
 class PasteVector : public QUndoCommand {
   public:
