@@ -13,7 +13,7 @@ enum Shape {square, circle, vertical, horizontal, lDiagonal, rDiagonal, diamond,
 const string brushShapes[] = {"Square", "Circle", "Vertical", "Horizontal", "Left Diagonal", "Right Diagonal", "Diamond", "Octagon", "Custom"};
 
 const int numBrushes = 9;
-const unsigned char maxRadius = 64;
+const unsigned char maxRadius = 61;
 const unsigned char minRadius = 0;
 
 class Brush {
@@ -23,13 +23,12 @@ public:
     Brush(string brushName = brushShapes[0], int Radius = 10);
     ~Brush();
     void setShape(string brushName);
+    void setCustom(vector <vector <unsigned char> > custom);
     void setRadius(int r);
     int getRadius();
     int getFullSize();
     const unsigned char *const *const getBrushMap();
-    void sendTo(vector <vector < unsigned char > > pattern);
-    vector <vector <unsigned char> > tempMap;
-
+    Shape getBrushShape();
 
 private:
 
@@ -43,10 +42,10 @@ private:
     void createDiamond();
     void createOctagon();
     void createCustom();
-
     unsigned char radius, **brushMap;
     Shape shape;
     unsigned short size;
+    bool init;
 };
 
 #endif // BRUSH_H

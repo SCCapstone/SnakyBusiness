@@ -6,6 +6,8 @@ The focus of Glass Opus, and the team behind it, is to provide a free software t
 
 The team is using Microsoft coding guidelines. Found [here](https://www.cise.ufl.edu/~mschneid/Research/C++%20Programming%20Style%20Guidelines.htm) and implemented via [this](https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019https://docs.microsoft.com/en-us/cpp/code-quality/using-the-cpp-core-guidelines-checkers?view=vs-2019).
 
+Visit our [website](https://sccapstone.github.io/SnakyBusiness/) to learn more about Glass Opus and view the demo video. 
+
 ## External Requirements
 
 The app be run via the executable in the zip folder under the most recent release.
@@ -23,24 +25,29 @@ The app be run via the executable in the zip folder under the most recent releas
 
 There are two options to running the software:  
 1. Once Qt <!--and the OpenCV libs have-->has been correctly installed, one must open the project in Qt and press the run button in the bottom left of the Qt gui. (This option requires the Qt libraries to be on your path.)
-2. Open the bin folder and run the Roto.exe file.  
+2. Launch Glass Opus via the Windows start menu, desktop shortcut, or by opening the executable in the installation (or zip folder if used).  
 
 # Testing
 
-Coming Soon
+Tests are run automatically, verified by the user. Test are used to verify that basic functionality has not been altered or damaged.
 
 ## Testing Technology
 
-Coming Soon
+Testing can only be done in the Debug Release of Glass Opus.
 
 ## Running Tests
 
-Coming Soon
+After launching the Debug Release, add a new Layer, then press the F7 Key. A prompt appears warning the user that running tests will wipe their project and ask them if
+they wish to continue. Upon selecting Yes, a list will be brought up with all tests that can be run. Clicking on the name of a test will run that test, then re-prompt
+for further testing. Selecting Run All Tests will go through each test one by one. When using Run All Tests, or certain other tests, there will be pop up windows at 
+certain intervals, clicking OK on these windows will allow the test to progress. 
+
+When finished testing, simply close the prompt box or click Cancel. 
 
 # Authors
 
-- Auden Childress, geistfulautomaton@gmail.com, auden@email.sc.edu
-- Ben Kronemeyer, benjamink1409@gmail.com, kronemeb@email.sc.edu
-- Matthew Pollard, mattpollard44@gmail.com, pollarm@email.sc.edu
-- Malik Melvin, melvinmalik15@gmail.com, mmmelvin@email.sc.edu
-- Thomas Wilks, tpwilk@hotmail.com, twilks@email.sc.edu
+- Auden Childress,  geistfulautomaton@gmail.com,  auden@email.sc.edu
+- Ben Kronemeyer,   benjamink1409@gmail.com,      kronemeb@email.sc.edu
+- Matthew Pollard,  mattpollard44@gmail.com,      pollarm@email.sc.edu
+- Malik Melvin,     melvinmalik15@gmail.com,      mmmelvin@email.sc.edu
+- Thomas Wilks,     tpwilk@hotmail.com,           twilks@email.sc.edu

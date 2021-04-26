@@ -1,12 +1,11 @@
 #include "brush.h"
 
-Brush::Brush(string brushName, int Radius)
-{
+Brush::Brush(string brushName, int Radius) {
     size = 0;
     radius = static_cast<unsigned char>(Radius);
     size = 2 * radius + 1;
+    init = true;
     setShape(brushName);
-    tempMap = vector <vector <unsigned char> >(219, vector<unsigned char>(219));
 }
 
 Brush::~Brush() {
@@ -37,13 +36,17 @@ void Brush::setRadius(int r) {
     delete [] brushMap;
     radius = stdFuncs::clamp(static_cast<unsigned char>(r), minRadius, maxRadius);
     size = 2 * radius + 1;
+    init = true;
     update();
 }
 
 void Brush::update() {
-    brushMap = new unsigned char*[static_cast<size_t>(size)];
-    for (int i = 0; i < size; ++i)
-        brushMap[i] = new unsigned char[static_cast<size_t>(size)];
+    if (init) {
+        init = false;
+        brushMap = new unsigned char*[static_cast<size_t>(size)];
+        for (int i = 0; i < size; ++i)
+            brushMap[i] = new unsigned char[static_cast<size_t>(size)];
+    }
     switch (shape) {
     case square:
         createSquare();
@@ -68,9 +71,6 @@ void Brush::update() {
         break;
     case octagon:
         createOctagon();
-        break;
-    case custom:
-       createCustom();
         break;
     }
 }
@@ -140,16 +140,13 @@ void Brush::createOctagon() {
             brushMap[i][j] = (x + y < (3 * radius) / 2);
         }
 }
-void Brush::createCustom(){
-    for(int i = 0; i< size; i++){
-        for(int j = 0; j< size; j++)
-            brushMap[i][j] = tempMap[i][j];
-    }
+void Brush::setCustom(vector <vector < unsigned char > > custom) {
+    shape = Shape::custom;
+    for(int i = 0; i < size; ++i)
+        for(int j = 0; j < size; ++j)
+            brushMap[i][j] = custom[i][j];
 }
-void Brush::sendTo(std::vector<std::vector<unsigned char>> pattern){
-    for (int i = 0; i < pattern.size(); ++i){
-            for (int j = 0; j < pattern[i].size(); ++j) {
-               tempMap[i][j] = pattern[i][j];
-            }
-        }
+
+Shape Brush::getBrushShape() {
+    return shape;
 }

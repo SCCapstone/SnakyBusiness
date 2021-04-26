@@ -93,6 +93,7 @@ public:
         spinBox_2->setObjectName(QString::fromUtf8("spinBox_2"));
         spinBox_2->setMinimum(1);
         spinBox_2->setMaximum(64);
+        spinBox_2->setValue(2);
 
         verticalLayout_4->addWidget(spinBox_2);
 
@@ -100,6 +101,7 @@ public:
         spinBox->setObjectName(QString::fromUtf8("spinBox"));
         spinBox->setMinimum(1);
         spinBox->setMaximum(64);
+        spinBox->setValue(2);
 
         verticalLayout_4->addWidget(spinBox);
 
@@ -136,7 +138,7 @@ public:
     {
         patternProfiler->setWindowTitle(QCoreApplication::translate("patternProfiler", "Form", nullptr));
         label_3->setText(QCoreApplication::translate("patternProfiler", "Width", nullptr));
-        label_2->setText(QCoreApplication::translate("patternProfiler", "Hight", nullptr));
+        label_2->setText(QCoreApplication::translate("patternProfiler", "Height", nullptr));
     } // retranslateUi
 
 };
