@@ -93,6 +93,8 @@ const vector <string> acceptedExportImageFormats = {"bmp", "jpg", "jpeg", "png",
 
 enum downloadAction {DownloadThenRestart, DownLoadThenOpen};
 
+const int bins = 256;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -165,6 +167,7 @@ private:
     brushShape *brushProlfiler;
     patternProfiler *pp;
     string tshape;
+    QLabel *histograms;
 };
 
 #endif // MAINWINDOW_H

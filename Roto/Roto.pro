@@ -5,7 +5,6 @@ QT = core gui widgets
 RC_ICONS = execIco.ico
 
 HEADERS = \
-    $$PWD/base85.h \
     $$PWD/brush.h \
     $$PWD/brushhandler.h \
     $$PWD/brushshape.h \
@@ -23,7 +22,6 @@ HEADERS = \
     $$PWD/ui_mainwindow.h \
     $$PWD/ui_radialprofiler.h \
     $$PWD/ui_resizewindow.h \
-    $$PWD/undoredo.h \
     $$PWD/viewscroller.h\
     $$PWD/ui_brushShape.h\
     $$PWD/ui_patternprofiler.h\
@@ -31,7 +29,6 @@ HEADERS = \
     $$PWD/patternprofiler.h\
 
 SOURCES = \
-    $$PWD/base85.cpp \
     $$PWD/brush.cpp \
     $$PWD/brushhandler.cpp \
     $$PWD/brushshape.cpp \
@@ -47,7 +44,6 @@ SOURCES = \
     $$PWD/screenrender.cpp \
     $$PWD/splinevector.cpp \
     $$PWD/triangle.cpp \
-    $$PWD/undoredo.cpp \
     $$PWD/viewscroller.cpp\
     $$PWD/brushShape.cpp\
     $$PWD/patternprofiler.cpp\
