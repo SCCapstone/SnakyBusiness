@@ -122,8 +122,8 @@ MainWindow::MainWindow(string startPath, string projectFile, QWidget *parent)
     setMode(Brush_Mode);
     sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
     sr->setHoverActive(true);
-    brushProlfiler = new brushShape(&bh, this);
-    pp = new patternProfiler(&bh, this);
+    brushProlfiler = new brushShape(this);
+    pp = new patternProfiler(this);
     if (projectFile != "") {
         show();
         ioh->load(QString(projectFile.c_str()));
@@ -276,6 +276,8 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
         }
         else {
             radialProfiler->updateSize(bh.getSize() + dy);
+            if (bh.getBrushShape() == custom)
+                bh.setShape(brushShapes[bh.getBrushShape()], brushProlfiler->getShapeSize(bh.getSize()));
             sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
             statusBar()->showMessage(("Brush Radius: " + to_string(bh.getSize())).c_str(), 1000);
         }
@@ -515,14 +517,12 @@ void MainWindow::doSomething(string btnPress) {
     }
     else if (btnPress == "Brush Radius") {
         bool ok = false;
-        if (tshape == "Custom")
-            int ret = QMessageBox::warning(this,"Glass Opus", "Custom brushes cannot be resized");
-        else {
-            int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush radius", bh.getSize(), minRadius, maxRadius, 1, &ok );
-            if (ok) {
-                radialProfiler->updateSize(ret);
-                sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
-            }
+        int ret = QInputDialog::getInt(this, "Glass Opus", "Please enter a brush radius", bh.getSize(), minRadius, maxRadius, 1, &ok);
+        if (ok) {
+            radialProfiler->updateSize(ret);
+            if (bh.getBrushShape() == custom)
+                bh.setShape(brushShapes[bh.getBrushShape()], brushProlfiler->getShapeSize(bh.getSize()));
+            sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
         }
     }
     else if (btnPress == "Brush Strength") {
@@ -762,18 +762,12 @@ void MainWindow::doSomething(string btnPress) {
     else if (btnPress == "Zoom Out")
         sr->zoomOut();
     else if (btnPress == "Shape Profiler") {
-        tshape = "Custom";
-        brushProlfiler->open();
+        brushProlfiler->exec();
+        bh.setShape(brushShapes[bh.getBrushShape()], brushProlfiler->getShapeSize(bh.getSize()));
     }
     else if (btnPress == "Pattern Profiler") {
-        if(tshape == "Custom") {
-            bh.setShape("Square");
-            tshape = "Square";
-            pp->open();
-            //int ret = QMessageBox::warning(this,"Glass Opus", "Switch brushes to open pattern profiler");
-        }
-        else
-            pp->open();
+        pp->exec();
+        bh.setPattern(pp->getPattern());
     }
     else if (btnPress == "Histogram Equalization") {
         QInputDialog kerPrompt;
@@ -987,14 +981,13 @@ void MainWindow::changeBrushFilter(string filterName) {
 }
 
 void MainWindow::changeBrushShape(string shape) {
-    tshape = shape;
     if (shape == "Custom") {
-        brushProlfiler->open();
+        brushProlfiler->exec();
+        bh.setShape(shape, brushProlfiler->getShapeSize(bh.getSize()));
     }
-    else {
+    else
         bh.setShape(shape);
-        sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
-    }
+    sr->updateHoverMap(bh.getSize(), bh.getBrushMap());
 }
 
 void MainWindow::changeBrushMethod(string method) {

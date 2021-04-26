@@ -35,19 +35,17 @@ public:
     void setDensity(int density);
     void setFilterStrength(int val);
     void setStrength(int str);
-    void setShape(string shape,vector<vector<unsigned char>> pattern ={{0,0},{0,0}});
+    void setShape(string shape, vector <vector <unsigned char> > custom = vector <vector <unsigned char> > ());
     void setBrushColor(QColor qc);
     void setFillColor(QColor qc);
     void setFilter(string filterName);
     void setSamplePoint(QPoint sPnt);
     void setRelativePoint(QPoint rPnt);
     const unsigned char *const *const getBrushMap();
-    void setPattern(int xDim, int yDim, vector<vector<unsigned char>>pattern);
+    void setPattern(vector <vector <unsigned char> > pattern);
     void setPatternInUse(int used);
     void radialUpdate(int size, vector <int> pts);
-    const unsigned char *const *const getPatternMap();
-    int getPatternXDim();
-    int getPatternYDim();
+    vector <vector <unsigned char> > getPatternMap();
     bool getPatternInUse();
     int getMethodIndex();
     int getFilterIndex();
@@ -66,6 +64,7 @@ public:
     void erase(QImage *qi, QPoint qp);
     void setInterpolationActive(bool flag);
     void setSize(int size);
+    Shape getBrushShape();
 
 private:
 
@@ -75,7 +74,6 @@ private:
     void additive(QImage *qi);
     void subractive(QImage *qi);
     void filter(QImage *qi);
-    void pattern(QImage *qi);
     void radial(QImage *qi);
     void sample(QImage *qi);
     QColor getAffected();
@@ -87,7 +85,7 @@ private:
 
     bool ipolActive, patternInUse;
     int sprayDensity;
-    unsigned char strength, patternXDim, patternYDim, **patternMap;
+    unsigned char strength;
     unsigned char checkMap[3 * maxRadius + 1][3 * maxRadius + 1];
     appMethod method;
     Brush brush;
@@ -97,6 +95,7 @@ private:
     list <QPoint> toProcess;
     float radialMap[2 * maxRadius + 1][2 * maxRadius + 1];
     vector <int> radialValues;
+    vector <vector <unsigned char> > patternMap;
 };
 
 #endif // brushHANDLER_H
