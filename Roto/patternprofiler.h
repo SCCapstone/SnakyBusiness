@@ -2,15 +2,16 @@
 #define PATTERNPROFILER_H
 
 #include <QDialog>
-#include<QMouseEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <vector>
 
-#include "brushhandler.h"
-#include "brush.h"
-#include "radialprofiler.h"
+#include <brushhandler.h>
+#include <brush.h>
 
-using namespace std;
+using std::vector;
+
+const int dispScale = 9;
 
 namespace Ui {
 class patternProfiler;
@@ -21,11 +22,9 @@ class patternProfiler : public QDialog
     Q_OBJECT
 
 public:
-    patternProfiler(brushHandler *bah, QWidget *parent = nullptr);
+    patternProfiler(QWidget *parent = nullptr);
     ~patternProfiler();
-    vector<vector<unsigned char>> getPattern();
-    int getWidth();
-    int getHight();
+    vector <vector <unsigned char> > getPattern();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event);
@@ -34,18 +33,17 @@ protected:
 
 private slots:
     void on_spinBox_2_valueChanged(int width);
-    void on_spinBox_valueChanged(int hight);
+    void on_spinBox_valueChanged(int height);
     void on_buttonBox_accepted();
     void on_buttonBox_rejected();
 
 private:
     Ui::patternProfiler *ui;
-    brushHandler *bh;
+    brushHandler bh;
     bool drawing;
-    RadialProfiler *rd;
     Qt::MouseButton lb;
-    QImage *qb;
-    unsigned char pattern[maxRadius][maxRadius];
+    QImage qb;
+    vector <vector <unsigned char> > pattern;
 
 };
 

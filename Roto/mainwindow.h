@@ -177,7 +177,6 @@ private:
     QProgressDialog *progress;
     brushShape *brushProlfiler;
     patternProfiler *pp;
-    string tshape;
     QLabel *histograms;
 };
 

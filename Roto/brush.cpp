@@ -1,10 +1,10 @@
 #include "brush.h"
 
-Brush::Brush(string brushName, int Radius)
-{
+Brush::Brush(string brushName, int Radius) {
     size = 0;
     radius = static_cast<unsigned char>(Radius);
     size = 2 * radius + 1;
+    init = true;
     setShape(brushName);
 }
 
@@ -19,7 +19,7 @@ const unsigned char *const *const Brush::getBrushMap() {
     return retMap;
 }
 
-void Brush::setShape(string brushName, vector <vector < unsigned char > > pattern) {
+void Brush::setShape(string brushName) {
     int i;
     for (i = 0; i < numBrushes; ++i)
         if (brushName == brushShapes[i])
@@ -27,7 +27,7 @@ void Brush::setShape(string brushName, vector <vector < unsigned char > > patter
     if (i == numBrushes)
         i = 0;
     shape = Shape(i);
-    update(pattern);
+    update();
 }
 
 void Brush::setRadius(int r) {
@@ -36,13 +36,17 @@ void Brush::setRadius(int r) {
     delete [] brushMap;
     radius = stdFuncs::clamp(static_cast<unsigned char>(r), minRadius, maxRadius);
     size = 2 * radius + 1;
+    init = true;
     update();
 }
 
-void Brush::update(vector <vector < unsigned char >> pattern) {
-    brushMap = new unsigned char*[static_cast<size_t>(size)];
-    for (int i = 0; i < size; ++i)
-        brushMap[i] = new unsigned char[static_cast<size_t>(size)];
+void Brush::update() {
+    if (init) {
+        init = false;
+        brushMap = new unsigned char*[static_cast<size_t>(size)];
+        for (int i = 0; i < size; ++i)
+            brushMap[i] = new unsigned char[static_cast<size_t>(size)];
+    }
     switch (shape) {
     case square:
         createSquare();
@@ -67,9 +71,6 @@ void Brush::update(vector <vector < unsigned char >> pattern) {
         break;
     case octagon:
         createOctagon();
-        break;
-    case custom:
-       createCustom(pattern);
         break;
     }
 }
@@ -139,11 +140,13 @@ void Brush::createOctagon() {
             brushMap[i][j] = (x + y < (3 * radius) / 2);
         }
 }
-void Brush::createCustom(vector <vector < unsigned char > > pattern){
-    for(int i = 0; i< size; i++){
-        for(int j = 0; j< size; j++){
-            brushMap[i][j] = pattern[i][j];
+void Brush::setCustom(vector <vector < unsigned char > > custom) {
+    shape = Shape::custom;
+    for(int i = 0; i < size; ++i)
+        for(int j = 0; j < size; ++j)
+            brushMap[i][j] = custom[i][j];
+}
 
-        }
-    }
+Shape Brush::getBrushShape() {
+    return shape;
 }
