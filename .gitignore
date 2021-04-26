@@ -249,3 +249,10 @@ build-Roto-Desktop_Qt_5_15_1_MSVC2019_64bit-Release/release/moc_brushshape.cpp
 Roto/Roto.pro
 *.res
 *.pro
+*.docx
+*.bmp
+build-Roto-Desktop_Qt_5_15_2_MSVC2019_64bit-Release/release/moc_unitTest.cpp
+*.dll
+*.glass
+*.pro
+Roto/Roto.pro
