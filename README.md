@@ -27,15 +27,20 @@ There are two options to running the software:
 
 # Testing
 
-Coming Soon
+Tests are run automatically, verified by the user. Test are used to verify that basic functionality has not been altered or damaged.
 
 ## Testing Technology
 
-Coming Soon
+Testing can only be done in the Debug Release of Glass Opus.
 
 ## Running Tests
 
-Coming Soon
+After launching hte Debug Release, add a new Layer, then press the F7 Key. A prompt appears warning the user that running tests will wipe thier project and ask them if
+they wish to continue. Upon selecting Yes, a list will be brought up with all tests that can be run. Clicking on the name of a test will run that test, then re-prompt
+for further testing. Selecting Run All Tests will go through each test one by one. When using Run All Tests, or certain other tests, there will be pop up windows at 
+certain intervals, clicking OK on these windows will allow the test to progress. 
+
+When finished testing, simply close the prompt box or click Cancel. 
 
 # Authors
 
