@@ -46,7 +46,7 @@ When finished testing, simply close the prompt box or click Cancel.
 
 # Authors
 
-- Auden Childress,  geistfulautomaton@gmail.com,  auden@email.sc.edu
+- [Auden Childress](https://github.com/Geist-of-the-Automaton),  geistfulautomaton@gmail.com,  auden@email.sc.edu
 - Ben Kronemeyer,   benjamink1409@gmail.com,      kronemeb@email.sc.edu
 - Matthew Pollard,  mattpollard44@gmail.com,      pollarm@email.sc.edu
 - Malik Melvin,     melvinmalik15@gmail.com,      mmmelvin@email.sc.edu
