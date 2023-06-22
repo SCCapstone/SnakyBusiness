@@ -1,6 +1,8 @@
 # Glass Opus
 
-##THIS PROJECT HAS BEEN MIGRATED. The most up to date info and version are [here](https://www.audenchildress.com/glass-opus)
+## THIS PROJECT HAS BEEN MIGRATED. The most up to date info and version are [here](https://www.audenchildress.com/glass-opus)
+
+
 
 Glass Opus is an open source rotoscoping software for students and artists. The software will provide a variety of features to allow the users to see their work from start to finish. Drawing with a variety brushes and vectors, image manipulation, and filtering are among the many features than one can employ to create their vision.
 
